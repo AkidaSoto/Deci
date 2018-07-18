@@ -6,8 +6,6 @@
 
 % Written and Compiled by @John Nguyen of Robert Reinhart Lab on 7/17/2018, contact: Akida@bu.edu.
 
-% In order to have a good experience, I suggest turn on 'Sections' in Code Folding in Preferences (under Home Tab)
-% You'll then be able press [Ctrl and =] to Collapse all Sections to a easier-to-read format
 
 % --------Disclaimer----------- 
 %Deci is dwarf version of a large code, Decima, compiled recently so it
@@ -16,7 +14,12 @@
 
 %---------Manual-------
 
-%Deci has 6 Stages
+%To Start, Open MainMenu and go the MainMenu Section
+
+% In order to have a good experience, I suggest turn on 'Sections' in Code Folding in Preferences (under Home Tab)
+% You'll then be able press [Ctrl and =] to Collapse all Sections to a easier-to-read format
+
+%Deci has 6 Stages, each segmented by it's own section with it's own list of parameters
     %MainMenu - Information used to find Raw Files director and Output Directory
         %Types of Raw formats compatible are [.dat, .eeg, .bdf, .cnt]
         %When MainMenu runs, a snapshot of parameter will be saved as "Parameter.txt" in your .Version Directory
