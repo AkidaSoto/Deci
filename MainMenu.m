@@ -21,9 +21,17 @@
 
 %Deci has 6 Stages, each segmented by it's own section with it's own list of parameters
     %MainMenu - Information used to find Raw Files director and Output Directory
+    
+        %To start, You'll need a Raw Data Folder with your Data with .Folder.Raw
         %Types of Raw formats compatible are [.dat, .eeg, .bdf, .cnt]
+        
+        %Specify your output folder as Folder.Version
+        
         %When MainMenu runs, a snapshot of parameter will be saved as "Parameter.txt" in your .Version Directory
         %Deci will ask you which steps you want to start on:
+        
+        
+        
      %Step 1:DefineTrial
         %Deci comes with a rudimentary auto trial definiton, however this comes with a few assumptions.
             % You want every trial to be same beg and end, and therefore the same length
