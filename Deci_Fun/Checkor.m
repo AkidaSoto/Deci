@@ -31,4 +31,6 @@ if any(ismember(steps1,[Deci.Step]))
     
 end
 
+copyfile(which('MainMenu'),[Deci.Folder.Version 'Parameter.text'])
+
 end

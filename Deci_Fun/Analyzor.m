@@ -5,11 +5,6 @@ if ~isfield(Deci.Analysis,'ArtifactReject')
     Warning('Parameter for ArtifactReject not found, presuming not wanted')
 end
 
-if ~isfield(Deci.Analysis,'Toi')
-    Deci.Analysis.Toi = [-inf inf];
-    Warning('Parameter for Toi not found, presuming [-inf inf]')
-end
-
 if ~isfield(Deci.Analysis,'Channels')
     Deci.Analysis.Channels = 'all';
     Warning('Parameter for Channels not found, presuming all')
@@ -80,6 +75,11 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         
         if ~isempty(Deci.Analysis.Freq)
+            
+            if ~isfield(Deci.Analysis.Freq,'Toi')
+                Deci.Analysis.Toi = [-inf inf];
+                Warning('Parameter for Toi not found, presuming [-inf inf]')
+            end
             
             fcfg = Deci.Analysis.Freq;
             fcfg.toi = Deci.Analysis.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Toi(2);

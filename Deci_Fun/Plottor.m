@@ -1,9 +1,5 @@
 function Plottor(Deci)
 
-if isempty(Deci.Plot.Channel)
-    Deci.Plot.Channel = 'all';
-    warning('Cannot Find Channels for plot, setting as all');
-end
 
 if isempty(Deci.Plot.Toi)
     Deci.Plot.Toi = [-inf inf];
@@ -45,9 +41,17 @@ for subject_list = 1:length(Deci.SubjectList)
         Freq.Conditions     = CleanDir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}]);
         Freq.Channels       = CleanDir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep Freq.Conditions{1}]);
         Freq.Channels       = cellfun(@(c) c(1:end-4),Freq.Channels,'un',0);
+        
+        if ~ischar(Deci.Plot.Freq.Channel)
+            if ~any(ismember(Deci.Plot.Freq.Channel,Freq.Channels))
+                error('Freq Channel Parameter has additional channels not found in Data')
+            end
+            
+            Freq.Channels = Deci.Plot.Freq.Channel(ismember(Deci.Plot.Freq.Channel,Freq.Channels));
+        end
     end
     
-    if Deci.Plot.ERP || ~isempty(Deci.Plot.PRP)
+    if ~isempty(Deci.Plot.ERP) || ~isempty(Deci.Plot.PRP)
         if ~isdir([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list}])
             error(['ERP Analysis not found for '  Deci.SubjectList{subject_list}])
         end
@@ -56,7 +60,8 @@ for subject_list = 1:length(Deci.SubjectList)
     end
     
     if ~isempty(Deci.Plot.PRP)
-        
+         Deci.Plot.GA = 0;
+         
         if isempty(Deci.Plot.PRP.label)
             Deci.Plot.Freq.BslType =  0;
             warning('Cannot Find label for PRP plot, setting as 0');
@@ -116,7 +121,7 @@ if Deci.Plot.Freq.Plot || ~isempty(Deci.Plot.PRP)
     end
 end
 
-if Deci.Plot.ERP || ~isempty(Deci.Plot.PRP)
+if ~isempty(Deci.Plot.ERP)|| ~isempty(Deci.Plot.PRP)
     for  Condition =  1:length(ERP.Conditions)
         for  subject_list = 1:length(Deci.SubjectList)
             
@@ -126,6 +131,15 @@ if Deci.Plot.ERP || ~isempty(Deci.Plot.PRP)
             toi = round(time.time,4) >= Deci.Plot.Toi(1) & round(time.time,4) <= Deci.Plot.Toi(2);
             time.time =  time.time(toi);
             time.avg  =time.avg(:,toi);
+            
+            if ~ischar(Deci.Plot.ERP.Channel)
+                if ~any(ismember(Deci.Plot.ERP.Channel,time.label))
+                    error('Channel Parameter has additional channels not found in Data')
+                end
+                
+                tcfg.channel = Deci.Plot.ERP.Channel;
+                time = ft_selectdata(tcfg,time);
+            end
             
             Subjects{subject_list} = time;
             clear time;
@@ -139,8 +153,12 @@ if Deci.Plot.ERP || ~isempty(Deci.Plot.PRP)
             TimeData(Condition,:) = Subjects(:);
         end
         clear Subjects;
+        
     end
+    
+    
 end
+
 
 
 %% Plot
@@ -222,12 +240,12 @@ if Deci.Plot.Freq.Plot
     
 end
 
-if Deci.Plot.ERP
+if ~isempty(Deci.Plot.ERP)
     %Not yet available
 end
 
 if ~isempty(Deci.Plot.PRP)
-    
+   
     
     PRPPlot = figure;
     colors = reshape(hsv(size(FreqData,1)),[3 size(FreqData,1) 1]);
@@ -276,7 +294,7 @@ if ~isempty(Deci.Plot.PRP)
             
             if Deci.Plot.PRP.label
                 t =  text(ax4, scat(cond,subj,1),scat(cond,subj,2),Deci.SubjectList{subj});
-                set(t, 'Clipping', 'on');
+                set(t, 'Clipping', 'on','Interpreter', 'none');
             end
             
             
@@ -322,17 +340,17 @@ if ~isempty(Deci.Plot.PRP)
     
     xlabel(ax3, 'Rho value');
     ylabel(ax3, 'P value');
-    title(ax3,{['Between Trial Correlation with p and rho'] ['at times ' scattitle]} );
+    title(ax3,{['Between Trial Correlation with p and rho']} );
     
     
     xlabel(ax3,'Time(secs)');
     ylabel(ax3, 'Rho' );
-    title(ax3,{['Correlation by time  only sigficiant by Fdr MC Corrected'] ['at times ' scattitle]} )
+    title(ax3,{['Correlation by time  only sigficiant by Fdr MC Corrected']} )
     
     xlabel(ax4,'Total Power');
     ylabel(ax4, 'ERP Power (uV)' );
     
-    title(ax4,{['Correlation Total Power-ERP by subject'] ['at times ' scattitle]} )
+    title(ax4,{['Correlation Total Power-ERP by subject'] ['at times ' scattitle]})
     
     
 end
