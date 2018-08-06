@@ -2,19 +2,20 @@ function Artifactor(Deci)
 
 for subject_list = 1:length(Deci.SubjectList)
     
-    if Deci.Art.ICA  || ~isempty(Deci.Art.TR.Eye) || ~isempty(Deci.Art.TR.Muscle)
-        data = load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}]);
-        label = data.label;
-        data = data.data;
-        
-    end
+
     
     %% ICA
     
     if Deci.Art.ICA
         
+        if Deci.Art.ICA  || ~isempty(Deci.Art.TR.Eye) || ~isempty(Deci.Art.TR.Muscle)
+            data = [];
+            load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
+            
+        end
+        
         cfg = [];
-        cfg.channel = label;
+        cfg.channel =  'all';
         
         cfg.method  = 'runica';
         cfg.runica.pca = 20;
@@ -32,34 +33,62 @@ for subject_list = 1:length(Deci.SubjectList)
         clear cfg.method
         
         cfg.channel = 'all';
-        ft_databrowser(cfg, datacomp)
         
+        fakeUI = figure;
+        select_labels(fakeUI,[],sort(datacomp.label));
+        fakeUI.Visible =  'off';
+        ft_databrowser(cfg,datacomp);
+        suptitle(Deci.SubjectList{subject_list});
+        waitfor(findall(0,'Name','Select Labels'),'BeingDeleted','on');
         
-        cfg.component = input('Components to reject? (Delimit by space)','s');
-        
-        if isempty(cfg.component)
+        if isempty(fakeUI.UserData)
             cfg.component = [];
         else
-            cfg.component = str2num(cfg.component);
+            cfg.component = find(ismember(fakeUI.UserData,datacomp.label));
             if any(cfg.component <= 0 & cfg.component >= 20)
                 error('component numbers outside of limits of 1-20');
             end
         end
+        close(fakeUI)
         
         data = ft_rejectcomponent(cfg, datacomp);
         clear datacomp
         
-        mkdir([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}])
-        save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data','label','-v7.3')
+        mkdir([Deci.Folder.Preproc])
+        save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data','-v7.3')
     end
     
-    %% Trial Rejection
-    
+end
+%% Trial Rejection
+for subject_list = 1:length(Deci.SubjectList)
     if ~isempty(Deci.Art.TR.Eye) || ~isempty(Deci.Art.TR.Muscle)
+        
+        if Deci.Art.ICA  || ~isempty(Deci.Art.TR.Eye) || ~isempty(Deci.Art.TR.Muscle)
+            data = [];
+            load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
+            
+        end
+        
         cfg = [];
         load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}],'cfg');
         
+        testcfg.latency = Deci.Art.TR.Eye.Toi;
+        EEG_data = ft_selectdata(testcfg,data);
         
+        redefine = 0;
+        if exist([Deci.Folder.Version  filesep 'Redefine' filesep Deci.SubjectList{subject_list} '.mat']) == 2
+            redefine = 1;
+            
+            retrl = [];
+            load([Deci.Folder.Version  filesep 'Redefine' filesep Deci.SubjectList{subject_list} '.mat']);
+            cfg.offset = retrl;
+            cfg.shift = Deci.Art.TR.Eye.Toi(1);
+            
+            EEG_redefine = ft_datashift(cfg,data);
+            EEG_redefine = ft_selectdata(testcfg,EEG_redefine);
+        end
+        
+        cfg.channel = 'all';
         cfg.datafile = filesyntax(cfg.datafile);
         cfg.headerfile = filesyntax(cfg.headerfile);
         cfg.dataset = filesyntax(cfg.dataset);
@@ -94,31 +123,42 @@ for subject_list = 1:length(Deci.SubjectList)
                 acfg.artfctdef.zvalue.interactive = 'no';
             end
             
-            testcfg.latency = Deci.Art.TR.Eye.Toi;
-            EOG_data = ft_selectdata(testcfg,data);
             
-            [~, artifact_EOG_cond] = ft_artifact_zvalue_checkless(acfg,EOG_data);
+            [~, artifact_EOG_cond] = ft_artifact_zvalue_checkless(acfg,EEG_data);
             
             if ~isempty(artifact_EOG_cond)
                 ecfg = cfg;
                 ecfg.artfctdef.reject = 'complete';
                 ecfg.artfctdef.eog.artifact = artifact_EOG_cond;
                 
-                artifact = ft_rejectartifact(ecfg,EOG_data);
+                artifact = ft_rejectartifact(ecfg,EEG_data);
                 artif = [artif;artifact.saminfo];
+            end
+            
+            if redefine
+                [~, artifact_EOGr_cond] = ft_artifact_zvalue_checkless(acfg,EEG_redefine);
+                
+                if ~isempty(artifact_EOGr_cond)
+                    ercfg = cfg;
+                    ercfg.artfctdef.reject = 'complete';
+                    ercfg.artfctdef.eog.artifact = artifact_EOGr_cond;
+                    
+                    artifact = ft_rejectartifact(ercfg,EEG_redefine);
+                    artif = [artif;artifact.saminfo];
+                end
             end
             
         end
         
         if ~isempty(Deci.Art.TR.Muscle)
-        
+            
             hdr = ft_read_header(cfg.headerfile);
             Nyq = [hdr.Fs/2] -1;
             
             MUSpadval = [0 .1 0];
             MUScutoffval = 25;
             MUSbpval = [110 Nyq];
-
+            
             bcfg = cfg;
             bcfg.artfctdef.zvalue.channel     = 'all';
             bcfg.artfctdef.zvalue.cutoff      = MUScutoffval;
@@ -142,23 +182,34 @@ for subject_list = 1:length(Deci.SubjectList)
                 bcfg.artfctdef.zvalue.interactive = 'no';
             end
             
-            testcfg.latency = Deci.Art.TR.Muscle.Toi;
-            MUS_data = ft_selectdata(testcfg,data);
             
-            [~, artifact_muscle_cond] = ft_artifact_zvalue_checkless(bcfg,MUS_data);
+            
+            [~, artifact_muscle_cond] = ft_artifact_zvalue_checkless(bcfg,EEG_data);
             
             if ~isempty(artifact_muscle_cond)
                 mcfg =cfg;
                 mcfg.artfctdef.reject = 'complete';
                 mcfg.artfctdef.muscle.artifact = artifact_muscle_cond;
                 
-                artifact = ft_rejectartifact(mcfg,MUS_data);
+                artifact = ft_rejectartifact(mcfg,EEG_data);
                 artif = [artif;artifact.saminfo];
             end
             
+            if redefine
+                [~, artifact_muscler_cond] = ft_artifact_zvalue_checkless(bcfg,EEG_redefine);
+                
+                if ~isempty(artifact_muscler_cond)
+                    emcfg = cfg;
+                    emcfg.artfctdef.reject = 'complete';
+                    emcfg.artfctdef.eog.artifact = artifact_muscler_cond;
+                    
+                    artifact = ft_rejectartifact(emcfg,EEG_redefine);
+                    artif = [artif;artifact.saminfo];
+                end
+            end
+            
+            
         end
-        
-       
         
         if ~isempty(artif)
             conds =  unique(floor(cfg.trl(:,4)),'stable');
@@ -168,6 +219,7 @@ for subject_list = 1:length(Deci.SubjectList)
             
             for con = 1:length(conds)
                 artifacts = artif(floor(data.trialinfo) ==conds(con));
+                arties(subject_list,con,:) =[length(find(artifacts)) length(artifacts)] ;
                 save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} filesep num2str(conds(con))],'artifacts');
             end
         end

@@ -60,8 +60,8 @@ for subject_list = 1:length(Deci.SubjectList)
     end
     
     if ~isempty(Deci.Plot.PRP)
-         Deci.Plot.GA = 0;
-         
+        Deci.Plot.GA = 0;
+        
         if isempty(Deci.Plot.PRP.label)
             Deci.Plot.Freq.BslType =  0;
             warning('Cannot Find label for PRP plot, setting as 0');
@@ -104,9 +104,34 @@ if Deci.Plot.Freq.Plot || ~isempty(Deci.Plot.PRP)
             Subjects{subject_list} = rmfield(ft_appendfreq(acfg,Chans{:}),'cfg');
             clear Chans;
             
-            acfg.baseline = Deci.Plot.Freq.Bsl;
-            acfg.baselinetype = Deci.Plot.Freq.BslType;
-            Subjects{subject_list} = rmfield(ft_freqbaseline(acfg,Subjects{subject_list}),'cfg');
+            if  exist([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list} filesep num2str(Condition) '.mat']) ~= 2
+                
+                if ~isequal(Deci.Plot.Freq.Bsl,[0 0])
+                    acfg.baseline = Deci.Plot.Freq.Bsl;
+                    acfg.baselinetype = Deci.Plot.Freq.BslType;
+                    Subjects{subject_list} = rmfield(ft_freqbaseline(acfg,Subjects{subject_list}),'cfg');
+                end
+            else
+                
+                bsl = [];
+                load([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list} filesep num2str(Condition) '.mat']);
+                
+                bsl = repmat(bsl.powspctrm(ismember(bsl.label,Freq.Channels),foi,:),[1 1 size(Subjects{subject_list}.powspctrm ,3)]);
+                
+                switch Deci.Plot.Freq.BslType
+                    case 'absolute'
+                        Subjects{subject_list}.powspctrm = Subjects{subject_list}.powspctrm - bsl;
+                    case 'relative'
+                        Subjects{subject_list}.powspctrm= Subjects{subject_list}.powspctrm ./ bsl;
+                    case 'relchange'
+                       Subjects{subject_list}.powspctrm = (Subjects{subject_list} - bsl) ./ bsl;
+                    case 'db'
+                       Subjects{subject_list}.powspctrm = 10*log10(Subjects{subject_list}.powspctrm ./ bsl);
+                end
+                
+                
+            end
+            
             
         end
         
@@ -217,6 +242,7 @@ if Deci.Plot.Freq.Plot
                 close topo
             end
         end
+        
     end
     
     if length(Freq.Channels) ~= 1
@@ -245,7 +271,7 @@ if ~isempty(Deci.Plot.ERP)
 end
 
 if ~isempty(Deci.Plot.PRP)
-   
+    
     
     PRPPlot = figure;
     colors = reshape(hsv(size(FreqData,1)),[3 size(FreqData,1) 1]);

@@ -1,19 +1,37 @@
-% Welcome to Deci, a fluid pipeline to analyze EEG Data with ease.
-% Deci uses Fieldtrip (Robert Oostenveld) as the backbone of its analysis with a few codes modify so it may not be compatible with any.
+% ----------Welcome to Deci------- 
+% a fluid pipeline to analyze EEG Data with ease.
+
+% Deci uses Fieldtrip (Robert Oostenveld) as the backbone of its analysis with
+% a few codes modified so it may not be compatible with other versions of Fieldtrip.
+
 % Written and Compiled by @John Nguyen of Robert Reinhart Lab on 7/17/2018, contact: Akida@bu.edu.
 
-% Disclaimer: Deci is dwarf version of a large code, Decima, compiled recently so it
+
+% --------Disclaimer----------- 
+%Deci is dwarf version of a large code, Decima, compiled recently so it
 % may come with some bugs and error, please contact me anytime.
 % Additionally, Deci may only work with newer version of MATLAB
 
-% In order to have a good experience, I suggest turn on 'Sections' in Code Folding in Preferences (under Home Tab)
-% You'll then be able press [Ctrl and =] to Collapse all secions to a easier-to-read format
+%---------Manual-------
 
-%Deci has 6 Stages
+%To Start, Open MainMenu and go the MainMenu Section
+
+% In order to have a good experience, I suggest turn on 'Sections' in Code Folding in Preferences (under Home Tab)
+% You'll then be able press [Ctrl and =] to Collapse all Sections to a easier-to-read format
+
+%Deci has 6 Stages, each segmented by it's own section with it's own list of parameters
     %MainMenu - Information used to find Raw Files director and Output Directory
+    
+        %To start, You'll need a Raw Data Folder with your Data with .Folder.Raw
         %Types of Raw formats compatible are [.dat, .eeg, .bdf, .cnt]
+        
+        %Specify your output folder as Folder.Version
+        
         %When MainMenu runs, a snapshot of parameter will be saved as "Parameter.txt" in your .Version Directory
         %Deci will ask you which steps you want to start on:
+        
+        
+        
      %Step 1:DefineTrial
         %Deci comes with a rudimentary auto trial definiton, however this comes with a few assumptions.
             % You want every trial to be same beg and end, and therefore the same length
@@ -65,20 +83,17 @@
                 %looks at correlation between ERP and Freq data.
 %% MainMenu
 Deci                    = [];
-Deci.Folder.Raw         = ['C:\Users\Researcher\Documents\Raw']; %Folder with Raw Data files
-Deci.SubjectList        = ['all']; %Cell Array of Subjects Files or 'all' to specify all in Deci.Folder.Raw
+Deci.Folder.Raw         = ['C:\Users\Researcher\Dropbox (BOSTON UNIVERSITY)\Non-NAS\raw_data\TimeEst EEG-PS_all_new'];        %Folder with Raw Data files
+Deci.SubjectList        = ['all'];                                      %Cell Array of Subjects Files or 'all' to specify all in Deci.Folder.Raw
 
-Deci.Folder.Version     = ['C:\Users\Researcher\Documents\test2\']; % This is your Output Directory, it does not have to exist yet
+Deci.Folder.Version     = ['C:\Users\Researcher\Dropbox (BOSTON UNIVERSITY)\Non-NAS\Comp_1\Deci\TimeEst'];     % This is your Output Directory, it does not have to exist yet
 
-Deci.Layout.Noeye       = 'easycap_rob_noeye.mat'; % Layout without Ocular Channels, Default is ReinhartLab 1020 system
-Deci.Layout.eye         = 'easycap_rob_eye.mat';   % Layout with Ocular Channels
+Deci.Layout.Noeye       = 'easycap_rob_noeye.mat';                      % Layout without Ocular Channels, Default is ReinhartLab 1020 system
+Deci.Layout.eye         = 'easycap_rob_eye.mat';                        % Layout with Ocular Channels
 
-%Steps Are DefineTrial = 1, PreProcess = 2, Artifacts = 3, Analysis = 4,
-%Plots = 5
 Deci.Step = input('Start from which step? DefineTrial = 1, PreProcess = 2, Artifacts = 3, Analysis = 4, Plots = 5 >>');
 
-Deci.Proceed            = 0; %0 or 1, Do you want Deci to automatically proceed to next steps? Suggest 0 for first-time users.
-
+Deci.Proceed            = 1;                                             %0 or 1, Do you want Deci to automatically proceed to next steps? Suggest 0 for first-time users.
 Deci = Checkor(Deci);
 %% 1. Define Trial
 if Deci.Step <= 1
@@ -86,6 +101,10 @@ if Deci.Step <= 1
     %Experimental Trials are specfic to the experiment.
     %Collected Trials are specfic to the Trial Definition and may exceed the time from Experimental Trials
     
+    Deci.DT.Type = 'timeestfun2';                       % Define trial via 'Manual' with definitions below
+                                                        % or file name with output trl [Store them in Xtra_Fun]
+    
+    %Manual Definition
     Deci.DT.Starts     = {10 11};       % Markers Represent Start of Experimental* Trial
     Deci.DT.Ends       = {200 201 202}; % Markers Represent End of   Experimental* Trial
     
@@ -97,7 +116,7 @@ if Deci.Step <= 1
     
     % if you get a "cannot read data after the end of the file" error, this
     % is because the time length request after the Lock is further than the
-    % file's end. Suggestion is remove the last Trial and make sure to
+    % file's end. Suggestion is tp remove the last Trial and make sure to
     % leave data recording to a few seconds after last trial finishes.
     
     DefineTrialor(Deci);
@@ -111,17 +130,20 @@ if Deci.Step <= 2
     Deci.PP.ScalingFactor       = .00819;                       % If the data needs to scale
     
     %ReinhartLab Settings, Template Format
-    %Deci.PP.Imp                = 'TP10:TP9';                   % 'Impicit Reference?[Implicit:RefChannels without Implicit]'
-    %Deci.PP.Ocu                = 'TVEOG:BVEOG,LHEOG:RHEOG';    % 'Ocular Reref?[Ref-Channels without Ref]'
+    Deci.PP.Imp                = 'TP10:TP9';                   % 'Impicit Reference?[Implicit:RefChannels without Implicit]'
+    Deci.PP.Ocu                = 'TVEOG:BVEOG,LHEOG:RHEOG';    % 'Ocular Reref?[Ref-Channels without Ref]'
     
     %Rereference channel to average of Implicit Electrode and Offline Reference
-    Deci.PP.Imp                 = 'RM:LM';                      % 'Implicit Reference?[Implicit:RefChannels without Implicit]'
-    
+    %Deci.PP.Imp                 = 'RM:LM';                      % 'Implicit Reference?[Implicit:RefChannels without Implicit]
     %Ocular channel reference for average of Horizontal/Vertial average. Takes the naming of the Ref channel.
-    Deci.PP.Ocu                 = [];                           % 'Ocular Reref?[Ref:Channels without Ref]'
+    %Deci.PP.Ocu                 = [];                           % 'Ocular Reref?[Ref:Channels without Ref]'
     
-    Deci.PP.hbp                 = [];                           % 'High-bandpass filter, in Hz.'
+    Deci.PP.HBP                 = [];                           % 'High-bandpass filter, in Hz.'
     Deci.PP.Demean              = [-.2 0];                      % 'Baseline Window for Correction'
+    Deci.PP.Repair              = [];                            % 'View and Repair Channels'
+    Deci.PP.Repair.Type =   
+    
+    
     PreProcessor(Deci);
     if ~Deci.Proceed; return; end
 end
@@ -132,8 +154,6 @@ if Deci.Step <= 3
     Deci.Art.ICA                     = 0; % Whether or Not to do ICA
     
     % Trial Artifacts
-
-    
     Deci.Art.TR.Eye                  = [];               % Comment the rest of .Eye to not do Eye Artifact Trial Rejection
     Deci.Art.TR.Eye.Interactive      = 0;                % Enable Interactive Trial Artifact Rejection
     Deci.Art.TR.Eye.Chans            = {'VEM','HEM'};    % 1xChan Cell Array of Ocular Eye Channels
@@ -151,19 +171,23 @@ if Deci.Step <= 4
     
     Deci.Analysis.ArtifactReject     = 1;                    % Specify whether or not to Apply Trial Rejection
     Deci.Analysis.Channels           = 'all';                % Cell array of channels or 'all'
-    Deci.Analysis.Laplace            = [];                   % Leave .Laplace empty to not do a Laplacian Transformation based on file realistic_1005.txt format
+    Deci.Analysis.Laplace            = 0;                   % Leave .Laplace as 0 to not do a Laplacian Transformation based on file realistic_1005.txt format
     %  Deci.Analysis.Laplace.EyeChans   = {'RHEOG' 'BVEOG'};    % List Ocular
     %  Eye Channels
+    
+    Deci.Analysis.Redefine = [];                            % Parameters if a Redefinition was Created
+    Deci.Analysis.Redefine.Bsl = [-.5 -.2];
+    Deci.Analysis.Redefine.ERPToi = -.2;
     
     % Fourier analysis to collect Trial-collapsed TotalPower and ITPC
     % This .Freq Structure follows exactly ft_freqanalysis but may need to
     % modify due to the Freq.Toi parameter.
     Deci.Analysis.Freq               = [];           % Comment the rest of .Freq to not do Fourier Transformation
     Deci.Analysis.Freq.method        = 'wavelet';    % Currently only uses Wavelet Decomp
-    Deci.Analysis.Freq.foi           = 1:1:60;       % Frequency of Interest
+    Deci.Analysis.Freq.foi           = exp(linspace(log(2),log(40),40));       % Frequency of Interest
     Deci.Analysis.Freq.width         = 7 ;           % Width
     Deci.Analysis.Freq.gwidth        = 4;            % Gwidth
-    Deci.Analysis.Freq.Toi           = [-2 2];       % Time Range
+    Deci.Analysis.Freq.Toi           = [-.2 1];       % Time Range
     
     %Event Related Potential Analysis
     %Note that entire Time range will be analyzed.

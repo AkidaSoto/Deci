@@ -83,17 +83,17 @@
                 %looks at correlation between ERP and Freq data.
 %% MainMenu
 Deci                    = [];
-Deci.Folder.Raw         = ['C:\Users\Researcher\Documents\Raw'];        %Folder with Raw Data files
-Deci.SubjectList        = ['all'];                                      %Cell Array of Subjects Files or 'all' to specify all in Deci.Folder.Raw
+Deci.Folder.Raw         = ['C:\Users\Researcher\Dropbox (BOSTON UNIVERSITY)\Non-NAS\raw_data\TimeEst EEG-PS_all_new'];        %Folder with Raw Data files
+Deci.SubjectList        = ['gui'];                                      %Cell Array of Subjects Files or 'all' to specify all in Deci.Folder.Raw or 'gui' to choose.
 
-Deci.Folder.Version     = ['C:\Users\Researcher\Documents\test2\'];     % This is your Output Directory, it does not have to exist yet
+Deci.Folder.Version     = ['C:\Users\Researcher\Dropbox (BOSTON UNIVERSITY)\Non-NAS\Comp_1\Deci\TimeEst'];     % This is your Output Directory, it does not have to exist yet
 
 Deci.Layout.Noeye       = 'easycap_rob_noeye.mat';                      % Layout without Ocular Channels, Default is ReinhartLab 1020 system
-Deci.Layout.eye         = 'easycap_rob_eye.mat';                        % Layout with Ocular Channels
+Deci.Layout.eye         = 'easycap_rob_binocular.mat';                        % Layout with Ocular Channels
 
 Deci.Step = input('Start from which step? DefineTrial = 1, PreProcess = 2, Artifacts = 3, Analysis = 4, Plots = 5 >>');
 
-Deci.Proceed            = 0;                                             %0 or 1, Do you want Deci to automatically proceed to next steps? Suggest 0 for first-time users.
+Deci.Proceed            = 1;                                             %0 or 1, Do you want Deci to automatically proceed to next steps? Suggest 0 for first-time users.
 Deci = Checkor(Deci);
 %% 1. Define Trial
 if Deci.Step <= 1
@@ -101,6 +101,10 @@ if Deci.Step <= 1
     %Experimental Trials are specfic to the experiment.
     %Collected Trials are specfic to the Trial Definition and may exceed the time from Experimental Trials
     
+    Deci.DT.Type = 'timeestfun2';                       % Define trial via 'Manual' with definitions below
+                                                        % or file name with output trl [Store them in Xtra_Fun]
+    
+    %Manual Definition
     Deci.DT.Starts     = {10 11};       % Markers Represent Start of Experimental* Trial
     Deci.DT.Ends       = {200 201 202}; % Markers Represent End of   Experimental* Trial
     
@@ -112,7 +116,7 @@ if Deci.Step <= 1
     
     % if you get a "cannot read data after the end of the file" error, this
     % is because the time length request after the Lock is further than the
-    % file's end. Suggestion is remove the last Trial and make sure to
+    % file's end. Suggestion is tp remove the last Trial and make sure to
     % leave data recording to a few seconds after last trial finishes.
     
     DefineTrialor(Deci);
@@ -123,20 +127,24 @@ end
 if Deci.Step <= 2
     %Leave any option empty ,[], if not desired
     
-    Deci.PP.ScalingFactor       = .00819;                       % If the data needs to scale
+    Deci.PP.ScalingFactor       = [];                       % If the data needs to scale
     
     %ReinhartLab Settings, Template Format
-    %Deci.PP.Imp                = 'TP10:TP9';                   % 'Impicit Reference?[Implicit:RefChannels without Implicit]'
-    %Deci.PP.Ocu                = 'TVEOG:BVEOG,LHEOG:RHEOG';    % 'Ocular Reref?[Ref-Channels without Ref]'
+    Deci.PP.Imp                = 'TP10:TP9';                   % 'Impicit Reference?[Implicit:RefChannels without Implicit]'
+    Deci.PP.Ocu                = 'TVEOG:BVEOG,LHEOG:RHEOG';    % 'Ocular Reref?[Ref-Channels without Ref]'
     
     %Rereference channel to average of Implicit Electrode and Offline Reference
-    Deci.PP.Imp                 = 'RM:LM';                      % 'Implicit Reference?[Implicit:RefChannels without Implicit]'
-    
+    %Deci.PP.Imp                 = 'RM:LM';                      % 'Implicit Reference?[Implicit:RefChannels without Implicit]
     %Ocular channel reference for average of Horizontal/Vertial average. Takes the naming of the Ref channel.
-    Deci.PP.Ocu                 = [];                           % 'Ocular Reref?[Ref:Channels without Ref]'
+    %Deci.PP.Ocu                 = [];                           % 'Ocular Reref?[Ref:Channels without Ref]'
     
-    Deci.PP.hbp                 = [];                           % 'High-bandpass filter, in Hz.'
-    Deci.PP.Demean              = [-.2 0];                      % 'Baseline Window for Correction'
+    Deci.PP.HBP                 = [];                           % 'High-bandpass filter, in Hz.'
+    Deci.PP.Demean              = [-.4 -.2];                      % 'Baseline Window for Correction'
+    Deci.PP.Repair              = [];                           % 'View and Repair Channels'
+    Deci.PP.Repair.Type         = 'Auto';                        %'Manual' or 'Auto'
+    Deci.PP.Repair.Auto         = {{} {} {'Pz'} {} {'FC4'} {} {} {} {} {} {} {} {} {'FCz'} {} {} {} {}};      %If Auto, Nx1 Subject cell array of Mx1 cells of Channels to reject                        
+    
+    
     PreProcessor(Deci);
     if ~Deci.Proceed; return; end
 end
@@ -147,11 +155,9 @@ if Deci.Step <= 3
     Deci.Art.ICA                     = 0; % Whether or Not to do ICA
     
     % Trial Artifacts
-
-    
     Deci.Art.TR.Eye                  = [];               % Comment the rest of .Eye to not do Eye Artifact Trial Rejection
     Deci.Art.TR.Eye.Interactive      = 0;                % Enable Interactive Trial Artifact Rejection
-    Deci.Art.TR.Eye.Chans            = {'VEM','HEM'};    % 1xChan Cell Array of Ocular Eye Channels
+    Deci.Art.TR.Eye.Chans            = {'BVEOG','RHEOG'};    % 1xChan Cell Array of Ocular Eye Channels
     Deci.Art.TR.Eye.Toi              = [-.2 1];          % Time Range of Interest to look for Artifacts
     
     Deci.Art.TR.Muscle               = [];               % Comment the rest of .Muscle to not do Muscle Artifact Trial Rejection
@@ -166,19 +172,21 @@ if Deci.Step <= 4
     
     Deci.Analysis.ArtifactReject     = 1;                    % Specify whether or not to Apply Trial Rejection
     Deci.Analysis.Channels           = 'all';                % Cell array of channels or 'all'
-    Deci.Analysis.Laplace            = [];                   % Leave .Laplace empty to not do a Laplacian Transformation based on file realistic_1005.txt format
-    %  Deci.Analysis.Laplace.EyeChans   = {'RHEOG' 'BVEOG'};    % List Ocular
-    %  Eye Channels
+    Deci.Analysis.Laplace            = 1;                   % Leave .Laplace as 0 to not do a Laplacian Transformation based on file realistic_1005.txt format
+    
+    Deci.Analysis.Redefine = [];                            % Parameters if a Redefinition was Created
+    Deci.Analysis.Redefine.Bsl = [-.5 -.2];
+    Deci.Analysis.Redefine.ERPToi = -.5;
     
     % Fourier analysis to collect Trial-collapsed TotalPower and ITPC
     % This .Freq Structure follows exactly ft_freqanalysis but may need to
     % modify due to the Freq.Toi parameter.
     Deci.Analysis.Freq               = [];           % Comment the rest of .Freq to not do Fourier Transformation
     Deci.Analysis.Freq.method        = 'wavelet';    % Currently only uses Wavelet Decomp
-    Deci.Analysis.Freq.foi           = 1:1:60;       % Frequency of Interest
+    Deci.Analysis.Freq.foi           = exp(linspace(log(2),log(40),40));       % Frequency of Interest
     Deci.Analysis.Freq.width         = 7 ;           % Width
     Deci.Analysis.Freq.gwidth        = 4;            % Gwidth
-    Deci.Analysis.Freq.Toi           = [-2 2];       % Time Range
+    Deci.Analysis.Freq.Toi           = [-.2 1];       % Time Range
     
     %Event Related Potential Analysis
     %Note that entire Time range will be analyzed.
@@ -198,16 +206,16 @@ if Deci.Step <= 5
     Deci.Plot.Toi = [-.2 1];                % Time Range of Interest
     
     Deci.Plot.Freq = [];
-    Deci.Plot.Freq.Plot = 0;                % 1 or 0 to do Freq Plots
+    Deci.Plot.Freq.Plot = 1;                % 1 or 0 to do Freq Plots
     Deci.Plot.Freq.Type = 'TotalPower';     % Use 'TotalPower','ITPC' or 'EvokedPower'
     Deci.Plot.Freq.Foi = [4 8];             % Leave empty to reach all
     Deci.Plot.Freq.Roi = 'maxmin';          % use 'maxmin','maxabs or [min max] for settin
-    Deci.Plot.Freq.BslType = 'relative';    % Use 'absolute','relative','relchange','db','normchange'
-    Deci.Plot.Freq.Bsl = [-.2 0];           % Baseline Correction Time
+    Deci.Plot.Freq.BslType = 'db';    % Use 'absolute','relative','relchange','db','normchange'
+    Deci.Plot.Freq.Bsl = [0 0];           % Baseline Correction Time
     Deci.Plot.Freq.Channel = 'all';              % Cell array of channels or 'all'
      
-    Deci.Plot.ERP = []; %Not Available to plot
-    Deci.Plot.ERP.Channel = 'all';              % Cell array of channels or 'all'
+     Deci.Plot.ERP = []; %Not Available to plot
+%     Deci.Plot.ERP.Channel = 'all';              % Cell array of channels or 'all'
      
     %Power related Potential
     %Plot 1 = Collapsed-Frequency/Channel Freq.Type Data
@@ -217,8 +225,8 @@ if Deci.Step <= 5
     
     Deci.Plot.PRP = [];                     %Requires .Freq/.ERP to be filled out
                                             %Changes .GA into 0 
-    Deci.Plot.PRP.label = 1;                %Whether or Not to add subject info on plot 4
-    Deci.Plot.PRP.ScatterToi = [.3 .7];     %Time range for plot 4
+%     Deci.Plot.PRP.label = 1;                %Whether or Not to add subject info on plot 4
+%     Deci.Plot.PRP.ScatterToi = [.3 .7];     %Time range for plot 4
     
     Plottor(Deci);
     if ~Deci.Proceed; return; end

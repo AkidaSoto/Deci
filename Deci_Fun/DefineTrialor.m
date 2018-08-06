@@ -23,9 +23,17 @@ for subject_list = 1:length(Deci.SubjectList)
         end
     end
     
+    cfg = [];
     cfg.dataset = [Deci.Folder.Raw filesep Deci.SubjectList{subject_list} files_ending{1}];
     cfg.DT = Deci.DT;
+    
+    if strcmpi(Deci.DT.Type,'Manual') 
     cfg.trialfun = 'expfunor';
+    else
+    cfg.trialfun = Deci.DT.Type;
+    end
+    cfg.Raw = Deci.Folder.Version;
+    cfg.Subject = Deci.SubjectList{subject_list};
     cfg = ft_definetrial(cfg); % will return cfg.trl, the segmented data
     
     [~,i] = sort(cfg.trl(:,4));
