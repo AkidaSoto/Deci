@@ -253,8 +253,11 @@ for subject_list = 1:length(Deci.SubjectList)
         
         for con = 1:length(conds)
             
-            artifacts = zeros(size(data.trialinfo(data.trialinfo == conds(con))))';
-            artifacts(logic(condition == conds(con))) = true;
+            artifacts = data.trialinfo(data.trialinfo == conds(con));
+            artifacts(logic(condition == conds(con)))
+            
+            artifacts = logic(condition == conds(con));
+            
             save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} filesep num2str(conds(con))],'artifacts');
         end
         
