@@ -1,0 +1,23 @@
+function savelog = ParRefresh(savelog,type)
+
+if ~isempty(savelog)
+    dbstop in ParRefresh at 4 if ~isempty(savelog.Error);
+    
+    ImaginaryCheck = 0;
+    
+    if strcmpi(type,'Read')
+        finishedjobs = find([savelog.Read] == 1);
+        delete(savelog(finishedjobs));
+        savelog = savelog(~finishedjobs);
+    elseif strcmpi(type,'Finished')
+        finishedjobs = find(ismember({savelog.State},'finished'));
+        delete(savelog(finishedjobs));
+        savelog = savelog(~finishedjobs);
+    else
+        error('WRONG Type!')
+    end
+else
+    savelog.log = parfeval(@sum,1,1,1);
+end
+
+end
