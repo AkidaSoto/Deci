@@ -142,7 +142,7 @@ if Deci.Step <= 2
     %Deci.PP.Ocu                 = [];                           % 'Ocular Reref?[Ref:Channels without Ref]'
     
     Deci.PP.HBP                 = [];                           % 'High-bandpass filter, in Hz.'
-    Deci.PP.Demean              = [-.4 -.2];                      % 'Baseline Window for Correction'
+    Deci.PP.Demean              = [-.5 -.2];                      % 'Baseline Window for Correction'
     Deci.PP.Repair              = [];                           % 'View and Repair Channels'
     Deci.PP.Repair.Type         = 'Auto';                        %'Manual' or 'Auto'
     Deci.PP.Repair.Auto         = {{} {} {'Pz'} {} {'FC4'} {} {} {} {} {} {} {} {} {'FCz'} {} {} {} {}};      %If Auto, Nx1 Subject cell array of Mx1 cells of Channels to reject
@@ -157,17 +157,22 @@ if Deci.Step <= 3
     % Individual Component Analysis, 20 Components.
     Deci.Art.ICA                     = 0; % Whether or Not to do ICA
     
-    % Trial Artifacts
+     % Trial Artifacts
+    Deci.Art.TR.Toi              = [-.5 -.2];          % Time Range of Interest to look for Artifacts
+    Deci.Art.TR.rToi           = [-.5 1];
+    
+    
     Deci.Art.TR.Eye                  = [];               % Comment the rest of .Eye to not do Eye Artifact Trial Rejection
     Deci.Art.TR.Eye.Interactive      = 0;                % Enable Interactive Trial Artifact Rejection
-    Deci.Art.TR.Eye.Chans            = {'BVEOG','RHEOG'};    % 1xChan Cell Array of Ocular Eye Channels
-    Deci.Art.TR.Eye.Toi              = [-.2 1];          % Time Range of Interest to look for Artifacts
-    
+    Deci.Art.TR.Eye.Chans            = {'BVEOG','RHEOG','AF7','AF8'};    % 1xChan Cell Array of Ocular Eye Channels
+
     Deci.Art.TR.Muscle               = [];               % Comment the rest of .Muscle to not do Muscle Artifact Trial Rejection
     Deci.Art.TR.Muscle.Interactive   = 0;                % Enable Interactive Trial Artifact Rejection
-    Deci.Art.TR.Muscle.Toi           = [-.2 1];          % Time Range of Interest to look for Artifacts
-    
-    Deci.Art.Manual = 1;
+
+
+    Deci.Art.Manual = [];
+    Deci.Art.Manual.Toi              = [-.5 -.2]; 
+    Deci.Art.Manual.rToi              =[-.5 1];
 
     Artifactor(Deci);
     if ~Deci.Proceed; return; end
