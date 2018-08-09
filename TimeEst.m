@@ -142,7 +142,7 @@ if Deci.Step <= 2
     %Deci.PP.Ocu                 = [];                           % 'Ocular Reref?[Ref:Channels without Ref]'
     
     Deci.PP.HBP                 = [];                           % 'High-bandpass filter, in Hz.'
-    Deci.PP.Demean              = [-.4 -.2];                      % 'Baseline Window for Correction'
+    Deci.PP.Demean              = [-.5 -.2];                      % 'Baseline Window for Correction'
     Deci.PP.Repair              = [];                           % 'View and Repair Channels'
     Deci.PP.Repair.Type         = 'Auto';                        %'Manual' or 'Auto'
     Deci.PP.Repair.Auto         = {{} {} {'Pz'} {} {'FC4'} {} {} {} {} {} {} {} {} {'FCz'} {} {} {} {}};      %If Auto, Nx1 Subject cell array of Mx1 cells of Channels to reject

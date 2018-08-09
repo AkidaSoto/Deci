@@ -53,7 +53,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         cfg = [];
         cfg.trials = find(data.trialinfo==trialevents(Cond));
-        cfg.trials = cfg.trials(artifacts);
+        cfg.trials = cfg.trials(logical(artifacts));
         
         redefine = 0;
         if exist([Deci.Folder.Version  filesep 'Redefine' filesep Deci.SubjectList{subject_list}  '.mat']) == 2
