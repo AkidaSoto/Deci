@@ -68,8 +68,8 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg = [];
         load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}],'cfg');
         
-        testcfg.latency = Deci.Art.TR.Eye.Toi;
-        EEG_data = ft_selectdata(testcfg,data);
+%         testcfg.latency = Deci.Art.TR.Toi;
+%         EEG_data = ft_selectdata(testcfg,data);
         
         redefine = 0;
         if exist([Deci.Folder.Version  filesep 'Redefine' filesep Deci.SubjectList{subject_list} '.mat']) == 2
@@ -78,9 +78,10 @@ for subject_list = 1:length(Deci.SubjectList)
             retrl = [];
             load([Deci.Folder.Version  filesep 'Redefine' filesep Deci.SubjectList{subject_list} '.mat']);
             cfg.offset = retrl;
-            cfg.shift = Deci.Art.TR.Eye.Toi(1);
+            cfg.shift = Deci.Art.TR.rToi(1);
             
             EEG_redefine = ft_datashift(cfg,data);
+            testcfg.latency = Deci.Art.TR.rToi;
             EEG_redefine = ft_selectdata(testcfg,EEG_redefine);
         end
         
@@ -120,7 +121,7 @@ for subject_list = 1:length(Deci.SubjectList)
             end
             
             
-            [~, artifact_EOG_cond] = ft_artifact_zvalue_checkless(acfg,EEG_data);
+            [~, artifact_EOG_cond] = ft_artifact_zvalue_checkless(acfg,data);
             
             if ~isempty(artifact_EOG_cond)
                 ecfg = cfg;
@@ -222,11 +223,28 @@ for subject_list = 1:length(Deci.SubjectList)
         
     end
     
-    if Deci.Art.Manual
+    if ~isempty(Deci.Art.Manual)
         
         data = [];
         load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
         artif = [];
+        
+        testcfg.latency = Deci.Art.TR.Toi;
+        EEG_data = ft_selectdata(testcfg,data);
+        
+        redefine = 0;
+        if exist([Deci.Folder.Version  filesep 'Redefine' filesep Deci.SubjectList{subject_list} '.mat']) == 2
+            redefine = 1;
+            
+            retrl = [];
+            load([Deci.Folder.Version  filesep 'Redefine' filesep Deci.SubjectList{subject_list} '.mat']);
+            cfg.offset = retrl;
+            cfg.shift = Deci.Art.Manual.rToi(1);
+            
+            EEG_redefine = ft_datashift(cfg,data);
+            testcfg.latency = Deci.Art.Manual.rToi;
+            EEG_redefine = ft_selectdata(testcfg,EEG_redefine);
+        end
         
         if isdir([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}])
             
@@ -240,6 +258,15 @@ for subject_list = 1:length(Deci.SubjectList)
             
         end
         
+        if redefine
+            for trl = 1:length(data.trial)
+                data.trial{trl} = cat(2,EEG_data.trial{trl},EEG_redefine.trial{trl});
+                data.time{trl} = cat(2,EEG_data.time{trl},EEG_redefine.time{trl});
+            end
+        else
+            
+            data = EEG_data;
+        end
         
         cfg          = [];
         cfg.method   = 'summary';
@@ -253,11 +280,8 @@ for subject_list = 1:length(Deci.SubjectList)
         
         for con = 1:length(conds)
             
-            artifacts = data.trialinfo(data.trialinfo == conds(con));
-            artifacts(logic(condition == conds(con)))
-            
-            artifacts = logic(condition == conds(con));
-            
+            artifacts = zeros(size(data.trialinfo(data.trialinfo == conds(con))))';
+            artifacts(logic(condition == conds(con))) = true;
             save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} filesep num2str(conds(con))],'artifacts');
         end
         
