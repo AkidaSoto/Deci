@@ -246,6 +246,8 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.trials = find(artif);
         dummy        = ft_rejectvisual(cfg,data);
         
+        find(ismember(data.sampleinfo(:,1),dummy.sampleinfo(:,1)))
+        
     end
     
 end

@@ -83,10 +83,11 @@
 %looks at correlation between ERP and Freq data.
 %% MainMenu
 Deci                    = [];
-Deci.Folder.Raw         = ['C:\Users\Researcher\Dropbox (BOSTON UNIVERSITY)\Non-NAS\raw_data\TimeEst EEG-PS_all_new'];        %Folder with Raw Data files
+Deci.File = mfilename;
+Deci.Folder.Raw         = ['C:\Users\User\Desktop\John\RawData\TimeEst EEG-PS_all_new'];        %Folder with Raw Data files
 Deci.SubjectList        = ['all'];                                      %Cell Array of Subjects Files or 'all' to specify all in Deci.Folder.Raw or 'gui' to choose.
 
-Deci.Folder.Version     = ['C:\Users\Researcher\Dropbox (BOSTON UNIVERSITY)\Non-NAS\Comp_1\Deci\TimeEst'];     % This is your Output Directory, it does not have to exist yet
+Deci.Folder.Version     = ['C:\Users\User\Desktop\John\ProcessedData\TimeEst'];     % This is your Output Directory, it does not have to exist yet
 
 Deci.Layout.Noeye       = 'easycap_rob_noeye.mat';                      % Layout without Ocular Channels, Default is ReinhartLab 1020 system
 Deci.Layout.eye         = 'easycap_rob_binocular.mat';                        % Layout with Ocular Channels
@@ -174,8 +175,8 @@ end
 %% 4. Analysis
 if Deci.Step <= 4
     
-%     Deci.Folder.Version      = [Deci.Folder.Version '_nolaplace'];
-%     Deci.Folder.Analysis     = [Deci.Folder.Version filesep 'Analysis'];
+     %Deci.Folder.Version      = [Deci.Folder.Version '_nolaplace'];
+     %Deci.Folder.Analysis     = [Deci.Folder.Version filesep 'Analysis'];
 
     Deci.Analysis.ArtifactReject     = 1;                    % Specify whether or not to Apply Trial Rejection
     Deci.Analysis.Channels           = 'all';                % Cell array of channels or 'all'
@@ -193,9 +194,9 @@ if Deci.Step <= 4
     Deci.Analysis.Freq.foi           = exp(linspace(log(2),log(40),40));       % Frequency of Interest
     Deci.Analysis.Freq.width         = 7 ;           % Width
     Deci.Analysis.Freq.gwidth        = 4;            % Gwidth
-    Deci.Analysis.Freq.Toi           = [-.2 1];       % Time Range
+    Deci.Analysis.Freq.Toi           = [-.5 1];       % Time Range
     
-    Deci.Analysis
+    Deci.Analysis.Freq.Redefine = 1;   % 1 for Both BSL and Freq, or 2 just BSL
     
     %Event Related Potential Analysis
     %Note that entire Time range will be analyzed.
