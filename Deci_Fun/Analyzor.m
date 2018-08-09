@@ -104,7 +104,7 @@ for subject_list = 1:length(Deci.SubjectList)
            if redefine
                
                retrl1 = retrl(find(data.trialinfo==trialevents(Cond)));
-               retrl1 = retrl1(artifacts);
+               retrl1 = retrl1(logical(artifacts));
                
                 begtim  = min(retrl1) + Deci.Analysis.Freq.Toi(1);
                 endtim  = max(retrl1) + Deci.Analysis.Freq.Toi(2);
