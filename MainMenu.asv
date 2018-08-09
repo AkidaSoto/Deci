@@ -195,7 +195,7 @@ if Deci.Step <= 4
     Deci.Analysis.Freq.gwidth        = 4;            % Gwidth
     Deci.Analysis.Freq.Toi           = [-.2 1];       % Time Range
     
-    Deci.Analysis.Freq.Redefine = 1;   % 1 for Both BSL and Freq, or 2 just BSL
+    Deci.Analysis
     
     %Event Related Potential Analysis
     %Note that entire Time range will be analyzed.
