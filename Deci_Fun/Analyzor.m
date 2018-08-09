@@ -101,7 +101,8 @@ for subject_list = 1:length(Deci.SubjectList)
             
            if redefine
                
-                retrl1 = retrl(find(find(data.trialinfo==trialevents(Cond)) & artifacts'));
+               retrl1 = retrl(find(data.trialinfo==trialevents(Cond)));
+               retrl1 = retrl1(artifacts);
                
                 begtim  = min(retrl1) + Deci.Analysis.Freq.Toi(1);
                 endtim  = max(retrl1) + Deci.Analysis.Freq.Toi(2);
@@ -115,14 +116,14 @@ for subject_list = 1:length(Deci.SubjectList)
                 bsl.powspctrm = permute(mean(mean(abs(bsl.fourierspctrm).^2 ,1),4),[2 3 1]);
                 bsl.dimord = 'chan_freq_time';
                 bsl = rmfield(bsl,'fourierspctrm');
-                bsl.freq = bsl.oldfoi;
-
-                shift_cfg.latency = Deci.Analysis.Freq.Toi(1):diff([data.time{1}(1) data.time{1}(2)]):Deci.Analysis.Freq.Toi(2);
-                shift_cfg.offset = retrl1;
-                shift_cfg.parameter = 'fourierspctrm';
-                shift_cfg.keeptrials = 'no';
-                Fourier = ft_freqshift(shift_cfg, Fourier);
-                
+%                 bsl.freq = bsl.oldfoi;
+% 
+%                 shift_cfg.latency = Deci.Analysis.Freq.Toi(1):diff([data.time{1}(1) data.time{1}(2)]):Deci.Analysis.Freq.Toi(2);
+%                 shift_cfg.offset = retrl1;
+%                 shift_cfg.parameter = 'fourierspctrm';
+%                 shift_cfg.keeptrials = 'no';
+%                 Fourier = ft_freqshift(shift_cfg, Fourier);
+%                 
                 mkdir([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list}]);
                 save([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list} filesep num2str(Cond)],'bsl');
                 clear bsl;
@@ -131,45 +132,47 @@ for subject_list = 1:length(Deci.SubjectList)
                 Fourier = rmfield(ft_freqanalysis(Ifcfg, data),'cfg');
             end
             
-            Fourier.freq = Fourier.oldfoi;
-
-            if ischar(Deci.Analysis.Channels)
-                Chan = Fourier.label;
-            elseif all(ismember(Deci.Analysis.Channels,Fourier.label))
-                Chan = Deci.Analysis.Channels;
-            else
-                error('Wrong Channel Selection in Analyis');
-            end
-            
-            for i = 1:length(Chan)
-                
-                dcfg = [];
-                dcfg.channel = Chan(i);
-                freqplaceholder = ft_selectdata(dcfg,Fourier);
-                
-                
-                mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep num2str(Cond)]);
-                mkdir([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list} filesep num2str(Cond)]);
-                
-                label = freqplaceholder;
-                label = rmfield(label,'fourierspctrm');
-                label.label = Chan;
-                label.dimord = 'chan_freq_time';
-                
-                freq = freqplaceholder;
-                freq.dimord = 'chan_freq_time';
-                freq.powspctrm      = permute(abs(mean(freq.fourierspctrm./abs(freq.fourierspctrm),1)),[2 3 4 1]);         % divide by amplitude
-                freq  = rmfield(freq,'fourierspctrm');
-                save([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list} filesep num2str(Cond) filesep Chan{i}],'freq','label','-v7.3');
-                
-                freq = freqplaceholder;
-                freq.powspctrm = permute(mean(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1]);
-                freq.dimord = 'chan_freq_time';
-                freq  = rmfield(freq,'fourierspctrm');
-                save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep num2str(Cond) filesep Chan{i}],'freq','label','-v7.3');
-                
-            end
-            
+%             Fourier.freq = Fourier.oldfoi;
+% 
+%             if ischar(Deci.Analysis.Channels)
+%                 Chan = Fourier.label;
+%             elseif all(ismember(Deci.Analysis.Channels,Fourier.label))
+%                 Chan = Deci.Analysis.Channels;
+%             else
+%                 error('Wrong Channel Selection in Analyis');
+%             end
+%             
+%             for i = 1:length(Chan)
+%                 
+%                 dcfg = [];
+%                 dcfg.channel = Chan(i);
+%                 freqplaceholder = ft_selectdata(dcfg,Fourier);
+%                 
+%                 
+%                 mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep num2str(Cond)]);
+%                 mkdir([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list} filesep num2str(Cond)]);
+%                 
+%                 label = freqplaceholder;
+%                 label = rmfield(label,'fourierspctrm');
+%                 label.label = Chan;
+%                 label.dimord = 'chan_freq_time';
+%                 
+%                 freq = freqplaceholder;
+%                 freq.dimord = 'chan_freq_time';
+%                 freq.powspctrm      = permute(abs(mean(freq.fourierspctrm./abs(freq.fourierspctrm),1)),[2 3 4 1]);         % divide by amplitude
+%                 freq  = rmfield(freq,'fourierspctrm');
+%                 save([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list} filesep num2str(Cond) filesep Chan{i}],'freq','label','-v7.3');
+%                 
+%                 freq = freqplaceholder;
+%                 freq.powspctrm = permute(mean(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1]);
+%                 freq.dimord = 'chan_freq_time';
+%                 freq  = rmfield(freq,'fourierspctrm');
+%                 save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep num2str(Cond) filesep Chan{i}],'freq','label','-v7.3');
+%                 
+%             end
+%             figure
+%             ft_singleplotTFR([],freq);
+%             
         end
     end
     

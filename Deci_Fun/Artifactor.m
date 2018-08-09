@@ -8,11 +8,9 @@ for subject_list = 1:length(Deci.SubjectList)
     
     if Deci.Art.ICA
         
-        if Deci.Art.ICA  || ~isempty(Deci.Art.TR.Eye) || ~isempty(Deci.Art.TR.Muscle)
-            data = [];
-            load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
-            
-        end
+        data = [];
+        load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
+
         
         cfg = [];
         cfg.channel =  'all';
@@ -63,11 +61,9 @@ end
 for subject_list = 1:length(Deci.SubjectList)
     if ~isempty(Deci.Art.TR.Eye) || ~isempty(Deci.Art.TR.Muscle)
         
-        if Deci.Art.ICA  || ~isempty(Deci.Art.TR.Eye) || ~isempty(Deci.Art.TR.Muscle)
-            data = [];
-            load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
-            
-        end
+        data = [];
+        load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
+
         
         cfg = [];
         load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}],'cfg');
@@ -98,7 +94,7 @@ for subject_list = 1:length(Deci.SubjectList)
         if ~isempty(Deci.Art.TR.Eye)
             
             EOGpadval = [0 .1 0];
-            EOGcutoffval = 6;
+            EOGcutoffval = 4;
             EOGbpval = [1 15];
             
             % EOG artifact detection
@@ -223,6 +219,32 @@ for subject_list = 1:length(Deci.SubjectList)
                 save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} filesep num2str(conds(con))],'artifacts');
             end
         end
+        
+    end
+    
+    if Deci.Art.Manual
+        
+        data = [];
+        load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
+        artif = [];
+        
+        if isdir([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}])
+            
+            ArtFolders = CleanDir([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}]);
+            artifacts = [];
+            for Arts = 1:length(ArtFolders)
+                load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} filesep ArtFolders{Arts}],'artifacts');
+                
+                artif = [artif artifacts];    
+            end
+            
+        end
+        
+        
+        cfg          = [];
+        cfg.method   = 'summary';
+        cfg.trials = find(artif);
+        dummy        = ft_rejectvisual(cfg,data);
         
     end
     

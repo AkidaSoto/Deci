@@ -14,6 +14,7 @@ Lock = '35';
 ReLock = '27';
 
 Learned = '33';
+block_end = '6';
 
 startstop = {'10' '11'};
 bstartstop = {'5' '6'};
@@ -39,6 +40,7 @@ end
 startstopseg = reshape(find(ismember({event.value},startstop)'),[2 length(find(ismember({event.value},startstop)'))/2]);
 bstartstopseg = reshape(find(ismember({event.value},bstartstop)'),[2 length(find(ismember({event.value},bstartstop)'))/2]);
 Learned = find(ismember({event.value},Learned));
+Blocks = find(ismember({event.value},block_end));
 
 for b = 1:length(Learned)
     
@@ -78,7 +80,7 @@ for b = 1:length(Learned)
                 retrl(end +1,:) = [condrelock - condlock]/hdr.Fs;
                 offset        = sstime(1)*hdr.Fs;
                 
-                trl(end + 1,:) = [begsample endsample offset i b];
+                trl(end + 1,:) = [begsample endsample offset i length(Learned)/length(Blocks)];
                 
             end
             

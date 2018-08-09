@@ -104,7 +104,7 @@ if Deci.Plot.Freq.Plot || ~isempty(Deci.Plot.PRP)
             Subjects{subject_list} = rmfield(ft_appendfreq(acfg,Chans{:}),'cfg');
             clear Chans;
             
-            if  exist([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list} filesep num2str(Condition) '.mat']) ~= 2
+            if  exist([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list} filesep num2str(Condition) '.mat']) ~= 2 || ~isequal(Deci.Plot.Freq.Bsl,[0 0])
                 
                 if ~isequal(Deci.Plot.Freq.Bsl,[0 0])
                     acfg.baseline = Deci.Plot.Freq.Bsl;
@@ -124,27 +124,56 @@ if Deci.Plot.Freq.Plot || ~isempty(Deci.Plot.PRP)
                     case 'relative'
                         Subjects{subject_list}.powspctrm= Subjects{subject_list}.powspctrm ./ bsl;
                     case 'relchange'
-                       Subjects{subject_list}.powspctrm = (Subjects{subject_list} - bsl) ./ bsl;
+                        Subjects{subject_list}.powspctrm = (Subjects{subject_list} - bsl) ./ bsl;
                     case 'db'
-                       Subjects{subject_list}.powspctrm = 10*log10(Subjects{subject_list}.powspctrm ./ bsl);
+                        Subjects{subject_list}.powspctrm = 10*log10(Subjects{subject_list}.powspctrm ./ bsl);
                 end
                 
                 
             end
             
-            
+
         end
         
         if Deci.Plot.GA
             facfg.parameter =  'powspctrm';
-            FreqData{Condition} = rmfield(ft_freqgrandaverage(facfg,Subjects{:}),'cfg');
+            FreqData{Condition,1} = rmfield(ft_freqgrandaverage(facfg,Subjects{:}),'cfg');
             
         else
             FreqData(Condition,:) = Subjects(:);
         end
         clear Subjects;
     end
+    
+    if Deci.Plot.Math.Type ~= 0
+    
+        for cond = 1:length(Deci.Plot.Math.Form)
+            for subj = 1:size(FreqData,2)
+                scfg.parameter = 'powspctrm';
+                scfg.operation = Deci.Plot.Math.Form{cond};
+                MathData{subj} = ft_math(scfg,FreqData{:,subj});
+            end
+            
+                FreqData(length(Freq.Conditions)+cond,:) = MathData;
+        end
+            
+            if Deci.Plot.Math.Type == 1
+                FreqData = FreqData(length(Freq.Conditions)+1:end,:);
+            end
+        
+    end
+    
 end
+
+
+if ~isempty(Deci.Plot.Freq.Wires)
+    for subj = 1:size(FreqData,2)
+        for cond = 1:size(FreqData,1)
+            WireData{cond,subj} =  ft_selectdata(Deci.Plot.Freq.Wires,FreqData{cond,subj});
+        end
+    end
+end
+
 
 if ~isempty(Deci.Plot.ERP)|| ~isempty(Deci.Plot.PRP)
     for  Condition =  1:length(ERP.Conditions)
@@ -172,7 +201,7 @@ if ~isempty(Deci.Plot.ERP)|| ~isempty(Deci.Plot.PRP)
         
         if Deci.Plot.GA
             facfg.parameter =  'avg';
-            TimeData{Condition} = rmfield(ft_timelockgrandaverage(facfg,Subjects{:}),'cfg');
+            TimeData{Condition,1} = rmfield(ft_timelockgrandaverage(facfg,Subjects{:}),'cfg');
             
         else
             TimeData(Condition,:) = Subjects(:);
@@ -181,12 +210,38 @@ if ~isempty(Deci.Plot.ERP)|| ~isempty(Deci.Plot.PRP)
         
     end
     
+    if Deci.Plot.Math.Type ~= 0
+        
+        for cond = 1:length(Deci.Plot.Math.Form)
+            for subj = 1:size(TimeData,2)
+                scfg.parameter = 'powspctrm';
+                scfg.operation = Deci.Plot.Math.Form{cond};
+                MathData{subj} = ft_math(scfg,TimeData{:,subj});
+            end
+            
+            TimeData(length(ERP.Conditions)+cond,:) = MathData;
+        end
+        
+        if Deci.Plot.Math.Type == 1
+            TimeData = TimeData(length(ERP.Conditions)+1:end,:);
+        end
+        
+    end
     
 end
 
 
 
 %% Plot
+
+
+if Deci.Plot.GA
+   Deci.SubjectList = {'Group 1'};
+end
+
+if ~isempty(Deci.Folder.Plot)
+   mkdir(Deci.Plot.Save.Path);
+end
 
 cfg        = [];
 cfg.layout = Deci.Layout.eye;
@@ -196,78 +251,202 @@ cfg.interactive = 'yes';
 if Deci.Plot.Freq.Plot
     
     for subj = 1:size(FreqData,2)
-        square = figure;
-        topo = figure;
+        
+        if Deci.Plot.Freq.Square
+        square(subj) = figure;
+        end
+        
+        if Deci.Plot.Freq.Topo
+        topo(subj)  = figure;
+        end
+        
+        if ~isempty(Deci.Plot.Freq.Wires)
+        wire(subj)  = figure;
+        end
         
         for cond = 1:size(FreqData,1)
             
-            set(0, 'CurrentFigure', square)
+            
+            
+            
+            
+                        if Deci.Plot.Freq.Topo
+                if length(Freq.Channels) ~= 1
+                    
+                    
+                    set(0, 'CurrentFigure', topo(subj) )
+                    cirky(subj,cond)    =  subplot(size(FreqData,1),1,cond);
+                    ft_topoplotER(cfg, FreqData{cond,subj});
+                    
+                    
+%                     hold on
+%                     a = get(gca,'Children');
+%                     conty = a(arrayfun(@(c) strcmp(c.Type,'contour'),a));
+%                     surfy  = a(arrayfun(@(c) strcmp(c.Type,'surface'),a));
+%                     
+%                     spot = find(arrayfun(@(c) strcmp(c.Type,'contour'),a));
+%                     
+%                     actmin = min(min(surfy.CData(~isnan(surfy.CData))));
+%                     actmax = max(max(surfy.CData(~isnan(surfy.CData))));
+%                     
+%                     h = figure;
+%                     [~,cont] = contourf(gca,surfy.CData,linspace(actmin,actmax,6));
+%                     a(spot).LevelList = cont.LevelList;
+%                     a(spot).TextList = cont.TextList;
+%                     a(spot).Fill = 'on';
+%                     delete(h);
+                    
+%                     axis xy
+                    title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' Cond'  num2str(cond)]);
+                    colorbar('vert');
+                    map = colormap('jet'); %'hot' 'gray'
+                    colormap(map);
+                    
+                else
+                    close topo
+                end
+            end
+            
+            
+            if strcmpi(Deci.Plot.Scale,'log')
+                FreqData{cond,subj}.freq = log(FreqData{cond,subj}.freq);
+                
+                if ~isempty(Deci.Plot.Freq.Wires)
+                    WireData{cond,subj}.freq = log(WireData{cond,subj}.freq);
+                end
+            end
+            
+            if Deci.Plot.Freq.Square
+            set(0, 'CurrentFigure', square(subj) )
             subby(subj,cond) = subplot(size(FreqData,1),1,cond);
             ft_singleplotTFR(cfg,FreqData{cond,subj})
             
-            title(['Subj ' num2str(subj) ' ' Deci.Plot.Freq.Type ' Cond'  num2str(cond)]);
+            title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' Cond'  num2str(cond)]);
             colorbar('vert');
             map = colormap('jet'); %'hot' 'gray'
             colormap(map);
-            
-            if length(Freq.Channels) ~= 1
-                
-                set(0, 'CurrentFigure', topo)
-                cirky(subj,cond)    =  subplot(size(FreqData,1),1,cond);
-                ft_topoplotER(cfg, FreqData{cond,subj});
-                
-                hold on
-                a = get(gca,'Children');
-                conty = a(arrayfun(@(c) strcmp(c.Type,'contour'),a));
-                surfy  = a(arrayfun(@(c) strcmp(c.Type,'surface'),a));
-                
-                spot = find(arrayfun(@(c) strcmp(c.Type,'contour'),a));
-                
-                actmin = min(min(surfy.CData(~isnan(surfy.CData))));
-                actmax = max(max(surfy.CData(~isnan(surfy.CData))));
-                
-                h = figure;
-                [~,cont] = contourf(gca,surfy.CData,linspace(actmin,actmax,6));
-                a(spot).LevelList = cont.LevelList;
-                a(spot).TextList = cont.TextList;
-                a(spot).Fill = 'on';
-                delete(h);
-                
-                axis xy
-                title(['Subj ' num2str(subj) ' ' Deci.Plot.Freq.Type ' Cond'  num2str(cond)]);
-                colorbar('vert');
-                map = colormap('jet'); %'hot' 'gray'
-                colormap(map);
-            else
-                close topo
             end
+            
+
+            
+
+        end
+        
+        if ~isempty(Deci.Plot.Freq.Wires)
+            
+            set(0, 'CurrentFigure', wire(subj) )
+            curvy(subj)    =  axes;
+            
+            for cond = 1:size(WireData,1)
+                
+                if strcmpi(Deci.Plot.Freq.Wires.Collapse,'Freq')
+                    plot(WireData{cond,subj}.time,squeeze(WireData{cond,subj}.powspctrm));
+                    
+                    xlabel('Time');
+                elseif  strcmpi(Deci.Plot.Freq.Wires.Collapse,'Time')
+                    
+                    if strcmpi(Deci.Plot.Scale,'log')
+                        WireData{cond,subj}.freq = exp(WireData{cond,subj}.freq);
+                    end
+                    
+                    plot(WireData{cond,subj}.freq,squeeze(WireData{cond,subj}.powspctrm));
+                     xlabel('Freq')
+                end
+                ylabel('Power')
+              hold on
+            end
+            legend(curvy(subj),strsplit(num2str(1:size(FreqData,1))))
+            title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type]);
+            
+            if ~isempty(Deci.Folder.Plot)
+                saveas(wire(subj),[Deci.Folder.Plot filesep Deci.SubjectList{subj} '_wire'],Deci.Plot.Save.Format);
+            end
+            
         end
         
     end
     
-    if length(Freq.Channels) ~= 1
-        set(0, 'CurrentFigure', topo)
-        for r = 1:length(cirky(:))
-            cirky(r).CLim = [min([cirky.CLim]) max([cirky.CLim])];
-        end
-    end
     
-    set(0, 'CurrentFigure', square)
-    for r = 1:length(subby(:))
+    for subj = 1:size(FreqData,2)
+        if length(Freq.Channels) ~= 1
+            
+            if Deci.Plot.Freq.Topo
+                set(0, 'CurrentFigure', topo(subj) )
+                for r = 1:length(cirky(:))
+                  
+                    if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
+                        cirky(r).CLim = Deci.Plot.Freq.Roi;
+                    elseif strcmp(Deci.Plot.Freq.Roi,'maxmin')
+                        cirky(r).CLim = [min([cirky.CLim]) max([cirky.CLim])];
+                    elseif strcmp(Deci.Plot.Freq.Roi,'maxabs')
+                        cirky(r).CLim = [-1*max(abs([cirky.CLim])) max(abs([cirky.CLim]))];
+                    end
+                    
+                end
         
-        if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
-            subby(r).CLim = Deci.Plot.Freq.Roi;
-        elseif strcmp(Deci.Plot.Freq.Roi,'maxmin')
-            subby(r).CLim = [min([subby.CLim]) max([subby.CLim])];
-        elseif strcmp(Deci.Plot.Freq.Roi,'maxabs')
-            subby(r).CLim = [-1*max(abs([subby.CLim])) max(abs([subby.CLim]))];
+                if ~isempty(Deci.Folder.Plot)
+                    saveas(topo(subj),[Deci.Folder.Plot filesep Deci.SubjectList{subj} '_topo'],Deci.Plot.Save.Format);
+                end
+
+            end
+            
+            
         end
+        
+        if Deci.Plot.Freq.Square
+            set(0, 'CurrentFigure', square(subj))
+            for r = 1:length(subby(:))
+                
+                if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
+                    subby(r).CLim = Deci.Plot.Freq.Roi;
+                elseif strcmp(Deci.Plot.Freq.Roi,'maxmin')
+                    subby(r).CLim = [min([subby.CLim]) max([subby.CLim])];
+                elseif strcmp(Deci.Plot.Freq.Roi,'maxabs')
+                    subby(r).CLim = [-1*max(abs([subby.CLim])) max(abs([subby.CLim]))];
+                end
+            end
+            
+            if strcmpi(Deci.Plot.Scale,'log')
+                for r = 1:length(subby(:))
+                    subby(r).YTickLabels = exp(subby(r).YTick);
+                end
+            end
+              
+            if ~isempty(Deci.Folder.Plot)
+            saveas(square(subj),[Deci.Folder.Plot filesep Deci.SubjectList{subj} '_square'],Deci.Plot.Save.Format);
+            end
+            
+        end
+
+        
     end
-    
 end
 
 if ~isempty(Deci.Plot.ERP)
-    %Not yet available
+  
+    for subj = 1:size(TimeData,2)
+        
+        topoERP(subj)  = figure;
+       
+        
+        for cond = 1:size(TimeData,1)
+            
+            set(0, 'CurrentFigure', topoERP)
+            tippy(cond,subj)    = subplot(size(TimeData,1),1,cond);
+            ft_topoplotER(cfg, TimeData{cond,subj});
+            
+            
+        end
+        
+        wireERP(subj)  = figure;
+        ft_singleplotER(cfg, TimeData{:,subj});
+        
+    end
+    
+    for r = 1:length(tippy(:))
+        tippy(r).CLim = [min([tippy.CLim]) max([tippy.CLim])];
+    end
+    
 end
 
 if ~isempty(Deci.Plot.PRP)
