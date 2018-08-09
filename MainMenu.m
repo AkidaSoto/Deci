@@ -95,7 +95,9 @@ Deci.Layout.eye         = 'easycap_rob_binocular.mat';                        % 
 Deci.Step = input('Start from which step? DefineTrial = 1, PreProcess = 2, Artifacts = 3, Analysis = 4, Plots = 5 >>');
 
 Deci.Proceed            = 0;                                             %0 or 1, Do you want Deci to automatically proceed to next steps? Suggest 0 for first-time users.
-Deci.Debug = 1;
+Deci.Debug = 0;
+Deci.PCom = 0; % Activate Parallel Computing
+
 Deci = Checkor(Deci);
 
 %% 1. Define Trial
@@ -211,7 +213,13 @@ if Deci.Step <= 4
     
     Deci.Analysis.EvokedPower        = 0; %Not Available
     
-    Analyzor(Deci);
+    if Deci.PCom
+        for subject_list = 1:length(Deci.SubjectList)
+            parfeval(@PCAnalyzor,0,Deci);
+        end
+    else
+        Analyzor(Deci);
+    end
     if ~Deci.Proceed; return; end
 end
 %% 5. Plotting
