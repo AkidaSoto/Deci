@@ -226,6 +226,9 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         
     end
+end
+
+for subject_list = 1:length(Deci.SubjectList)
     
     if ~isempty(Deci.Art.Manual)
         
