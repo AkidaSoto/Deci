@@ -20,7 +20,7 @@ elseif strcmp(Deci.SubjectList,'gui')
     select_labels(fakeUI,[],Deci.SubjectList);
     waitfor(findall(0,'Name','Select Labels'),'BeingDeleted','on');
     Deci.SubjectList = fakeUI.UserData;
-    close fakeUI
+    close(fakeUI);
 end
 
 steps2 = {'Definition','PreProc','PreProc'};

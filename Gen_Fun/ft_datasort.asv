@@ -1,0 +1,13 @@
+function ft_datasort(cfg,data)
+
+switch cfg.method
+    case 'trl'
+        trl = cfg.trl;
+    case 'maxvar'
+        [~,trl] = sort(max(cell2mat(cellfun(@(c) var(c,[],2),data.trial,'un',0))),'descend');
+    case 'maxstd'
+        [~,trl] = sort(max(cell2mat(cellfun(@(c) std(c,[],2),data.trial,'un',0))),'descend');
+    case 'kurtosis'
+        kurtosis = sort(max(cell2mat(cellfun(@(c) kurtosis(c,[],2),data.trial,'un',0))),'descend');
+end
+
