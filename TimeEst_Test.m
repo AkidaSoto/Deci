@@ -84,11 +84,10 @@
 %% MainMenu
 Deci                    = [];
 Deci.File = mfilename;
-Deci.Folder.Raw         = ['C:\Users\User\Desktop\John\RawData\TimeEst EEG-PS_all_new'];        %Folder with Raw Data files
-% Deci.SubjectList        = ['all'];                                      %Cell Array of Subjects Files or 'all' to specify all in Deci.Folder.Raw or 'gui' to choose.
- Deci.SubjectList        = 'gui';
- 
-Deci.Folder.Version     = ['C:\Users\User\Desktop\John\ProcessedData\TimeEst_lessica'];     % This is your Output Directory, it does not have to exist yet
+Deci.Folder.Raw         = ['C:\Users\User\Desktop\John\RawData\TimeEst-Test_new'];        %Folder with Raw Data files
+Deci.SubjectList        = ['all'];                                      %Cell Array of Subjects Files or 'all' to specify all in Deci.Folder.Raw or 'gui' to choose.
+
+Deci.Folder.Version     = ['C:\Users\User\Desktop\John\ProcessedData\TimeEst'];     % This is your Output Directory, it does not have to exist yet
 
 Deci.Layout.Noeye       = 'easycap_rob_noeye.mat';                      % Layout without Ocular Channels, Default is ReinhartLab 1020 system
 Deci.Layout.eye         = 'easycap_rob_binocular.mat';                        % Layout with Ocular Channels
@@ -97,7 +96,7 @@ Deci.Step = input('Start from which step? DefineTrial = 1, PreProcess = 2, Artif
 
 Deci.Proceed            = 1;                                             %0 or 1, Do you want Deci to automatically proceed to next steps? Suggest 0 for first-time users.
 Deci.Debug = 1;
-Deci.PCom = 1; % Activate Parallel Computing
+Deci.PCom = 0; % Activate Parallel Computing
 
 Deci = Checkor(Deci);
 
@@ -105,7 +104,8 @@ Deci = Checkor(Deci);
 if Deci.Step <= 1
     
     
-  
+    Deci.Folder.Version      = [Deci.Folder.Version];
+
     %Experimental Trials are specfic to the experiment.
     %Collected Trials are specfic to the Trial Definition and may exceed the time from Experimental Trials
     
@@ -149,11 +149,10 @@ if Deci.Step <= 2
     Deci.PP.HBP                 = [];                           % 'High-bandpass filter, in Hz.'
     Deci.PP.Demean              = [-.5 -.2];                      % 'Baseline Window for Correction'
     Deci.PP.Repair              = [];                           % 'View and Repair Channels'
+    Deci.PP.Repair.Type         = 'Auto';                        %'Manual' or 'Auto'
+    Deci.PP.Repair.Auto         = {{} {} {'Pz'} {} {'FC4'} {} {} {} {} {} {} {} {} {'FCz'} {} {} {} {}};      %If Auto, Nx1 Subject cell array of Mx1 cells of Channels to reject
     
-%      Deci.PP.Repair.Type         = 'Auto';                        %'Manual' or 'Auto'
-%      Deci.PP.Repair.Auto         = {{} {} {} {'Pz'} {} {'FC4'} {} {} {} {} {} {} {} {} {'FCz'} {} {} {} {}};      %If Auto, Nx1 Subject cell array of Mx1 cells of Channels to reject
-%     
-%     
+    
     PreProcessor(Deci);
     if ~Deci.Proceed; return; end
 end
@@ -161,7 +160,7 @@ end
 if Deci.Step <= 3
     
     % Individual Component Analysis, 20 Components.
-    Deci.Art.ICA                     = 1; % Whether or Not to do ICA
+    Deci.Art.ICA                     =1; % Whether or Not to do ICA
     
     % Trial Artifacts
     Deci.Art.TR.Toi              = [-.5 -.2];          % Time Range of Interest to look for Artifacts
@@ -171,10 +170,10 @@ if Deci.Step <= 3
     Deci.Art.TR.Eye                  = [];               % Comment the rest of .Eye to not do Eye Artifact Trial Rejection
      Deci.Art.TR.Eye.Interactive      = 0;                % Enable Interactive Trial Artifact Rejection
      Deci.Art.TR.Eye.Chans            = {'BVEOG','RHEOG','AF7','AF8'};    % 1xChan Cell Array of Ocular Eye Channels
-%     
+     
     Deci.Art.TR.Muscle               = [];               % Comment the rest of .Muscle to not do Muscle Artifact Trial Rejection
-     Deci.Art.TR.Muscle.Interactive   = 0;                % Enable Interactive Trial Artifact Rejection
-%     
+      Deci.Art.TR.Muscle.Interactive   = 0;                % Enable Interactive Trial Artifact Rejection
+     
     
     Deci.Art.Manual = [];
     Deci.Art.Manual.Toi              = [-.5 -.2];
@@ -186,9 +185,9 @@ end
 %% 4. Analysis
 if Deci.Step <= 4
     
-    Deci.Folder.Version      = [Deci.Folder.Version '_nolaplace'];
-    Deci.Folder.Analysis     = [Deci.Folder.Version filesep 'Analysis'];
-    
+%     Deci.Folder.Version      = [Deci.Folder.Version '_nolaplace'];
+    Deci.Folder.Analysis     = [Deci.Folder.Version '_nolaplace' filesep 'Analysis'];
+%     
     Deci.Analysis.ArtifactReject     = 1;                    % Specify whether or not to Apply Trial Rejection
     Deci.Analysis.Channels           = 'all';                % Cell array of channels or 'all'
     Deci.Analysis.Laplace            = 0;                   % Leave .Laplace as 0 to not do a Laplacian Transformation based on file realistic_1005.txt format
@@ -232,8 +231,13 @@ end
 %% 5. Plotting
 if Deci.Step <= 5
     
-    Deci.Plot.GA = 1;                       % 0 for Individual Plots, 1 for GrandAverage
+    Deci.Folder.Version      = [Deci.Folder.Version];
+    Deci.Folder.Analysis     = [Deci.Folder.Version filesep 'Analysis'];
+    Deci.Folder.Plot         = [Deci.Folder.Version filesep 'Plot' filesep 'CueBSL'];
+    
+    Deci.Plot.GA = 0;                       % 0 for Individual Plots, 1 for GrandAverage
     Deci.Plot.Scale = 'log';
+    
     Deci.Plot.Save = [];
     Deci.Plot.Save.Format = 'fig';
     
@@ -241,83 +245,22 @@ if Deci.Step <= 5
     Deci.Plot.Math.Form = {'[x1+x3]','[x2+x4]','x6-x5'};                    % Not yet Available
     Deci.Plot.Math.Type = 1;                    % 0 = no maths, 1 = only math plots, 2 = both math and single plots
     
+    Deci.Plot.Toi = [0 .8];                % Time Range of Interest
+    Deci.Plot.Toi = [];
     
     Deci.Plot.Freq = [];
-    
-    band = 1;
-    
-    
-    switch band
-        case 1
-             Deci.Plot.Freq.Foi = [18 24];             % Leave empty to reach all
-        case 2
-             Deci.Plot.Freq.Foi = [4 8];             % Leave empty to reach all
-            
-        case 3
-             Deci.Plot.Freq.Foi = [3 inf];
-    end
-    
-    toi = 2;
-    switch toi
-        case 1
-             Deci.Plot.Toi = [.1 .5];
-        case 2
-            Deci.Plot.Toi = [0 .8];
-        case 3
-             Deci.Plot.Toi = [];
-    end
-    
-    chan = 3;
-    
-    switch chan
-        case 1
-            Deci.Plot.Freq.Channel = {'FCz'};
-        case 2
-            Deci.Plot.Freq.Channel = {'CP3'};
-        case 3
-              Deci.Plot.Freq.Channel = [{'AF3'  } {'AF4'  } {'AF7'  } ...
-    {'AF8'  } {'AFz'  } {'C1'   } {'C2'   } {'C3'   } {'C4'   } {'C5'   } ...
-    {'C6'   } {'CP1'  } {'CP2'  } {'CP3'  } {'CP4'  } {'CP5'  } {'CP6'  } ...
-    {'CPz'  } {'Cz'   } {'F1'   } {'F2'   } {'F3'   } {'F4'   } {'F5'   } ...
-    {'F6'   } {'F7'   } {'F8'   } {'FC1'  } {'FC2'  } {'FC3'  } {'FC4'  } ...
-    {'FC5'  } {'FC6'  } {'FCz'  } {'FT7'  } {'FT8'  } {'Fz'   } {'O1'   } ...
-    {'O2'   } {'Oz'   } {'P1'   } {'P2'   } {'P3'   } {'P4'   } {'P5'   } ...
-    {'P6'   } {'P7'   } {'P8'   } {'PO3'  } {'PO4'  } {'PO7'  } {'PO8'  } ...
-    {'POz'  } {'Pz'   } {'T7'   } {'T8'   } {'TP10' } {'TP7'  } {'TP8'  } ...
-    {'TP9'  } ] ;
-    end
-  
-    
-    Type = 2;
-    
-    switch Type
-        case 1
-            %PreCue Baseline No Laplace
-            Deci.Folder.Version      = [Deci.Folder.Version '_nolaplace'];
-            Deci.Folder.Analysis     = [Deci.Folder.Version filesep 'Analysis'];
-            Deci.Folder.Plot         = [Deci.Folder.Version filesep 'Plot' filesep 'CueBSL'];
-            Deci.Plot.Freq.Bsl = [0 0];           % Baseline Correction Time
-        case 2
-            %PreCue Baseline Laplace
-            Deci.Folder.Plot         = [Deci.Folder.Version filesep 'Plot' filesep 'CueBSL'];
-            Deci.Plot.Freq.Bsl = [0 0];           % Baseline Correction Time
-        case 3
-            %PreFdb Baseline no Laplace
-            Deci.Folder.Version      = [Deci.Folder.Version '_nolaplace'];
-            Deci.Folder.Analysis     = [Deci.Folder.Version filesep 'Analysis'];
-            Deci.Folder.Plot         = [Deci.Folder.Version filesep 'Plot' filesep 'FdbBSL'];
-            Deci.Plot.Freq.Bsl = [-.5 -.2];           % Baseline Correction Time
-        case 4
-            %PreFdb Baseline Laplace
-            Deci.Folder.Plot         = [Deci.Folder.Version filesep 'Plot' filesep 'FdbBSL'];
-            Deci.Plot.Freq.Bsl = [-.5 -.2];           % Baseline Correction Time
-    end
-    
     Deci.Plot.Freq.Plot = 1;                % 1 or 0 to do Freq Plots
     Deci.Plot.Freq.Type = 'TotalPower';     % Use 'TotalPower','ITPC' or 'EvokedPower'
-    Deci.Plot.Freq.Roi = 'maxabs';          % use 'maxmin','maxabs or [min max] for settin
+    Deci.Plot.Freq.Foi = [18 24];             % Leave empty to reach all
+    Deci.Plot.Freq.Foi = [3 inf];
+    
+    Deci.Plot.Freq.Roi = 'maxmin';          % use 'maxmin','maxabs or [min max] for settin
+    %Deci.Plot.Freq.Roi = [-3 3];
     Deci.Plot.Freq.BslType = 'db';    % Use 'absolute','relative','relchange','db','normchange'
-
+    Deci.Plot.Freq.Bsl = [-.5 -.2];           % Baseline Correction Time
+    Deci.Plot.Freq.Channel = 'all';              % Cell array of channels or 'all'
+    %Deci.Plot.Freq.Channel = {'FCz'};
+    
     Deci.Plot.Freq.Topo = 1;
     Deci.Plot.Freq.Square = 0;
     

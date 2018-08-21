@@ -50,7 +50,7 @@ for Cond = 1:length(trialevents)
     
     cfg = [];
     cfg.trials = find(data.trialinfo==trialevents(Cond));
-    cfg.trials = cfg.trials(artifacts);
+    cfg.trials = cfg.trials(logical(artifacts));
     
     redefine = 0;
     if exist([Deci.Folder.Version  filesep 'Redefine' filesep Deci.SubjectList{subject_list}  '.mat']) == 2
@@ -98,10 +98,10 @@ for Cond = 1:length(trialevents)
         
         Analysis = 1;
         
-        if ~isfield(Deci.Analysis.Freq,'Redefine')
+        if isfield(Deci.Analysis.Freq,'Redefine')
             
             retrl1 = retrl(find(data.trialinfo==trialevents(Cond)));
-            retrl1 = retrl1(artifacts);
+            retrl1 = retrl1(logical(artifacts));
             
             fcfg.toi = [Deci.Analysis.Redefine.Bsl(1):diff([data.time{1}(1) data.time{1}(2)]):Deci.Analysis.Redefine.Bsl(2)];
             bsl = rmfield(ft_freqanalysis(fcfg, data),'cfg');
@@ -110,7 +110,8 @@ for Cond = 1:length(trialevents)
             bsl = rmfield(bsl,'fourierspctrm');
             bsl.freq = bsl.oldfoi;
             
-            if Deci.Analysis.Freq.Redefine == 2
+            Analysis = 0;
+            if Deci.Analysis.Freq.Redefine  ~= 2
                 begtim  = min(retrl1) + Deci.Analysis.Freq.Toi(1);
                 endtim  = max(retrl1) + Deci.Analysis.Freq.Toi(2);
                 fcfg.toi = [begtim:diff([data.time{1}(1) data.time{1}(2)]):endtim];
@@ -124,14 +125,14 @@ for Cond = 1:length(trialevents)
                 
                 Fourier = ft_freqshift(shift_cfg, Fourier);
                 
-                Analysis = 0;
+                Analysis = 1;
             end
             
             mkdir([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list}]);
             save([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list} filesep num2str(Cond)],'bsl');
             clear bsl;
         else
-            Fourier = rmfield(ft_freqanalysis(Ifcfg, data),'cfg');
+            Fourier = rmfield(ft_freqanalysis(fcfg, data),'cfg');
         end
         
         

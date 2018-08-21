@@ -91,12 +91,12 @@ if Deci.Plot.Freq.Plot || ~isempty(Deci.Plot.PRP)
                 foi = freq.freq >= round(Deci.Plot.Freq.Foi(1),4) & freq.freq <= round(Deci.Plot.Freq.Foi(2),4);
                 toi = round(freq.time,4) >= Deci.Plot.Toi(1) & round(freq.time,4) <= Deci.Plot.Toi(2);
                 
-                freq.freq =  freq.freq(foi);
-                freq.time =  freq.time(toi);
-                freq.powspctrm  =freq.powspctrm(:,foi,toi);
-                freq.label = Freq.Channels(Channel);
-                
                 Chans{Channel} = freq;
+                Chans{Channel}.freq =  Chans{Channel}.freq(foi);
+                Chans{Channel}.time =  Chans{Channel}.time(toi);
+                Chans{Channel}.powspctrm  =Chans{Channel}.powspctrm(:,foi,toi);
+                Chans{Channel}.label = Freq.Channels(Channel);
+
             end
             
             acfg.parameter = 'powspctrm';
@@ -106,32 +106,27 @@ if Deci.Plot.Freq.Plot || ~isempty(Deci.Plot.PRP)
             
             if  exist([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list} filesep num2str(Condition) '.mat']) ~= 2 || ~isequal(Deci.Plot.Freq.Bsl,[0 0])
                 
-                if ~isequal(Deci.Plot.Freq.Bsl,[0 0])
-                    acfg.baseline = Deci.Plot.Freq.Bsl;
-                    acfg.baselinetype = Deci.Plot.Freq.BslType;
-                    Subjects{subject_list} = rmfield(ft_freqbaseline(acfg,Subjects{subject_list}),'cfg');
-                end
+                acfg.latency = Deci.Plot.Freq.Bsl;
+                acfg.avgovertime = 'yes';
+                bsl = ft_selectdata(acfg,freq);
             else
                 
                 bsl = [];
-                load([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list} filesep num2str(Condition) '.mat']);
-                
-                bsl = repmat(bsl.powspctrm(ismember(bsl.label,Freq.Channels),foi,:),[1 1 size(Subjects{subject_list}.powspctrm ,3)]);
-                
-                switch Deci.Plot.Freq.BslType
-                    case 'absolute'
-                        Subjects{subject_list}.powspctrm = Subjects{subject_list}.powspctrm - bsl;
-                    case 'relative'
-                        Subjects{subject_list}.powspctrm= Subjects{subject_list}.powspctrm ./ bsl;
-                    case 'relchange'
-                        Subjects{subject_list}.powspctrm = (Subjects{subject_list} - bsl) ./ bsl;
-                    case 'db'
-                        Subjects{subject_list}.powspctrm = 10*log10(Subjects{subject_list}.powspctrm ./ bsl);
-                end
-                
-                
+                load([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list} filesep num2str(Condition) '.mat']); 
             end
             
+             bsl = repmat(bsl.powspctrm(ismember(bsl.label,Freq.Channels),foi,:),[1 1 size(Subjects{subject_list}.powspctrm ,3)]);
+                
+            switch Deci.Plot.Freq.BslType
+                case 'absolute'
+                    Subjects{subject_list}.powspctrm = Subjects{subject_list}.powspctrm - bsl;
+                case 'relative'
+                    Subjects{subject_list}.powspctrm= Subjects{subject_list}.powspctrm ./ bsl;
+                case 'relchange'
+                    Subjects{subject_list}.powspctrm = (Subjects{subject_list} - bsl) ./ bsl;
+                case 'db'
+                    Subjects{subject_list}.powspctrm = 10*log10(Subjects{subject_list}.powspctrm ./ bsl);
+            end
 
         end
         
@@ -240,7 +235,7 @@ if Deci.Plot.GA
 end
 
 if ~isempty(Deci.Folder.Plot)
-   mkdir(Deci.Plot.Save.Path);
+   mkdir(Deci.Folder.Plot);
 end
 
 cfg        = [];

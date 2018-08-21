@@ -120,14 +120,14 @@ for subject_list = 1:length(Deci.SubjectList)
                 bsl = rmfield(bsl,'fourierspctrm');
                 bsl.freq = bsl.oldfoi;
 
-                
+                Analysis = 0;
                 if Deci.Analysis.Freq.Redefine ~= 2
                 shift_cfg.latency = Deci.Analysis.Freq.Toi(1):diff([data.time{1}(1) data.time{1}(2)]):Deci.Analysis.Freq.Toi(2);
                 shift_cfg.offset = retrl1;
                 shift_cfg.parameter = 'fourierspctrm';
                 shift_cfg.keeptrials = 'no';
                 Fourier = ft_freqshift(shift_cfg, Fourier);
-                Analysis = 0;
+                Analysis = 1;
                 end
                 
                 mkdir([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list}]);
@@ -135,7 +135,7 @@ for subject_list = 1:length(Deci.SubjectList)
                 clear bsl;
             else
                 
-                Fourier = rmfield(ft_freqanalysis(Ifcfg, data),'cfg');
+                Fourier = rmfield(ft_freqanalysis(fcfg, data),'cfg');
            end
             
             

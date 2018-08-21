@@ -16,7 +16,7 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.channel =  'all';
         
         cfg.method  = 'runica';
-        cfg.runica.pca = 20;
+        %cfg.runica.pca = 20;
         datacomp = ft_componentanalysis(cfg, data);
         
         figure;
@@ -280,15 +280,14 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.trials = find(artif);
         dummy        = ft_rejectvisual(cfg,data);
         
-        logic = find(ismember(data.sampleinfo(:,1),dummy.sampleinfo(:,1)));
-        condition = data.trialinfo(ismember(data.sampleinfo(:,1),dummy.sampleinfo(:,1)));
-        
+        logic = ismember(data.sampleinfo(:,1),dummy.sampleinfo(:,1));
+
         conds =  unique( data.trialinfo,'stable');
         
         for con = 1:length(conds)
             
             artifacts = zeros(size(data.trialinfo(data.trialinfo == conds(con))))';
-            artifacts(logic(condition == conds(con))) = true;
+            artifacts(logic(data.trialinfo == conds(con))) = true;
             save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} filesep num2str(conds(con))],'artifacts');
         end
         
