@@ -1,5 +1,6 @@
-function PCAnalyzor(Deci,subject_list)
+function AllFreq = PCAnalyzor(Deci,subject_list)
 
+AllFreq = [];
 
 if ~isfield(Deci.Analysis,'ArtifactReject')
     Deci.Analysis.ArtifactReject = 0;
@@ -22,6 +23,49 @@ if  isempty(Deci.Analysis.Freq) &&  ~Deci.Analysis.ERP
     error('No analysis step was called for.')
 end
 
+if ~isempty(Deci.Analysis.Freq.CFC.Within)
+    
+    if isfield(Deci.Analysis.Freq.CFC.Within,'freqhigh')
+        if ischar(Deci.Analysis.Freq.CFC.Within.freqhigh)
+            switch Deci.Analysis.Freq.CFC.Within.freqhigh
+                case 'theta'
+                    Deci.Analysis.Freq.CFC.Within.freqhigh = [4 8];
+                case 'beta'
+                    Deci.Analysis.Freq.CFC.Within.freqhigh = [12.5 30];
+                case 'alpha'
+                    Deci.Analysis.Freq.CFC.Within.freqhigh = [8 12.5];
+                case 'gamma'
+                     Deci.Analysis.Freq.CFC.Within.freqhigh = [30 50];
+            end
+        elseif isnumeric(Deci.Analysis.Freq.CFC.Within.freqhigh)
+        else
+            error(['cannot interrept freqhigh']);
+        end
+    else
+           error(['cannot interrept freqhigh']);
+    end
+    
+    if isfield(Deci.Analysis.Freq.CFC.Within,'freqlow')
+        if ischar(Deci.Analysis.Freq.CFC.Within.freqlow)
+            switch Deci.Analysis.Freq.CFC.Within.freqlow
+                case 'theta'
+                    Deci.Analysis.Freq.CFC.Within.freqlow = [4 8];
+                case 'beta'
+                    Deci.Analysis.Freq.CFC.Within.freqlow = [12.5 30];
+                case 'alpha'
+                    Deci.Analysis.Freq.CFC.Within.freqlow = [8 12.5];
+                case 'gamma'
+                    Deci.Analysis.Freq.CFC.Within.freqlow = [30 50];
+            end
+        elseif isnumeric(Deci.Analysis.Freq.CFC.Within.freqlow)
+        else
+           error(['cannot interrept freqlow']);
+        end
+    else
+        error(['cannot interrept freqlow']);
+    end
+end
+
 data = [];
 load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data');
 
@@ -34,23 +78,9 @@ end
 trialevents = unique(data.trialinfo,'stable');
 
 for Cond = 1:length(trialevents)
-    
-    
-    if Deci.Analysis.ArtifactReject
-        
-        if exist([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} filesep num2str(Cond) '.mat']) == 2
-            artifacts = [];
-            load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} filesep num2str(Cond) '.mat'],'artifacts');
-        else
-            error(['artifacts not found for ' Deci.SubjectList{subject_list}]);
-        end
-    else
-        artifacts = logical(ones([1 length(find(data.trialinfo==trialevents(Cond)))]))';
-    end
-    
+
     cfg = [];
     cfg.trials = find(data.trialinfo==trialevents(Cond));
-    cfg.trials = cfg.trials(logical(artifacts));
     
     redefine = 0;
     if exist([Deci.Folder.Version  filesep 'Redefine' filesep Deci.SubjectList{subject_list}  '.mat']) == 2
@@ -101,7 +131,6 @@ for Cond = 1:length(trialevents)
         if isfield(Deci.Analysis.Freq,'Redefine')
             
             retrl1 = retrl(find(data.trialinfo==trialevents(Cond)));
-            retrl1 = retrl1(logical(artifacts));
             
             fcfg.toi = [Deci.Analysis.Redefine.Bsl(1):diff([data.time{1}(1) data.time{1}(2)]):Deci.Analysis.Redefine.Bsl(2)];
             bsl = rmfield(ft_freqanalysis(fcfg, data),'cfg');
@@ -174,6 +203,35 @@ for Cond = 1:length(trialevents)
                 freq  = rmfield(freq,'fourierspctrm');
                 save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep num2str(Cond) filesep Chan{i}],'freq','label','-v7.3');
                 
+                
+                
+                
+                 if ~isempty(Deci.Analysis.Freq.CFC.Within)
+                     
+                   
+
+                     freq = freqplaceholder;
+                     
+                            
+                           cscfg.latency =  Deci.Analysis.Freq.CFC.Within.latencylow;
+                           cscfg.freqbin = Deci.Analysis.Freq.CFC.Within.freqlow;
+                           cscfg.timebin = Deci.Analysis.Freq.CFC.Within.timebin;
+                           freqlow = ft_binfreq(cscfg,freq);
+                           
+                           cscfg.latency =  Deci.Analysis.Freq.CFC.Within.latencyhigh;
+                           cscfg.freqbin = Deci.Analysis.Freq.CFC.Within.freqhigh;
+                           freqhigh = ft_binfreq(cscfg,freq);
+                           
+%                            cfccfg.channel = Deci.Analysis.Freq.CFC.Within.Channel;
+%                            cfccfg.method = Deci.Analysis.Freq.CFC.Within.method;
+%                            cfc =  ft_crossfrequencyanalysis(Deci.Analysis.Freq.CFC.Within,freqlow,freqhigh);
+
+
+                            acfg.parameter = 'fourierspctrm';
+                            acfg.appenddim = 'freq';
+                            AllFreq{subject_list} = ft_appendfreq(acfg,freqlow,freqhigh);
+                     
+                 end
             end
         end
         

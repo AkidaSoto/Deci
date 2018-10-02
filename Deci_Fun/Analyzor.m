@@ -25,7 +25,7 @@ end
 for subject_list = 1:length(Deci.SubjectList)
     
     data = [];
-    load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}]);
+    load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}]);
     
     
     if Deci.Analysis.Laplace
@@ -38,22 +38,10 @@ for subject_list = 1:length(Deci.SubjectList)
     
     for Cond = 1:length(trialevents)
         
-        
-        if Deci.Analysis.ArtifactReject
-            
-            if exist([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} filesep num2str(Cond) '.mat']) == 2
-                artifacts = [];
-                load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} filesep num2str(Cond) '.mat'],'artifacts');
-            else
-                error(['artifacts not found for ' Deci.SubjectList{subject_list}]);
-            end
-        else
-            artifacts = logical(ones([1 length(find(data.trialinfo==trialevents(Cond)))]))';
-        end
-        
+
         cfg = [];
         cfg.trials = find(data.trialinfo==trialevents(Cond));
-        cfg.trials = cfg.trials(logical(artifacts));
+
         
         redefine = 0;
         if exist([Deci.Folder.Version  filesep 'Redefine' filesep Deci.SubjectList{subject_list}  '.mat']) == 2
@@ -104,7 +92,6 @@ for subject_list = 1:length(Deci.SubjectList)
            if redefine
                
                retrl1 = retrl(find(data.trialinfo==trialevents(Cond)));
-               retrl1 = retrl1(logical(artifacts));
                
                 begtim  = min(retrl1) + Deci.Analysis.Freq.Toi(1);
                 endtim  = max(retrl1) + Deci.Analysis.Freq.Toi(2);

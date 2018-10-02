@@ -25,7 +25,7 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         
         if isempty(Deci.Plot.Freq.Roi)
-            Deci.Plot.Freq.Roi =  'maxmin';
+            Deci.Plot.Freq.Roi =  [];
             warning('Cannot Find Roi for Freq plot, setting as maxmin');
         end
         

@@ -88,6 +88,11 @@ Deci.Folder.Raw         = ['C:\Users\User\Desktop\John\RawData\TimeEst EEG-PS_al
 % Deci.SubjectList        = ['all'];                                      %Cell Array of Subjects Files or 'all' to specify all in Deci.Folder.Raw or 'gui' to choose.
  Deci.SubjectList        = 'gui';
  
+%  
+Deci.SubjectList        =  [{'TimeEst_EEGTest_John'}    {'TimeEst_EEG_039CG'}    {'TimeEst_EEG_050PS'}    {'TimeEst_EEG_057CG'}  ...
+ {'TimeEst_EEG_065PS'}    {'TimeEst_EEG_070PS'} {'TimeEst_EEG_072PS'}    {'TimeEst_EEG_074CG'}    {'TimeEst_EEG_075CG'}    ...
+ {'TimeEst_EEG_077PS'}    {'TimeEst_EEG_084CG'}    {'TimeEst_EEG_085CG'} ];
+ 
 Deci.Folder.Version     = ['C:\Users\User\Desktop\John\ProcessedData\TimeEst_lessica'];     % This is your Output Directory, it does not have to exist yet
 
 Deci.Layout.Noeye       = 'easycap_rob_noeye.mat';                      % Layout without Ocular Channels, Default is ReinhartLab 1020 system
@@ -97,7 +102,7 @@ Deci.Step = input('Start from which step? DefineTrial = 1, PreProcess = 2, Artif
 
 Deci.Proceed            = 1;                                             %0 or 1, Do you want Deci to automatically proceed to next steps? Suggest 0 for first-time users.
 Deci.Debug = 1;
-Deci.PCom = 1; % Activate Parallel Computing
+Deci.PCom = 0; % Activate Parallel Computing
 
 Deci = Checkor(Deci);
 
@@ -150,44 +155,46 @@ if Deci.Step <= 2
     Deci.PP.Demean              = [-.5 -.2];                      % 'Baseline Window for Correction'
     Deci.PP.Repair              = [];                           % 'View and Repair Channels'
     
-%      Deci.PP.Repair.Type         = 'Auto';                        %'Manual' or 'Auto'
-%      Deci.PP.Repair.Auto         = {{} {} {} {'Pz'} {} {'FC4'} {} {} {} {} {} {} {} {} {'FCz'} {} {} {} {}};      %If Auto, Nx1 Subject cell array of Mx1 cells of Channels to reject
-%     
-%     
+     Deci.PP.Repair.Type         = 'Auto';                        %'Manual' or 'Auto'
+     Deci.PP.Repair.Auto         = {{} {} {} {'Pz'} {} {'FC4'} {} {} {} {} {} {} {} {} {'FCz'} {} {} {} {}};      %If Auto, Nx1 Subject cell array of Mx1 cells of Channels to reject
+    
+    
     PreProcessor(Deci);
     if ~Deci.Proceed; return; end
 end
 %% 3. ICA and Artifacts
 if Deci.Step <= 3
     
+    
     % Individual Component Analysis, 20 Components.
     Deci.Art.ICA                     = 1; % Whether or Not to do ICA
     
-    % Trial Artifacts
-    Deci.Art.TR.Toi              = [-.5 -.2];          % Time Range of Interest to look for Artifacts
-    Deci.Art.TR.rToi           = [-.5 1];
     
-    
-    Deci.Art.TR.Eye                  = [];               % Comment the rest of .Eye to not do Eye Artifact Trial Rejection
-     Deci.Art.TR.Eye.Interactive      = 0;                % Enable Interactive Trial Artifact Rejection
-     Deci.Art.TR.Eye.Chans            = {'BVEOG','RHEOG','AF7','AF8'};    % 1xChan Cell Array of Ocular Eye Channels
+    %Trial Artifacts
+     Deci.Art.TR.Toi              = [-.5 -.2];          % Time Range of Interest to look for Artifacts
+     Deci.Art.TR.rToi           = [-.5 1];
 %     
+%     
+     Deci.Art.TR.Eye                  = [];               % Comment the rest of .Eye to not do Eye Artifact Trial Rejection
+%      Deci.Art.TR.Eye.Interactive      = 0;                % Enable Interactive Trial Artifact Rejection
+%      Deci.Art.TR.Eye.Chans            = {'BVEOG','RHEOG','AF7','AF8'};    % 1xChan Cell Array of Ocular Eye Channels
+% %     %
     Deci.Art.TR.Muscle               = [];               % Comment the rest of .Muscle to not do Muscle Artifact Trial Rejection
-     Deci.Art.TR.Muscle.Interactive   = 0;                % Enable Interactive Trial Artifact Rejection
+%     Deci.Art.TR.Muscle.Interactive   = 0;                % Enable Interactive Trial Artifact Rejection
 %     
-    
+% %     
     Deci.Art.Manual = [];
-    Deci.Art.Manual.Toi              = [-.5 -.2];
-    Deci.Art.Manual.rToi              =[-.5 1];
-    
+%     Deci.Art.Manual.Toi              = [-.5 -.2];
+%     Deci.Art.Manual.rToi              =[-.5 1];
+%     
     Artifactor(Deci);
     if ~Deci.Proceed; return; end
 end
 %% 4. Analysis
 if Deci.Step <= 4
-    
-    Deci.Folder.Version      = [Deci.Folder.Version '_nolaplace'];
-    Deci.Folder.Analysis     = [Deci.Folder.Version filesep 'Analysis'];
+     
+    Deci.Folder.Version      = [Deci.Folder.Version ];
+    Deci.Folder.Analysis     = [Deci.Folder.Version '_nolaplace' filesep 'Analysis'];
     
     Deci.Analysis.ArtifactReject     = 1;                    % Specify whether or not to Apply Trial Rejection
     Deci.Analysis.Channels           = 'all';                % Cell array of channels or 'all'
@@ -215,9 +222,35 @@ if Deci.Step <= 4
     
     Deci.Analysis.EvokedPower        = 0; %Not Available
     
+    Deci.Analysis.Freq.CFC.Within = [];
+    Deci.Analysis.Freq.CFC.Within.Channel = 'all';
+    Deci.Analysis.Freq.CFC.Within.latencyhigh = [0 1];
+    Deci.Analysis.Freq.CFC.Within.latencylow = [0 1];
+     
+    Deci.Analysis.Freq.CFC.Within.freqhigh = 'beta';
+    Deci.Analysis.Freq.CFC.Within.freqlow = 'theta';
+    
+    
+    
+    Deci.Analysis.Freq.CFC.Within.timebin = 5; 
+    Deci.Analysis.Freq.CFC.Within.method = 'cs_cc';
+%     cfg.method     = string, can be
+%                     'coh' - coherence [Fourier-Fourier]
+%                     'plv' - phase locking value [phase-phase of amp]
+%                     'mvl' - mean vector length [phase-amp]
+%                     'mi'  - modulation index  [phase-amp]
+%                     'cs_cc'  - circstats circular-circular [phase-phase]
+%                     'cs_cl'  - circstats circular-linear [phase-amp]
+    
     if Deci.PCom
         for subject_list = 1:length(Deci.SubjectList)
-           PCCom(subject_list)= parfeval(@PCAnalyzor,0,Deci,subject_list);
+           PCCom(subject_list)= parfeval(@PCAnalyzor,1,Deci,subject_list);
+        end
+        
+        if ~isempty(Deci.Analysis.Freq.CFC.Within)
+            for subject_list = 1:length(Deci.SubjectList)
+                PCCom(subject_list)= parfeval(@PCAnalyzor,1,Deci,subject_list);
+            end
         end
         
         wait(PCCom);
@@ -225,14 +258,16 @@ if Deci.Step <= 4
         disp(['Total Time is ' char(max(minus([PCCom.FinishDateTime],[PCCom.StartDateTime])))]);
         
     else
-        Analyzor(Deci);
+       for subject_list = 1:length(Deci.SubjectList)
+            PCAnalyzor(Deci,subject_list);
+        end
     end
     if ~Deci.Proceed; return; end
 end
 %% 5. Plotting
 if Deci.Step <= 5
     
-    Deci.Plot.GA = 1;                       % 0 for Individual Plots, 1 for GrandAverage
+    Deci.Plot.GA = 0;                       % 0 for Individual Plots, 1 for GrandAverage
     Deci.Plot.Scale = 'log';
     Deci.Plot.Save = [];
     Deci.Plot.Save.Format = 'fig';
@@ -244,7 +279,7 @@ if Deci.Step <= 5
     
     Deci.Plot.Freq = [];
     
-    band = 1;
+    band =3;
     
     
     switch band
@@ -255,9 +290,13 @@ if Deci.Step <= 5
             
         case 3
              Deci.Plot.Freq.Foi = [3 inf];
+        case 4    
+            Deci.Plot.Freq.Foi = [13 24];
+        case 5
+              Deci.Plot.Freq.Foi = [3 4.5];
     end
     
-    toi = 2;
+    toi = 3;
     switch toi
         case 1
              Deci.Plot.Toi = [.1 .5];
@@ -265,9 +304,15 @@ if Deci.Step <= 5
             Deci.Plot.Toi = [0 .8];
         case 3
              Deci.Plot.Toi = [];
+        case 4
+               Deci.Plot.Toi = [.4 .9];
+        case 5
+              Deci.Plot.Toi = [0 .3];
+        case 6
+            Deci.Plot.Toi = [0 1];
     end
     
-    chan = 3;
+    chan =3;
     
     switch chan
         case 1
@@ -285,10 +330,14 @@ if Deci.Step <= 5
     {'P6'   } {'P7'   } {'P8'   } {'PO3'  } {'PO4'  } {'PO7'  } {'PO8'  } ...
     {'POz'  } {'Pz'   } {'T7'   } {'T8'   } {'TP10' } {'TP7'  } {'TP8'  } ...
     {'TP9'  } ] ;
+        case 4
+             Deci.Plot.Freq.Channel = [{'P2'} {'P3'} {'P4'} {'P5'}];
+        case 5
+             Deci.Plot.Freq.Channel = [{'F3'}];
     end
   
     
-    Type = 2;
+    Type = 1;
     
     switch Type
         case 1
@@ -315,20 +364,20 @@ if Deci.Step <= 5
     
     Deci.Plot.Freq.Plot = 1;                % 1 or 0 to do Freq Plots
     Deci.Plot.Freq.Type = 'TotalPower';     % Use 'TotalPower','ITPC' or 'EvokedPower'
-    Deci.Plot.Freq.Roi = 'maxabs';          % use 'maxmin','maxabs or [min max] for settin
+    Deci.Plot.Freq.Roi = [];          % use 'maxmin','maxabs or [min max] for settin
     Deci.Plot.Freq.BslType = 'db';    % Use 'absolute','relative','relchange','db','normchange'
 
-    Deci.Plot.Freq.Topo = 1;
-    Deci.Plot.Freq.Square = 0;
+    Deci.Plot.Freq.Topo = 0;
+    Deci.Plot.Freq.Square = 1;
     
     Deci.Plot.Freq.Wires = [];
-    %     Deci.Plot.Freq.Wires.Collapse = 'Time';        %Which Dim to Collapse 'Time' or 'Freq'
-    %     Deci.Plot.Freq.Wires.avgoverfreq = 'no';
-    %     Deci.Plot.Freq.Wires.avgovertime= 'yes';
-    %     Deci.Plot.Freq.Wires.frequency = [5 8];
-    %     Deci.Plot.Freq.Wires.latency = [.1  .5];
-    %     Deci.Plot.Freq.Wires.nanmean = 'no';
-    %
+%         Deci.Plot.Freq.Wires.Collapse = 'Time';        %Which Dim to Collapse 'Time' or 'Freq'
+%         Deci.Plot.Freq.Wires.avgoverfreq = 'no';
+%         Deci.Plot.Freq.Wires.avgovertime= 'yes';
+%         Deci.Plot.Freq.Wires.frequency = [4 8];
+%         Deci.Plot.Freq.Wires.latency = [.1  .5];
+%         Deci.Plot.Freq.Wires.nanmean = 'no';
+    
     
     Deci.Plot.ERP = []; %Not Available to plot
     %     Deci.Plot.ERP.Channel = 'all';              % Cell array of channels or 'all'

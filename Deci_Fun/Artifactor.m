@@ -10,14 +10,45 @@ for subject_list = 1:length(Deci.SubjectList)
         
         data = [];
         load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
-
+        
+          redefine = 0;
+        if exist([Deci.Folder.Version  filesep 'Redefine' filesep Deci.SubjectList{subject_list} '.mat']) == 2
+            redefine = 1;
+            
+            retrl = [];
+            load([Deci.Folder.Version  filesep 'Redefine' filesep Deci.SubjectList{subject_list} '.mat']);
+        end
         
         cfg = [];
-        cfg.channel =  'all';
+        
+        cfg.artfctdef.muscle = [];
+         cfg.artfctdef.muscle.cutoff      = 25;
+         cfg.artfctdef.muscle.channel = 'all';
+         cfg.artfctdef.muscle.interactive = 'no';
+        [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data);
+       
+         cfg.artfctdef.eog = [];
+         cfg.artfctdef.eog.cutoff      = 12.5;
+         cfg.artfctdef.eog.channel = {'RHEOG' 'BVEOG' 'AF7' 'AF8'};
+          cfg.artfctdef.eog.interactive = 'no';
+        [cfg, cfg.artfctdef.eog.artifact] = ft_artifact_eog(cfg, data);
+        
+        data_musc = ft_rejectartifact(cfg, data);
+        
+        cfg =[];
+        cfg.method = 'summary';
+        cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
+        data_musc = ft_rejectvisual(cfg,data_musc);
         
         cfg.method  = 'runica';
-        %cfg.runica.pca = 20;
-        datacomp = ft_componentanalysis(cfg, data);
+        cfg.numcomponent= 20;
+        data_musc = ft_componentanalysis(cfg, data_musc);
+        
+        cfg           = [];
+        cfg.numcomponent= 20;
+        cfg.unmixing  =data_musc.unmixing;
+        cfg.topolabel = data_musc.topolabel;
+        data_musc     = ft_componentanalysis(cfg, data);
         
         figure;
         cfg.component = [1:20];
@@ -26,34 +57,67 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
         
         cfg.comment   = 'no';
-        ft_topoplotIC(cfg, datacomp);
+        ft_topoplotIC(cfg, data_musc);
         
         clear cfg.method
         
         cfg.channel = 'all';
         
         fakeUI = figure;
-        select_labels(fakeUI,[],sort(datacomp.label));
+        select_labels(fakeUI,[],sort(data_musc.label));
         fakeUI.Visible =  'off';
-        ft_databrowser(cfg,datacomp);
+        ft_databrowser(cfg,data_musc);
         suptitle(Deci.SubjectList{subject_list});
         waitfor(findall(0,'Name','Select Labels'),'BeingDeleted','on');
         
         if isempty(fakeUI.UserData)
             cfg.component = [];
         else
-            cfg.component = find(ismember(fakeUI.UserData,datacomp.label));
-            if any(cfg.component <= 0 & cfg.component >= 20)
-                error('component numbers outside of limits of 1-20');
-            end
+            cfg.component = find(ismember(data_musc.label,fakeUI.UserData));
         end
         close(fakeUI)
         
-        data = ft_rejectcomponent(cfg, datacomp);
-        clear datacomp
+        data_musc = ft_rejectcomponent(cfg, data_musc);
+         
         
+        
+        cfg.artfctdef.muscle = [];
+        cfg.artfctdef.muscle.cutoff      = 25;
+        cfg.artfctdef.muscle.channel = 'all';
+        cfg.artfctdef.muscle.interactive = 'yes';
+        [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data_musc);
+        
+        cfg.artfctdef.eog = [];
+        cfg.artfctdef.eog.cutoff      = 12.5;
+        cfg.artfctdef.eog.channel = {'RHEOG' 'BVEOG' 'AF7' 'AF8'};
+        cfg.artfctdef.eog.interactive = 'yes';
+        [cfg, cfg.artfctdef.eog.artifact] = ft_artifact_eog(cfg, data_musc);
+        
+        cfg.artfctdef.crittoilim = Deci.Art.TR.Toi;
+        data = ft_rejectartifact(cfg, data_musc);
+        
+        if redefine
+            cfg.offset = retrl;
+            cfg.shift = Deci.Art.TR.rToi(1);
+            EEG_redefine = ft_datashift(cfg,data_musc);
+            
+            emcfg.artfctdef = cfg.artfctdef;
+            emcfg.artfctdef.crittoilim = Deci.Art.TR.rToi;
+            artifact = ft_rejectartifact(emcfg,EEG_redefine);
+            
+            cfg = [];
+            cfg.trials = all([artifact.saminfo;data.saminfo],1);
+            data = ft_selectdata(cfg,data_musc);
+        end
+        
+        cfg =[];
+        cfg.method = 'summary';
+        cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
+        data = ft_rejectvisual(cfg,data);
+        
+         
         mkdir([Deci.Folder.Preproc])
-        save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data','-v7.3')
+        save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
     end
     
 end
@@ -156,7 +220,7 @@ for subject_list = 1:length(Deci.SubjectList)
             
             MUSpadval = [0 .1 0];
             MUScutoffval = 25;
-            MUSbpval = [110 Nyq];
+            MUSbpval = [110 140];
             
             bcfg = cfg;
             bcfg.artfctdef.zvalue.channel     = 'all';
