@@ -84,24 +84,22 @@
 %% MainMenu
 Deci                    = [];
 Deci.File = mfilename;
-Deci.Folder.Raw         = ['C:\Users\User\Desktop\John\RawData\TimeEst EEG-PS_all_new'];        %Folder with Raw Data files
+Deci.Folder.Raw         = ['C:\Users\ReinhartLab\Desktop\TimeEst-Test_new'];        %Folder with Raw Data files
 % Deci.SubjectList        = ['all'];                                      %Cell Array of Subjects Files or 'all' to specify all in Deci.Folder.Raw or 'gui' to choose.
  Deci.SubjectList        = 'gui';
  
 %  
-Deci.SubjectList        =  [{'TimeEst_EEGTest_John'}    {'TimeEst_EEG_039CG'}    {'TimeEst_EEG_050PS'}    {'TimeEst_EEG_057CG'}  ...
- {'TimeEst_EEG_065PS'}    {'TimeEst_EEG_070PS'} {'TimeEst_EEG_072PS'}    {'TimeEst_EEG_074CG'}    {'TimeEst_EEG_075CG'}    ...
- {'TimeEst_EEG_077PS'}    {'TimeEst_EEG_084CG'}    {'TimeEst_EEG_085CG'} ];
+Deci.SubjectList        =  [{'TimeEst_EEGTest_John'}];
  
-Deci.Folder.Version     = ['C:\Users\User\Desktop\John\ProcessedData\TimeEst_lessica'];     % This is your Output Directory, it does not have to exist yet
+Deci.Folder.Version     = ['C:\Users\ReinhartLab\Desktop\TimeEst-Test_new\output'];     % This is your Output Directory, it does not have to exist yet
 
 Deci.Layout.Noeye       = 'easycap_rob_noeye.mat';                      % Layout without Ocular Channels, Default is ReinhartLab 1020 system
 Deci.Layout.eye         = 'easycap_rob_binocular.mat';                        % Layout with Ocular Channels
 
-Deci.Step = input('Start from which step? DefineTrial = 1, PreProcess = 2, Artifacts = 3, Analysis = 4, Plots = 5 >>');
+Deci.Step = 3;%input('Start from which step? DefineTrial = 1, PreProcess = 2, Artifacts = 3, Analysis = 4, Plots = 5 >>');
 
-Deci.Proceed            = 1;                                             %0 or 1, Do you want Deci to automatically proceed to next steps? Suggest 0 for first-time users.
-Deci.Debug = 1;
+Deci.Proceed            = 0;                                             %0 or 1, Do you want Deci to automatically proceed to next steps? Suggest 0 for first-time users.
+Deci.Debug = 0;
 Deci.PCom = 0; % Activate Parallel Computing
 
 Deci = Checkor(Deci);
