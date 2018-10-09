@@ -285,8 +285,8 @@ for Cond = 1:length(trialevents)
                      cscfg.freqbin = Deci.Analysis.Freq.CFC.Within.freqhigh;
                      freqhigh = ft_binfreq(cscfg,freq);
                      
-                     cfccfg.channel = Deci.Analysis.Freq.CFC.Within.Channel;
-                     cfccfg.method = Deci.Analysis.Freq.CFC.Within.method;
+                     %                            cfccfg.channel = Deci.Analysis.Freq.CFC.Within.Channel;
+                     %                            cfccfg.method = Deci.Analysis.Freq.CFC.Within.method;
                      cfc =  ft_crossfrequencyanalysis(Deci.Analysis.Freq.CFC.Within,freqlow,freqhigh);
                      
                      

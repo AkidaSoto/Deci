@@ -89,9 +89,9 @@ Deci.Folder.Raw         = ['C:\Users\User\Desktop\John\RawData\TimeEst EEG-PS_al
  Deci.SubjectList        = 'gui';
  
 %  
-Deci.SubjectList        =  [{'TimeEst_EEGTest_John'}    {'TimeEst_EEG_039CG'}    {'TimeEst_EEG_050PS'}    {'TimeEst_EEG_057CG'}  ...
- {'TimeEst_EEG_065PS'}    {'TimeEst_EEG_070PS'} {'TimeEst_EEG_072PS'}    {'TimeEst_EEG_074CG'}    {'TimeEst_EEG_075CG'}    ...
- {'TimeEst_EEG_077PS'}    {'TimeEst_EEG_084CG'}    {'TimeEst_EEG_085CG'} ];
+% Deci.SubjectList        =  [{'TimeEst_EEGTest_John'}    {'TimeEst_EEG_039CG'}    {'TimeEst_EEG_050PS'}    {'TimeEst_EEG_057CG'}  ...
+%  {'TimeEst_EEG_065PS'}    {'TimeEst_EEG_070PS'} {'TimeEst_EEG_072PS'}    {'TimeEst_EEG_074CG'}    {'TimeEst_EEG_075CG'}    ...
+%  {'TimeEst_EEG_077PS'}    {'TimeEst_EEG_084CG'}    {'TimeEst_EEG_085CG'} ];
  
 Deci.Folder.Version     = ['C:\Users\User\Desktop\John\ProcessedData\TimeEst_lessica'];     % This is your Output Directory, it does not have to exist yet
 
@@ -223,25 +223,40 @@ if Deci.Step <= 4
     Deci.Analysis.EvokedPower        = 0; %Not Available
     
     Deci.Analysis.Freq.CFC.Within = [];
-    Deci.Analysis.Freq.CFC.Within.Channel = 'all';
-    Deci.Analysis.Freq.CFC.Within.latencyhigh = [0 1];
-    Deci.Analysis.Freq.CFC.Within.latencylow = [0 1];
-     
-    Deci.Analysis.Freq.CFC.Within.freqhigh = 'beta';
-    Deci.Analysis.Freq.CFC.Within.freqlow = 'theta';
+%     Deci.Analysis.Freq.CFC.Within.Channel = 'all';
+%     Deci.Analysis.Freq.CFC.Within.latencyhigh = [0 1];
+%     Deci.Analysis.Freq.CFC.Within.latencylow = [0 1];
+%     Deci.Analysis.Freq.CFC.Within.freqhigh = 'beta';
+%     Deci.Analysis.Freq.CFC.Within.freqlow = 'theta';
+%     
+%     Deci.Analysis.Freq.CFC.Within.timebin = 5;
+%     Deci.Analysis.Freq.CFC.Within.method = 'cs_cc';
+    %     cfg.method     = string, can be
+    %                     'coh' - coherence [Fourier-Fourier]
+    %                     'plv' - phase locking value [phase-phase of amp]
+    %                     'mvl' - mean vector length [phase-amp]
+    %                     'mi'  - modulation index  [phase-amp]
+    %                     'cs_cc'  - circstats circular-circular [phase-phase]
+    %                     'cs_cl'  - circstats circular-linear [phase-amp]
     
+    Deci.Analysis.Freq.CFC.Between = [];
+    Deci.Analysis.Freq.CFC.Between.Channel = 'all';
+    Deci.Analysis.Freq.CFC.Between.latencyhigh = [0 1];
+    Deci.Analysis.Freq.CFC.Between.latencylow = [0 1];
+    Deci.Analysis.Freq.CFC.Between.freqhigh = 'beta';
+    Deci.Analysis.Freq.CFC.Between.freqlow = 'theta';
     
-    
-    Deci.Analysis.Freq.CFC.Within.timebin = 5; 
-    Deci.Analysis.Freq.CFC.Within.method = 'cs_cc';
-%     cfg.method     = string, can be
-%                     'coh' - coherence [Fourier-Fourier]
-%                     'plv' - phase locking value [phase-phase of amp]
-%                     'mvl' - mean vector length [phase-amp]
-%                     'mi'  - modulation index  [phase-amp]
-%                     'cs_cc'  - circstats circular-circular [phase-phase]
-%                     'cs_cl'  - circstats circular-linear [phase-amp]
-    
+    Deci.Analysis.Freq.CFC.Between.timebin = 5;
+    Deci.Analysis.Freq.CFC.Between.method = 'plv';
+    %     cfg.method     = string, can be
+    %                     'coh' - coherence [Fourier-Fourier]
+    %                     'plv' - phase locking value [phase-phase of amp]
+    %                     'mvl' - mean vector length [phase-amp]
+    %                     'mi'  - modulation index  [phase-amp]
+    %                     'cs_cc'  - circstats circular-circular [phase-phase]
+    %                     'cs_cl'  - circstats circular-linear [phase-amp]
+
+
     if Deci.PCom
         for subject_list = 1:length(Deci.SubjectList)
            PCCom(subject_list)= parfeval(@PCAnalyzor,1,Deci,subject_list);
