@@ -215,7 +215,7 @@ for Cond = 1:length(trialevents)
             if ischar(Deci.Analysis.Channels)
                 Chan = Fourier.label;
             elseif all(ismember(Deci.Analysis.Channels,Fourier.label))
-                Chan = Channels;
+                Chan = Deci.Analysis.Channels;
             else
                 error('Wrong Channel Selection in Analyis');
             end
@@ -276,27 +276,34 @@ for Cond = 1:length(trialevents)
                  if ~isempty(Deci.Analysis.Freq.CFC.Between)
                      
                      freq = freqplaceholder;
-                     cscfg.latency =  Deci.Analysis.Freq.CFC.Within.latencylow;
-                     cscfg.freqbin = Deci.Analysis.Freq.CFC.Within.freqlow;
-                     cscfg.timebin = Deci.Analysis.Freq.CFC.Within.timebin;
-                     freqlow = ft_binfreq(cscfg,freq);
+
+                     cscfg.latency =  Deci.Analysis.Freq.CFC.Between.latencylow;
+                     cscfg.freqbin = Deci.Analysis.Freq.CFC.Between.Freqlow;
+                     cscfg.timebin = Deci.Analysis.Freq.CFC.Between.timebin;
+                     SubFreqLow{i} = ft_binfreq(cscfg,freq);
                      
-                     cscfg.latency =  Deci.Analysis.Freq.CFC.Within.latencyhigh;
-                     cscfg.freqbin = Deci.Analysis.Freq.CFC.Within.freqhigh;
-                     freqhigh = ft_binfreq(cscfg,freq);
-                     
-                     cfccfg.channel = Deci.Analysis.Freq.CFC.Within.Channel;
-                     cfccfg.method = Deci.Analysis.Freq.CFC.Within.method;
-                     cfc =  ft_crossfrequencyanalysis(Deci.Analysis.Freq.CFC.Within,freqlow,freqhigh);
-                     
-                     
-                     acfg.parameter = 'fourierspctrm';
-                     acfg.appenddim = 'freq';
-                     AllFreq{subject_list} = ft_appendfreq(acfg,freqlow,freqhigh);
+                     cscfg.latency =  Deci.Analysis.Freq.CFC.Between.latencyhigh;
+                     cscfg.freqbin = Deci.Analysis.Freq.CFC.Between.Freqhigh;
+                     SubFreqHigh{i} = ft_binfreq(cscfg,freq);
                      
                  end
                  
             end
+            
+            if ~isempty(Deci.Analysis.Freq.CFC.Between)
+                
+                cacfg.parameter = 'fourierspctrm';
+                cacfg.appenddim = 'chan';
+                AllFreqLow{subject_list} = ft_appendfreq(cacfg,SubFreqLow{:});
+                AllFreqHigh{subject_list} = ft_appendfreq(cacfg,SubFreqHigh{:});
+                
+                cfc=  ft_singlecfc(Deci.Analysis.Freq.CFC.Between,AllFreqLow{subject_list},AllFreqHigh{subject_list});
+                
+                mkdir([Deci.Folder.Analysis filesep 'Cross_' Deci.Analysis.Freq.CFC.Between.method filesep  Deci.SubjectList{subject_list}]);
+                save([Deci.Folder.Analysis filesep 'Cross_' Deci.Analysis.Freq.CFC.Between.method filesep Deci.SubjectList{subject_list} filesep num2str(Cond)],'cfc','-v7.3');
+                
+            end
+            
         end
         
     end
