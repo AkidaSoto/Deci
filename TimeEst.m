@@ -198,7 +198,7 @@ if Deci.Step <= 4
     
     Deci.Analysis.ArtifactReject     = 1;                    % Specify whether or not to Apply Trial Rejection
     Deci.Analysis.Channels           = 'all';                % Cell array of channels or 'all'
-    Deci.Analysis.Channels           = ['FCz' 'CP3'];                % Cell array of channels or 'all'
+    Deci.Analysis.Channels           = {'FCz' 'CP3'};                % Cell array of channels or 'all'
     
     Deci.Analysis.Laplace            = 0;                   % Leave .Laplace as 0 to not do a Laplacian Transformation based on file realistic_1005.txt format
     
@@ -242,14 +242,22 @@ if Deci.Step <= 4
     %                     'cs_cl'  - circstats circular-linear [phase-amp]
     
     Deci.Analysis.Freq.CFC.Between = [];
-    Deci.Analysis.Freq.CFC.Between.Channel = 'all';
+    Deci.Analysis.Freq.CFC.Between.chanlow = {'FCz' 'Cz'};
+    Deci.Analysis.Freq.CFC.Between.chanhigh = {'CP3' 'CP1'}; %Try not to do all to all if you have more than 10 chans
+    
     Deci.Analysis.Freq.CFC.Between.latencyhigh = [0 1];
     Deci.Analysis.Freq.CFC.Between.latencylow = [0 1];
-    Deci.Analysis.Freq.CFC.Between.freqhigh = 'beta';
-    Deci.Analysis.Freq.CFC.Between.freqlow = 'theta';
+    
+    Deci.Analysis.Freq.CFC.Between.Freqhigh = 'beta';
+    Deci.Analysis.Freq.CFC.Between.Freqlow = 'theta';
     
     Deci.Analysis.Freq.CFC.Between.timebin = 5;
     Deci.Analysis.Freq.CFC.Between.method = 'plv';
+    Deci.Analysis.Freq.CFC.Between.keeptrials = 'no';
+        %Understand that trial-average of keeptrials-yes will not equal
+        %keeptrials-no because the operation mean(abs) =/= abs(mean) for
+        %complex values
+        
     %     cfg.method     = string, can be
     %                     'coh' - coherence [Fourier-Fourier]
     %                     'plv' - phase locking value [phase-phase of amp]
