@@ -299,8 +299,7 @@ for Cond = 1:length(trialevents)
                 
                 cfc=  ft_singlecfc(Deci.Analysis.Freq.CFC.Between,AllFreqLow{subject_list},AllFreqHigh{subject_list});
                 
-                mkdir([Deci.Folder.Analysis filesep 'Cross_' Deci.Analysis.Freq.CFC.Between.method filesep  Deci.SubjectList{subject_list}]);
-                save([Deci.Folder.Analysis filesep 'Cross_' Deci.Analysis.Freq.CFC.Between.method filesep Deci.SubjectList{subject_list} filesep num2str(Cond)],'cfc','-v7.3');
+                save([Deci.Folder.Analysis filesep 'Cross_Between' filesep Deci.SubjectList{subject_list} filesep num2str(Cond)],'cfc','-v7.3');
                 
             end
             
