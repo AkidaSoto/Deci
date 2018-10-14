@@ -629,14 +629,11 @@ if ~isempty(Deci.Plot.CFC)
         
     end
     
+    if isequal(Deci.Plot.CFC.Roi,'maxmin')
+    elseif isequal(Deci.Plot.CFC.Roi,[0 1])
+        PLVim.Parent.CLim = [0 1];
+    elseif length(Deci.Plot.CFC.Roi) == 2 && isnumeric(Deci.CFC.Freq.Roi)
+        PLVim.Parent.CLim = [Deci.Plot.CFC.Roi];
+    end
     
-                for r = 1:length(csquare(:))
-                    if isequal(Deci.Plot.CFC.Roi,'maxmin')
-                        csquare(r).CLim = [min([csquare.CLim]) max([csquare.CLim])];
-                    elseif isequal(Deci.Plot.CFC.Roi,[0 1])
-                        csquare(r).Parent.CLim = [0 1];
-                    elseif length(Deci.Plot.CFC.Roi) == 2 && isnumeric(Deci.CFC.Freq.Roi)
-                        csquare(r).Parent.CLim = [Deci.Plot.CFC.Roi];
-                    end
-                end
 end

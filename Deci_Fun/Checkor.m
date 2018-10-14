@@ -1,6 +1,8 @@
 
 function Deci = Checkor(Deci)
 
+
+warning('off', 'MATLAB:MKDIR:DirectoryExists');
 Deci.Folder.Definition   = [Deci.Folder.Version filesep 'Definition'];
 Deci.Folder.Preproc      = [Deci.Folder.Version filesep 'PreProc'];
 Deci.Folder.Artifact     = [Deci.Folder.Version filesep 'Artifact'];

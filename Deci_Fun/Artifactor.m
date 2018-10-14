@@ -89,7 +89,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         cfg.artfctdef.eog = [];
         cfg.artfctdef.eog.cutoff      = 12.5;
-        cfg.artfctdef.eog.channel = {'RHEOG' 'BVEOG' 'AF7' 'AF8'};
+        cfg.artfctdef.eog.channel = Deci.Art.Eye.Chans;
         cfg.artfctdef.eog.interactive = 'yes';
         [cfg, cfg.artfctdef.eog.artifact] = ft_artifact_eog(cfg, data_musc);
         
@@ -116,8 +116,11 @@ for subject_list = 1:length(Deci.SubjectList)
         data = ft_rejectvisual(cfg,data);
         
          
-        mkdir([Deci.Folder.Preproc])
+        mkdir([Deci.Folder.Artifact])
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
+    else
+        mkdir([Deci.Folder.Artifact])
+        copyfile([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat'], [Deci.Folder.Artifact]);
     end
     
 end
@@ -360,4 +363,3 @@ for subject_list = 1:length(Deci.SubjectList)
 end
 
 
-end

@@ -68,49 +68,49 @@ end
 
 if ~isempty(Deci.Analysis.Freq.CFC.Between)
     
-    if isfield(Deci.Analysis.Freq.CFC.Between,'freqhigh')
-        if ischar(Deci.Analysis.Freq.CFC.Between.freqhigh)
-            switch Deci.Analysis.Freq.CFC.Between.freqhigh
+    if isfield(Deci.Analysis.Freq.CFC.Between,'Freqhigh')
+        if ischar(Deci.Analysis.Freq.CFC.Between.Freqhigh)
+            switch Deci.Analysis.Freq.CFC.Between.Freqhigh
                 case 'theta'
-                    Deci.Analysis.Freq.CFC.Between.freqhigh = [4 8];
+                    Deci.Analysis.Freq.CFC.Between.Freqhigh = [4 8];
                 case 'beta'
-                    Deci.Analysis.Freq.CFC.Between.freqhigh = [12.5 30];
+                    Deci.Analysis.Freq.CFC.Between.Freqhigh = [12.5 30];
                 case 'alpha'
-                    Deci.Analysis.Freq.CFC.Between.freqhigh = [8 12.5];
+                    Deci.Analysis.Freq.CFC.Between.Freqhigh = [8 12.5];
                 case 'gamma'
-                     Deci.Analysis.Freq.CFC.Between.freqhigh = [30 50];
+                     Deci.Analysis.Freq.CFC.Between.Freqhigh = [30 50];
             end
-        elseif isnumeric(Deci.Analysis.Freq.CFC.Between.freqhigh)
+        elseif isnumeric(Deci.Analysis.Freq.CFC.Between.Freqhigh)
         else
-            error(['cannot interrept freqhigh']);
+            error(['cannot interrept Freqhigh']);
         end
     else
-           error(['cannot interrept freqhigh']);
+           error(['cannot interrept Freqhigh']);
     end
     
-    if isfield(Deci.Analysis.Freq.CFC.Between,'freqlow')
-        if ischar(Deci.Analysis.Freq.CFC.Between.freqlow)
-            switch Deci.Analysis.Freq.CFC.Between.freqlow
+    if isfield(Deci.Analysis.Freq.CFC.Between,'Freqlow')
+        if ischar(Deci.Analysis.Freq.CFC.Between.Freqlow)
+            switch Deci.Analysis.Freq.CFC.Between.Freqlow
                 case 'theta'
-                    Deci.Analysis.Freq.CFC.Between.freqlow = [4 8];
+                    Deci.Analysis.Freq.CFC.Between.Freqlow = [4 8];
                 case 'beta'
-                    Deci.Analysis.Freq.CFC.Between.freqlow = [12.5 30];
+                    Deci.Analysis.Freq.CFC.Between.Freqlow = [12.5 30];
                 case 'alpha'
-                    Deci.Analysis.Freq.CFC.Between.freqlow = [8 12.5];
+                    Deci.Analysis.Freq.CFC.Between.Freqlow = [8 12.5];
                 case 'gamma'
-                    Deci.Analysis.Freq.CFC.Between.freqlow = [30 50];
+                    Deci.Analysis.Freq.CFC.Between.Freqlow = [30 50];
             end
-        elseif isnumeric(Deci.Analysis.Freq.CFC.Between.freqlow)
+        elseif isnumeric(Deci.Analysis.Freq.CFC.Between.Freqlow)
         else
-           error(['cannot interrept freqlow']);
+           error(['cannot interrept Freqlow']);
         end
     else
-        error(['cannot interrept freqlow']);
+        error(['cannot interrept Freqlow']);
     end
 end
 
 data = [];
-load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data');
+load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data');
 
 if Deci.Analysis.Laplace
     [elec.label, elec.elecpos] = elec_1020select(data.label);
@@ -169,9 +169,18 @@ for Cond = 1:length(trialevents)
         fcfg.keeptrials = 'yes';
         fcfg.trials = cfg.trials;
         
+        if ischar(Deci.Analysis.Channels)
+            fcfg.channel = Deci.Analysis.Channels;
+        elseif iscell(Deci.Analysis.Channels)
+            fcfg.channel = Deci.Analysis.Channels;
+        else
+            error('Wrong Channel Selection in Analyis');
+        end
+        
+        
         Analysis = 1;
         
-        if isfield(Deci.Analysis.Freq,'Redefine')
+        if Deci.Analysis.Freq.Redefine
             
             retrl1 = retrl(find(data.trialinfo==trialevents(Cond)));
             
@@ -210,7 +219,7 @@ for Cond = 1:length(trialevents)
         
         if Analysis
             
-            Fourier.freq = Fourier.oldfoi;
+%             Fourier.freq = unique(Fourier.oldfoi);
             
             if ischar(Deci.Analysis.Channels)
                 Chan = Fourier.label;
@@ -219,6 +228,10 @@ for Cond = 1:length(trialevents)
             else
                 error('Wrong Channel Selection in Analyis');
             end
+            
+            SubFreqLow = [];
+            SubFreqHigh = [];
+            
             
             for i = 1:length(Chan)
                 
@@ -276,15 +289,27 @@ for Cond = 1:length(trialevents)
                  if ~isempty(Deci.Analysis.Freq.CFC.Between)
                      
                      freq = freqplaceholder;
-
-                     cscfg.latency =  Deci.Analysis.Freq.CFC.Between.latencylow;
-                     cscfg.freqbin = Deci.Analysis.Freq.CFC.Between.Freqlow;
-                     cscfg.timebin = Deci.Analysis.Freq.CFC.Between.timebin;
-                     SubFreqLow{i} = ft_binfreq(cscfg,freq);
                      
-                     cscfg.latency =  Deci.Analysis.Freq.CFC.Between.latencyhigh;
-                     cscfg.freqbin = Deci.Analysis.Freq.CFC.Between.Freqhigh;
-                     SubFreqHigh{i} = ft_binfreq(cscfg,freq);
+                     if ismember(Chan(i), Deci.Analysis.Freq.CFC.Between.chanlow)
+                     
+%                      cscfg.latency =  Deci.Analysis.Freq.CFC.Between.latencylow;
+%                      cscfg.freqbin = Deci.Analysis.Freq.CFC.Between.Freqlow;
+%                      cscfg.timebin = Deci.Analysis.Freq.CFC.Between.timebin;
+%                      SubFreqLow{i} = ft_binfreq(cscfg,freq);
+                       selcfg.frequency = Deci.Analysis.Freq.CFC.Between.Freqlow;
+                       selcfg.latency =  Deci.Analysis.Freq.CFC.Between.latencylow;
+                       SubFreqLow{end+1} = ft_selectdata(selcfg,freq);
+                     end
+%                      
+                      if ismember(Chan(i),Deci.Analysis.Freq.CFC.Between.chanhigh)
+%                      cscfg.latency =  Deci.Analysis.Freq.CFC.Between.latencyhigh;
+%                      cscfg.freqbin = Deci.Analysis.Freq.CFC.Between.Freqhigh;
+%                      SubFreqHigh{i} = ft_binfreq(cscfg,freq);
+                       selcfg.frequency = Deci.Analysis.Freq.CFC.Between.Freqhigh;
+                       selcfg.latency =  Deci.Analysis.Freq.CFC.Between.latencyhigh;
+                       SubFreqHigh{end+1} = ft_selectdata(selcfg,freq);
+                     end
+                     
                      
                  end
                  
@@ -294,14 +319,18 @@ for Cond = 1:length(trialevents)
                 
                 cacfg.parameter = 'fourierspctrm';
                 cacfg.appenddim = 'chan';
-                AllFreqLow{subject_list} = ft_appendfreq(cacfg,SubFreqLow{:});
-                AllFreqHigh{subject_list} = ft_appendfreq(cacfg,SubFreqHigh{:});
+                AllFreqLow{subject_list} = rmfield(ft_appendfreq(cacfg,SubFreqLow{:}),'cfg');
+                AllFreqHigh{subject_list} =  rmfield(ft_appendfreq(cacfg,SubFreqHigh{:}),'cfg');
                 
-                cfc=  ft_singlecfc(Deci.Analysis.Freq.CFC.Between,AllFreqLow{subject_list},AllFreqHigh{subject_list});
-                
-                mkdir([Deci.Folder.Analysis filesep 'Cross_' Deci.Analysis.Freq.CFC.Between.method filesep  Deci.SubjectList{subject_list}]);
-                save([Deci.Folder.Analysis filesep 'Cross_' Deci.Analysis.Freq.CFC.Between.method filesep Deci.SubjectList{subject_list} filesep num2str(Cond)],'cfc','-v7.3');
-                
+                for m = 1:length(Deci.Analysis.Freq.CFC.Between.methods)
+                    
+                    Deci.Analysis.Freq.CFC.Between.method = Deci.Analysis.Freq.CFC.Between.methods{m};
+                    
+                    cfc=  ft_singlecfc(Deci.Analysis.Freq.CFC.Between,AllFreqLow{subject_list},AllFreqHigh{subject_list});
+                    
+                    mkdir([Deci.Folder.Analysis filesep 'Cross_' Deci.Analysis.Freq.CFC.Between.method filesep  Deci.SubjectList{subject_list}]);
+                    save([Deci.Folder.Analysis filesep 'Cross_' Deci.Analysis.Freq.CFC.Between.method filesep Deci.SubjectList{subject_list} filesep num2str(Cond)],'cfc','-v7.3');
+                end
             end
             
         end

@@ -1,9 +1,5 @@
-function PreProcessor(Deci)
+function PreProcessor(Deci,subject_list)
 
-
-
-for subject_list = 1:length(Deci.SubjectList)
-    
     cfg = load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}]);
     cfg = cfg.cfg;
     
@@ -142,21 +138,67 @@ for subject_list = 1:length(Deci.SubjectList)
         if  ~isempty( data_eeg.label(strcmp(data_eeg.label,'OR')))
             data_eeg.label(strcmp(data_eeg.label,'OR')) = {'PO8'};
         end
-        
         if ~isempty( data_eeg.label(strcmp(data_eeg.label,'T3')))
             data_eeg.label(strcmp(data_eeg.label,'T3')) = {'T7'};
         end
         if  ~isempty( data_eeg.label(strcmp(data_eeg.label,'T4')))
             data_eeg.label(strcmp(data_eeg.label,'T4')) = {'T8'};
         end
-        
         if ~isempty( data_eeg.label(strcmp(data_eeg.label,'T5')))
             data_eeg.label(strcmp(data_eeg.label,'T5')) = {'P7'};
         end
         if  ~isempty( data_eeg.label(strcmp(data_eeg.label,'T6')))
             data_eeg.label(strcmp(data_eeg.label,'T6')) = {'P8'};
         end
+        if  ~isempty( data_eeg.label(strcmp(data_eeg.label,'VEM')))
+            data_eeg.label(strcmp(data_eeg.label,'VEM')) = {'BVEOG'};
+        end
+        if  ~isempty( data_eeg.label(strcmp(data_eeg.label,'HEM')))
+            data_eeg.label(strcmp(data_eeg.label,'HEM')) = {'RHEOG'};
+        end
+        if  ~isempty( data_eeg.label(strcmp(data_eeg.label,'LM')))
+            data_eeg.label(strcmp(data_eeg.label,'LM')) = {'TP9'};
+        end
+        if  ~isempty( data_eeg.label(strcmp(data_eeg.label,'RM')))
+            data_eeg.label(strcmp(data_eeg.label,'RM')) = {'TP10'};
+        end
         
+        
+%         
+%          if ~isempty( layout.label(strcmp(layout.label,'PO7')))
+%             layout.label(strcmp(layout.label,'PO7')) = {'OL'};
+%         end
+%         if  ~isempty( layout.label(strcmp(layout.label,'PO8')))
+%             layout.label(strcmp(layout.label,'PO8')) = {'OR'};
+%         end
+%         
+%         if ~isempty( layout.label(strcmp(layout.label,'T7')))
+%             layout.label(strcmp(layout.label,'T7')) = {'T3'};
+%         end
+%         if  ~isempty( layout.label(strcmp(layout.label,'T8')))
+%             layout.label(strcmp(layout.label,'T8')) = {'T4'};
+%         end
+%         
+%         if ~isempty( layout.label(strcmp(layout.label,'P7')))
+%             layout.label(strcmp(layout.label,'P7')) = {'T5'};
+%         end
+%         if  ~isempty( layout.label(strcmp(layout.label,'P8')))
+%             layout.label(strcmp(layout.label,'P8')) = {'T6'};
+%         end
+% if  ~isempty( layout.label(strcmp(layout.label,'BVEOG')))
+%     layout.label(strcmp(layout.label,'BVEOG')) = {'VEM'};
+% end
+% if  ~isempty( layout.label(strcmp(layout.label,'RHEOG')))
+%     layout.label(strcmp(layout.label,'RHEOG')) = {'HEM'};
+% end
+%         if  ~isempty( layout.label(strcmp(layout.label,'TP9')))
+%             layout.label(strcmp(layout.label,'TP9')) = {'LM'};
+%         end
+%         if  ~isempty( layout.label(strcmp(layout.label,'TP10')))
+%             layout.label(strcmp(layout.label,'TP10')) = {'RM'};
+%         end
+%         
+
     end
     
     [data_eeg.trialinfo,i] = sort(floor(data_eeg.trialinfo(:,1)));
@@ -168,8 +210,5 @@ for subject_list = 1:length(Deci.SubjectList)
     
     mkdir([Deci.Folder.Preproc])
     save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data','-v7.3');
-    
-end
-
 
 end
