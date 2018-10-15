@@ -39,8 +39,8 @@ for subject_list = 1:length(Deci.SubjectList)
     [~,i] = sort(cfg.trl(:,4));
     cfg.trl = cfg.trl(i,:);
     
-    if ~all(ismember([1:length(cfg.DT.Markers)],unique(floor(cfg.trl(:,4)))))
-        error(['No trials were defined for condition(s) ' num2str(find(~ismember([1:length(cfg.DT.Markers)],unique(floor(cfg.trl(:,4))))))]);
+    if ~all(ismember([1:length(unique(cfg.DT.Locks))],unique(floor(cfg.trl(:,4)))))
+        error(['No trials were defined for condition(s) ' num2str(find(~ismember([1:length(unique(cfg.DT.Locks))],unique(floor(cfg.trl(:,4))))))]);
     end
     
     mkdir([Deci.Folder.Definition]);
