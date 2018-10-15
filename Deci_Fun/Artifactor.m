@@ -6,7 +6,7 @@ for subject_list = 1:length(Deci.SubjectList)
     
     %% ICA
     
-    if Deci.Art.ICA
+    if Deci.Art.ICA.Reject
         
         data = [];
         load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
@@ -89,7 +89,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         cfg.artfctdef.eog = [];
         cfg.artfctdef.eog.cutoff      = 12.5;
-        cfg.artfctdef.eog.channel = Deci.Art.Eye.Chans;
+        cfg.artfctdef.eog.channel = Deci.Art.ICA.Eye.Chans;
         cfg.artfctdef.eog.interactive = 'yes';
         [cfg, cfg.artfctdef.eog.artifact] = ft_artifact_eog(cfg, data_musc);
         

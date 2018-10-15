@@ -38,6 +38,20 @@ for subject_list = 1:length(Deci.SubjectList)
             error('Cannot have Bsl empty for plot');
         end
         
+        if isequal(Deci.Plot.Freq.Channel,'Reinhart-All')
+            Deci.Plot.Freq.Channel = [{'AF3'  } {'AF4'  } {'AF7'  } ...
+                {'AF8'  } {'AFz'  } {'C1'   } {'C2'   } {'C3'   } {'C4'   } {'C5'   } ...
+                {'C6'   } {'CP1'  } {'CP2'  } {'CP3'  } {'CP4'  } {'CP5'  } {'CP6'  } ...
+                {'CPz'  } {'Cz'   } {'F1'   } {'F2'   } {'F3'   } {'F4'   } {'F5'   } ...
+                {'F6'   } {'F7'   } {'F8'   } {'FC1'  } {'FC2'  } {'FC3'  } {'FC4'  } ...
+                {'FC5'  } {'FC6'  } {'FCz'  } {'FT7'  } {'FT8'  } {'Fz'   } {'O1'   } ...
+                {'O2'   } {'Oz'   } {'P1'   } {'P2'   } {'P3'   } {'P4'   } {'P5'   } ...
+                {'P6'   } {'P7'   } {'P8'   } {'PO3'  } {'PO4'  } {'PO7'  } {'PO8'  } ...
+                {'POz'  } {'Pz'   } {'T7'   } {'T8'   } {'TP10' } {'TP7'  } {'TP8'  } ...
+                {'TP9'  } ] ;
+        end
+        
+        
         Freq.Conditions     = CleanDir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}]);
         Freq.Channels       = CleanDir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep Freq.Conditions{1}]);
         Freq.Channels       = cellfun(@(c) c(1:end-4),Freq.Channels,'un',0);
@@ -251,7 +265,7 @@ if ~isempty(Deci.Plot.CFC)
         if Deci.Plot.GA
             
             CFCData{Condition,1} = Subjects{1};
-            CFCData{Condition,1}.crsspctrm = mean(cell2mat(permute(cellfun(@(c) c.crsspctrm,Subjects,'un',0),[1 3 2])),3);
+            CFCData{Condition,1}.crsspctrm = mean(cell2mat(permute(cellfun(@(c) c.crsspctrm,Subjects,'un',0),[1 3 4 2])),4);
             
         else
             CFCData(Condition,:) = Subjects(:);
@@ -604,10 +618,24 @@ if ~isempty(Deci.Plot.CFC)
         for cond = 1:size(CFCData,1)
             
             
-            
-            
-            
             if Deci.Plot.CFC.Topo
+                set(0, 'CurrentFigure', CFCtopo(subj) )
+                ctopo(subj,cond)    =  subplot(size(CFCData,1),1,cond);
+                
+                Cross.labelcmb = CombVec(CFCData{1}.labellow',CFCData{1}.labelhigh')';
+                Cross.freq = CFCData{1}.freqlow;
+                Cross.cohspctrm = CFCData{cond,subj}.crsspctrm(:,:,1);
+                Cross.dimord = CFCData{1}.dimord;
+                
+                Crosscfg =[];
+                Crosscfg.foi = [-inf inf];
+                Crosscfg.layout = Deci.Layout.Noeye;
+                title([Deci.SubjectList{subj} ' ' Deci.Plot.CFC.method ' Cond '  num2str(cond)],'Interpreter', 'none');
+%               ft_topoplotCC(Crosscfg,Cross);
+                
+                ctopo(subj,cond).UserData = {Cross,Crosscfg,CFCData{cond,subj}.crsspctrm};
+                
+                
             end
             
             
@@ -616,27 +644,119 @@ if ~isempty(Deci.Plot.CFC)
                 set(0, 'CurrentFigure', CFCsquare(subj) )
                 csquare(subj,cond)    =  subplot(size(CFCData,1),1,cond);
                 
-                xdat = unique(CFCData{1}.labelcmb(:,1),'stable');
-                ydat = unique(CFCData{1}.labelcmb(:,2),'stable');
-                PLVim = imagesc(1:length(xdat),1:length(ydat),CFCData{cond,subj}.crsspctrm);
+                xdat = CFCData{1}.labellow;
+                ydat = CFCData{1}.labelhigh;
+                PLVim = imagesc(1:length(xdat),1:length(ydat),CFCData{cond,subj}.crsspctrm(:,:,1));
                 xticks(1:length(xdat));
                 xticklabels(xdat);
                 yticks(1:length(ydat))
                 yticklabels(ydat);
-                title([Deci.SubjectList{subj} ' ' Deci.Plot.CFC.method ' Cond '  num2str(cond)]);
+                title([Deci.SubjectList{subj} ' ' Deci.Plot.CFC.method ' Cond '  num2str(cond)],'Interpreter', 'none');
+                
+                csquare(subj,cond).UserData = CFCData{cond,subj}.crsspctrm;
+                colorbar;
             end
+        end
+        
+        if Deci.Plot.CFC.Topo
+            
+            set(0, 'CurrentFigure', CFCtopo(subj) )
+            uicontrol('style','text','position',[225 75 100 25],'String','Time of Interest');
+            
+            slide = uicontrol('style','slider','position',[75 10 400 20],...
+                'min',1,'max',size(CFCData{1,subj}.crsspctrm,3),'callback',{@ChangeDimTopo,ctopo(subj,:),Deci.Plot.CFC.Roi}, ...
+                'value',1,'SliderStep',[1/size(CFCData{1,subj}.crsspctrm,3) 1/size(CFCData{1,subj}.crsspctrm,3)]);
+            
+            ChangeDimTopo(slide,[],ctopo(subj,:),Deci.Plot.CFC.Roi);
+            
+            
+            for tick = 1:size(CFCData{1,subj}.crsspctrm,3)
+                uicontrol('style','text','position',[75+[[[slide.Position(3)]/5]*[tick-1]]+20 55 40 25],'String',num2str(round(CFCData{1,subj}.timelow(tick),2)));
+                uicontrol('style','text','position',[75+[[[slide.Position(3)]/5]*[tick-1]]+20 30 40 25],'String',num2str(round(CFCData{1,subj}.timehigh(tick),2)));
+            end
+            uicontrol('style','text','position',[45 55 60 25],'String','FreqLow');
+            uicontrol('style','text','position',[45 30 60 25],'String','FreqHigh');
+        end
+        
+                
+        if Deci.Plot.CFC.Square
+            
+            set(0, 'CurrentFigure', CFCsquare(subj) )
+            uicontrol('style','text','position',[225 75 100 25],'String','Time of Interest');
+            
+            slide = uicontrol('style','slider','position',[75 10 400 20],...
+                'min',1,'max',size(CFCData{1,subj}.crsspctrm,3),'callback',{@ChangeDim,csquare(subj,:),Deci.Plot.CFC.Roi,'CLim'}, ...
+                'value',1,'SliderStep',[1/size(CFCData{1,subj}.crsspctrm,3) 1/size(CFCData{1,subj}.crsspctrm,3)]);
+            
+            UpdateAxes(csquare(subj,:),Deci.Plot.CFC.Roi,'CLim',1);
+            
+            for tick = 1:size(CFCData{1,subj}.crsspctrm,3)
+                uicontrol('style','text','position',[75+[[[slide.Position(3)]/5]*[tick-1]]+20 55 40 25],'String',num2str(round(CFCData{1,subj}.timelow(tick),2)));
+                uicontrol('style','text','position',[75+[[[slide.Position(3)]/5]*[tick-1]]+20 30 40 25],'String',num2str(round(CFCData{1,subj}.timehigh(tick),2)));
+            end
+            uicontrol('style','text','position',[45 55 60 25],'String','FreqLow');
+            uicontrol('style','text','position',[45 30 60 25],'String','FreqHigh');
         end
         
     end
     
     
-                for r = 1:length(csquare(:))
-                    if isequal(Deci.Plot.CFC.Roi,'maxmin')
-                        csquare(r).CLim = [min([csquare.CLim]) max([csquare.CLim])];
-                    elseif isequal(Deci.Plot.CFC.Roi,[0 1])
-                        csquare(r).Parent.CLim = [0 1];
-                    elseif length(Deci.Plot.CFC.Roi) == 2 && isnumeric(Deci.CFC.Freq.Roi)
-                        csquare(r).Parent.CLim = [Deci.Plot.CFC.Roi];
-                    end
-                end
+
 end
+
+    function ChangeDim(popup,event,Axes,Roi,Lim)
+        popup.Value = round(popup.Value);
+        
+        for i = 1:length(Axes)
+            Axes(i).Children.CData = Axes(i).UserData(:,:,popup.Value);
+        end
+        
+        UpdateAxes(Axes,Roi,Lim,1)
+        
+    end
+
+    function UpdateAxes(Axes,Roi,Lim,Userdata)
+        
+        if Userdata == 1
+            Dats = cell2mat(arrayfun(@(c) c.UserData,Axes,'un',0));
+        else
+            Dats = cell2mat(arrayfun(@(c) c.Children.CData,Axes,'un',0));
+        end
+        
+        for Axe = 1:length(Axes(:))
+            if isequal(Roi,'maxmin')
+                Axes(Axe).(Lim) = [min(Dats(:)) max(Dats(:))];
+            elseif isequal(Roi,[0 1])
+                Axes(Axe).(Lim) = [0 1];
+            elseif length(Roi) == 2 && isnumeric(Roi)
+                Axes(Axe).(Lim) = Roi;
+            end
+        end
+    end
+
+    function ChangeDimTopo(popup,event,Axes,Roi)
+         popup.Value = round(popup.Value);
+         
+         if isequal(Roi,'maxmin')
+             CLim = cell2mat(arrayfun(@(c) c.UserData{3},Axes,'un',0));
+         elseif isequal(Roi,[0 1])
+             CLim = [0 1];
+         elseif length(Roi) == 2 && isnumeric(Roi)
+             CLim = Roi;
+         end
+        
+         for Axe =  1:length(Axes)
+            set(Axes(Axe).Parent, 'currentaxes', Axes(Axe))
+            
+            NewCross = Axes(Axe).UserData{1};
+            NewCross.cohspctrm =  Axes(Axe).UserData{3}(:,:,popup.Value);
+            NewCrossCfg = Axes(Axe).UserData{2};
+            NewCrossCfg.CLim = minmax(CLim(:)');
+            ft_topoplotCC(NewCrossCfg ,NewCross);
+            
+         end
+         
+    end
+
+end
+
