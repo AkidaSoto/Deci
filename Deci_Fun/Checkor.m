@@ -3,11 +3,11 @@ function Deci = Checkor(Deci)
 
 
 warning('off', 'MATLAB:MKDIR:DirectoryExists');
-Deci.Folder.Definition   = [Deci.Folder.Version 'Definition'];
-Deci.Folder.Preproc      = [Deci.Folder.Version 'PreProc'];
-Deci.Folder.Artifact     = [Deci.Folder.Version 'Artifact'];
-Deci.Folder.Analysis     = [Deci.Folder.Version 'Analysis'];
-Deci.Folder.Plot         = [Deci.Folder.Version 'Plot'];
+Deci.Folder.Definition   = [Deci.Folder.Version filesep 'Definition'];
+Deci.Folder.Preproc      = [Deci.Folder.Version filesep 'PreProc'];
+Deci.Folder.Artifact     = [Deci.Folder.Version filesep 'Artifact'];
+Deci.Folder.Analysis     = [Deci.Folder.Version filesep 'Analysis'];
+Deci.Folder.Plot         = [Deci.Folder.Version filesep 'Plot'];
 
 if strcmp(Deci.SubjectList,'all')
     Deci.SubjectList = cellfun(@(c) strsplit(c,'.'),CleanDir(Deci.Folder.Raw),'un',0);
