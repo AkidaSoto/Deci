@@ -41,6 +41,10 @@ for j = 1:length(startstopseg)
             endsample = condlock + sstime(2)*hdr.Fs;
             offset        = sstime(1)*hdr.Fs;
             
+%             if any(ismember(strsplit(num2str([644772 966643 1451729])),num2str(begsample)))
+%                K; 
+%             end
+            
             trl(end + 1,:) = [begsample endsample offset  i+condvalue*.01];
             
             

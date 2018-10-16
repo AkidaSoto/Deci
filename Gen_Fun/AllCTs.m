@@ -1,26 +1,40 @@
-function Markers = AllCTs(Syntax,Variations)
+function Markers = AllCTs(Markers,Variations)
 
-if length(find(Syntax == 'X')) ~= length(Variations)
+X = find(Markers{1} == 'X');
+A = find(Markers{1} == 'A');
+B = find(Markers{1} == 'B');
+
+
+
+if length([X A B]) ~= length(Variations)
     error('unequal amount of X and Variations')
 end
 
-Marker = {};
 
-for S = 1:length(find(Syntax == 'X'))
+
+
+
+for S = 1:length([X A B])
     
-    tempS = Syntax;
+   
     
-    for V = 1:length(Variations)
+    mTemp = [];
+    
+    for V = 1:length(Variations{S})
         
-        for inV = 1:length(Variations{V})
-           placement = find(tempS == 'X',1,'first');
-           tempS = [tempS(1:placement-1)  Variations{V}{inV} tempS(placement+1:end)];
+        
+        for M = 1:length(Markers)
+            
+           placement = regexp(Markers{M},'[A-Z]');
+            
+           mTemp{end+1} = [Markers{M}(1:placement-1)  Variations{S}{V} Markers{M}(placement+1:end)];
         end
+        
     end
     
-    tempS = str2num(strsplit(tempS));
-    Marker{end+1} = tempS;
+     Markers = mTemp;
+    
 end
-
-
+Markers = cellfun(@(c) str2num(strjoin(strsplit(c,'_'),' ')),Markers,'un',0);
+    
 end
