@@ -319,7 +319,6 @@ if Deci.Plot.Freq.Plot
                     
                     
                     set(0, 'CurrentFigure', topo(subj) )
-                    topo(subj).Visible = 'on';
                     cirky(subj,cond)    =  subplot(size(FreqData,1),1,cond);
                     ft_topoplotER(cfg, FreqData{cond,subj});
                     
@@ -363,7 +362,6 @@ if Deci.Plot.Freq.Plot
             
             if Deci.Plot.Freq.Square
                 set(0, 'CurrentFigure', square(subj) )
-                square(subj).Visible = 'on';
                 subby(subj,cond) = subplot(size(FreqData,1),1,cond);
                 ft_singleplotTFR(cfg,FreqData{cond,subj})
                 
@@ -418,8 +416,6 @@ if Deci.Plot.Freq.Plot
             
             if Deci.Plot.Freq.Topo
                 set(0, 'CurrentFigure', topo(subj) )
-                topo(subj).Visible = 'on';
-                
                 for r = 1:length(cirky(:))
                     
                     if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
@@ -443,8 +439,6 @@ if Deci.Plot.Freq.Plot
         
         if Deci.Plot.Freq.Square
             set(0, 'CurrentFigure', square(subj))
-            square(subj).Visible = 'on';
-            
             for r = 1:length(subby(:))
                 
                 if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
@@ -648,7 +642,6 @@ if ~isempty(Deci.Plot.CFC)
             
             if Deci.Plot.CFC.Hist
                 set(0, 'CurrentFigure', CFChist(subj) )
-                 CFChist(subj).Visible = 'on';
                 chist(subj,cond)    =  subplot(size(CFCData,1),1,cond);
                 chist(subj,cond).UserData = CFCData{cond,subj}.crsspctrm;
                 bar(reshape(CFCData{cond,subj}.crsspctrm,[size(CFCData{cond,subj}.crsspctrm,1)*size(CFCData{cond,subj}.crsspctrm,2) size(CFCData{cond,subj}.crsspctrm,3)]));
@@ -689,7 +682,7 @@ if ~isempty(Deci.Plot.CFC)
                  xticklabels(chist(subj,HistLim), cell2mat(CombVec(CFCData{cond,subj}.labellow',CFCData{cond,subj}.labelhigh')'));
                  xtickangle(chist(subj,HistLim),-20);
                  
-                 legend(chist(subj,HistLim),[repmat('FreqLow Time ',[size(CFCData{cond,subj}.timelow',1) 1]) num2str([CFCData{cond,subj}.timelow']) repmat(' - FreqHigh Time ',[size(CFCData{cond,subj}.timelow',1) 1]) num2str([CFCData{cond,subj}.timelow'])])
+                 legend(num2str([CFCData{cond,subj}.timelow' CFCData{cond,subj}.timehigh']))
              end
              
               
@@ -727,7 +720,7 @@ if ~isempty(Deci.Plot.CFC)
                 'min',1,'max',size(CFCData{1,subj}.crsspctrm,3),'callback',{@ChangeDim,csquare(subj,:),Deci.Plot.CFC.Roi,'C'}, ...
                 'value',1,'SliderStep',[1/size(CFCData{1,subj}.crsspctrm,3) 1/size(CFCData{1,subj}.crsspctrm,3)]);
             
-            UpdateAxes(csquare(subj,:),Deci.Plot.CFC.Roi,'C',1);
+            UpdateAxes(csquare(subj,:),Deci.Plot.CFC.Roi,'CLim',1);
             
             for tick = 1:size(CFCData{1,subj}.crsspctrm,3)
                 uicontrol('style','text','position',[75+[[[slide.Position(3)]/5]*[tick-1]]+20 55 40 25],'String',num2str(round(CFCData{1,subj}.timelow(tick),2)));
@@ -759,7 +752,7 @@ end
         if Userdata == 1
             Dats = cell2mat(arrayfun(@(c) c.UserData,Axes,'un',0));
         else
-            Dats = cell2mat(arrayfun(@(c) [c.Children.([Lim 'Data'])],Axes,'un',0));
+            Dats = cell2mat(arrayfun(@(c) c.Children.([Lim 'Data']),Axes,'un',0));
         end
         
         for Axe = 1:length(Axes(:))

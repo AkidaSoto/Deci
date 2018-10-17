@@ -4,18 +4,18 @@ AllFreq = [];
 
 if ~isfield(Deci.Analysis,'ArtifactReject')
     Deci.Analysis.ArtifactReject = 0;
-    Warning('Parameter for ArtifactReject not found, presuming not wanted')
+    warning('Parameter for ArtifactReject not found, presuming not wanted')
 end
 
 if ~isfield(Deci.Analysis,'Channels')
     Deci.Analysis.Channels = 'all';
-    Warning('Parameter for Channels not found, presuming all')
+    warning('Parameter for Channels not found, presuming all')
 end
 
 
 if ~isfield(Deci.Analysis,'Laplace')
     Deci.Analysis.Laplace = 0;
-    Warning('Parameter for Laplace not found, presuming not wanted')
+    warning('Parameter for Laplace not found, presuming not wanted')
 end
 
 
@@ -90,7 +90,7 @@ for Cond = 1:length(trialevents)
     end
     
     
-    if Deci.Analysis.ERP
+    if isfield(Deci.Analysis,'ERP')
         
         if redefine
             cfg.offset = retrl;
@@ -114,7 +114,7 @@ for Cond = 1:length(trialevents)
         
         if ~isfield(Deci.Analysis.Freq,'Toi')
             Deci.Analysis.Toi = [-inf inf];
-            Warning('Parameter for Toi not found, presuming [-inf inf]')
+            warning('Parameter for Toi not found, presuming [-inf inf]')
         end
         
         fcfg = Deci.Analysis.Freq;
@@ -137,7 +137,7 @@ for Cond = 1:length(trialevents)
         
         Analysis = 1;
         
-        if isfield(Deci.Analysis.Freq,'Redefine')
+        if isfield(Deci.Analysis.Freq,'Redefine') && redefine
             
             retrl1 = retrl(find(data.trialinfo==trialevents(Cond)));
             
