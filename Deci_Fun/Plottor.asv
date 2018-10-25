@@ -1,11 +1,6 @@
 function Plottor(Deci)
 
 
-if isempty(Deci.Plot.Toi)
-    Deci.Plot.Toi = [-inf inf];
-    warning('Cannot Find Toi for plot, setting as [-inf,inf]');
-end
-
 Freq    = [];
 ERP     = [];
 
@@ -13,6 +8,11 @@ for subject_list = 1:length(Deci.SubjectList)
     if Deci.Plot.Freq.Plot ||  ~isempty(Deci.Plot.PRP)
         if ~isdir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}])
             error(['Freq Analysis not found for '  Deci.SubjectList{subject_list}])
+        end
+        
+        if isempty(Deci.Plot.Freq.Toi)
+            Deci.Plot.Freq.Toi = [-inf inf];
+            warning('Cannot Find Toi for plot, setting as [-inf,inf]');
         end
         
         if isempty(Deci.Plot.Freq.Type)
@@ -71,6 +71,12 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         
         ERP.Conditions     = CleanDir([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list}]);
+        
+        if isempty(Deci.Plot.ERP.Toi)
+            Deci.Plot.ERP.Toi = [-inf inf];
+            warning('Cannot Find Toi for plot, setting as [-inf,inf]');
+        end
+        
     end
     
     if ~isempty(Deci.Plot.PRP)
@@ -85,6 +91,8 @@ for subject_list = 1:length(Deci.SubjectList)
             Deci.Plot.Freq.ScatterToi =  [-inf inf];
             warning('Cannot Find ScatterToi for PRPplot, setting as  [-inf inf]');
         end
+        
+
         
     end
     
@@ -115,7 +123,7 @@ if Deci.Plot.Freq.Plot || ~isempty(Deci.Plot.PRP)
                 load([Deci.Folder.Analysis filesep 'Freq_' Deci.Plot.Freq.Type filesep Deci.SubjectList{subject_list} filesep Freq.Conditions{Condition} filesep Freq.Channels{Channel}],'freq');
                 
                 foi = freq.freq >= round(Deci.Plot.Freq.Foi(1),4) & freq.freq <= round(Deci.Plot.Freq.Foi(2),4);
-                toi = round(freq.time,4) >= Deci.Plot.Toi(1) & round(freq.time,4) <= Deci.Plot.Toi(2);
+                toi = round(freq.time,4) >= Deci.Plot.Freq.Toi(1) & round(freq.time,4) <= Deci.Plot.Freq.Toi(2);
                 
                 Chans{Channel} = freq;
                 Chans{Channel}.freq =  Chans{Channel}.freq(foi);
@@ -168,19 +176,61 @@ if Deci.Plot.Freq.Plot || ~isempty(Deci.Plot.PRP)
     
     if Deci.Plot.Math.Type ~= 0
         
-        for cond = 1:length(Deci.Plot.Math.Form)
-            for subj = 1:size(FreqData,2)
-                scfg.parameter = 'powspctrm';
-                scfg.operation = Deci.Plot.Math.Form{cond};
-                MathData{subj} = ft_math(scfg,FreqData{:,subj});
+        if isequal(Deci.Plot.Math.Form,'Hemifield')
+          
+            if strcmp(Deci.Plot.PRP.Dim,'trials')
+                
+                for subject_list = 1:length(Deci.SubjectList)
+                end
+                
             end
             
-            FreqData(length(Freq.Conditions)+cond,:) = MathData;
+            
+            for subj = 1:size(FreqData,2)
+            HemiData = FreqData(:,subj);
+            Hemis = length(HemiData);
+           
+            for Hem = 1:Hemis
+               HemiData{Hem} = hemifieldflip(HemiData{Hem});
+            end
+            
+            Hemidata = [FreqData(:,subj);HemiData];
+           
+            for Hem = 1:Hemis
+            scfg.operation = ['x' num2str(Hem) '-x' num2str(Hem+Hemis)];
+            
+            scfg.parameter = 'powspctrm';
+            
+            MathData{Hem,subj} = ft_math(scfg,Hemidata{:});
+            
+            scfg.channel =  MathData{Hem,subj}.label(cell2mat(cellfun(@(c) any(rem(c(isstrprop(c,'digit')),2)),  MathData{Hem,subj}.label,'un',0)));
+             MathData{Hem,subj} = ft_selectdata(scfg, MathData{Hem,subj});
+            end
+            
+             
+            
+            end
+            
+            FreqData = MathData;
+            
+        else
+            
+            for cond = 1:length(Deci.Plot.Math.Form)
+                for subj = 1:size(FreqData,2)
+                    scfg.parameter = 'powspctrm';
+                    scfg.operation = Deci.Plot.Math.Form{cond};
+                    MathData{subj} = ft_math(scfg,FreqData{:,subj});
+                end
+                
+                FreqData(length(Freq.Conditions)+cond,:) = MathData;
+            end
+            
+            if Deci.Plot.Math.Type == 1
+                FreqData = FreqData(length(Freq.Conditions)+1:end,:);
+            end
         end
         
-        if Deci.Plot.Math.Type == 1
-            FreqData = FreqData(length(Freq.Conditions)+1:end,:);
-        end
+
         
     end
     
@@ -203,7 +253,7 @@ if ~isempty(Deci.Plot.ERP)|| ~isempty(Deci.Plot.PRP)
             time = [];
             load([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list} filesep ERP.Conditions{Condition}],'time');
             
-            toi = round(time.time,4) >= Deci.Plot.Toi(1) & round(time.time,4) <= Deci.Plot.Toi(2);
+            toi = round(time.time,4) >= Deci.Plot.ERP.Toi(1) & round(time.time,4) <= Deci.Plot.ERP.Toi(2);
             time.time =  time.time(toi);
             time.avg  =time.avg(:,toi);
             
@@ -231,23 +281,59 @@ if ~isempty(Deci.Plot.ERP)|| ~isempty(Deci.Plot.PRP)
         
     end
     
+    
     if Deci.Plot.Math.Type ~= 0
         
-        for cond = 1:length(Deci.Plot.Math.Form)
+        if isequal(Deci.Plot.Math.Form,'Hemifield')
+            
             for subj = 1:size(TimeData,2)
-                scfg.parameter = 'powspctrm';
-                scfg.operation = Deci.Plot.Math.Form{cond};
-                MathData{subj} = ft_math(scfg,TimeData{:,subj});
+                HemiData = TimeData(:,subj);
+                Hemis = length(HemiData);
+                
+                for Hem = 1:Hemis
+                    HemiData{Hem} = hemifieldflip(HemiData{Hem});
+                end
+                
+                Hemidata = [TimeData(:,subj);HemiData];
+                
+                for Hem = 1:Hemis
+                    scfg.operation = ['x' num2str(Hem) '-x' num2str(Hem+Hemis)];
+                    
+                    scfg.parameter = 'avg';
+                    
+                    MathData{Hem,subj} = ft_math(scfg,Hemidata{:});
+                    
+                    scfg.channel =  MathData{Hem,subj}.label(cell2mat(cellfun(@(c) any(rem(c(isstrprop(c,'digit')),2)),  MathData{Hem,subj}.label,'un',0)));
+                    MathData{Hem,subj} = ft_selectdata(scfg, MathData{Hem,subj});
+                end
+                
             end
             
-            TimeData(length(ERP.Conditions)+cond,:) = MathData;
+            TimeData = MathData;
+            
+        else
+            
+            for cond = 1:length(Deci.Plot.Math.Form)
+                for subj = 1:size(TimeData,2)
+                    scfg.parameter = 'avg';
+                    scfg.operation = Deci.Plot.Math.Form{cond};
+                    MathData{subj} = ft_math(scfg,TimeData{:,subj});
+                end
+                
+                TimeData(length(ERP.Conditions)+cond,:) = MathData;
+            end
+            
+            if Deci.Plot.Math.Type == 1
+                TimeData = TimeData(length(ERP.Conditions)+1:end,:);
+            end
         end
         
-        if Deci.Plot.Math.Type == 1
-            TimeData = TimeData(length(ERP.Conditions)+1:end,:);
-        end
+        
         
     end
+    
+    
+   
     
 end
 
@@ -319,6 +405,7 @@ if Deci.Plot.Freq.Plot
                     
                     
                     set(0, 'CurrentFigure', topo(subj) )
+                    topo(subj).Visible = 'on';
                     cirky(subj,cond)    =  subplot(size(FreqData,1),1,cond);
                     ft_topoplotER(cfg, FreqData{cond,subj});
                     
@@ -362,6 +449,7 @@ if Deci.Plot.Freq.Plot
             
             if Deci.Plot.Freq.Square
                 set(0, 'CurrentFigure', square(subj) )
+                square(subj).Visible = 'on';
                 subby(subj,cond) = subplot(size(FreqData,1),1,cond);
                 ft_singleplotTFR(cfg,FreqData{cond,subj})
                 
@@ -416,6 +504,8 @@ if Deci.Plot.Freq.Plot
             
             if Deci.Plot.Freq.Topo
                 set(0, 'CurrentFigure', topo(subj) )
+                topo(subj).Visible = 'on';
+                
                 for r = 1:length(cirky(:))
                     
                     if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
@@ -439,6 +529,8 @@ if Deci.Plot.Freq.Plot
         
         if Deci.Plot.Freq.Square
             set(0, 'CurrentFigure', square(subj))
+            square(subj).Visible = 'on';
+            
             for r = 1:length(subby(:))
                 
                 if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
@@ -467,30 +559,30 @@ if Deci.Plot.Freq.Plot
 end
 
 if ~isempty(Deci.Plot.ERP)
-    
-    for subj = 1:size(TimeData,2)
-        
-        topoERP(subj)  = figure;
-        
-        
-        for cond = 1:size(TimeData,1)
+    if Deci.Plot.ERP.Plot
+        for subj = 1:size(TimeData,2)
             
-            set(0, 'CurrentFigure', topoERP)
-            tippy(cond,subj)    = subplot(size(TimeData,1),1,cond);
-            ft_topoplotER(cfg, TimeData{cond,subj});
+            topoERP(subj)  = figure;
             
+            
+            for cond = 1:size(TimeData,1)
+                
+                set(0, 'CurrentFigure', topoERP)
+                tippy(cond,subj)    = subplot(size(TimeData,1),1,cond);
+                ft_topoplotER(cfg, TimeData{cond,subj});
+                
+                
+            end
+            
+            wireERP(subj)  = figure;
+            ft_singleplotER(cfg, TimeData{:,subj});
             
         end
         
-        wireERP(subj)  = figure;
-        ft_singleplotER(cfg, TimeData{:,subj});
-        
+        for r = 1:length(tippy(:))
+            tippy(r).CLim = [min([tippy.CLim]) max([tippy.CLim])];
+        end
     end
-    
-    for r = 1:length(tippy(:))
-        tippy(r).CLim = [min([tippy.CLim]) max([tippy.CLim])];
-    end
-    
 end
 
 if ~isempty(Deci.Plot.PRP)
@@ -559,9 +651,9 @@ if ~isempty(Deci.Plot.PRP)
         RHOim = plot(ax3,TimeData{cond,subj}.time,RHO,'Color',colors(:,cond));
         hold(ax3,'on');
         
-        scfg.parameter = 'avg';
-        SFreq = rmfield(ft_timelockgrandaverage(scfg,FreqData{cond,:}),'cfg');
-        STime = rmfield(ft_timelockgrandaverage(scfg,TimeData{cond,:}),'cfg');
+        tcfg.parameter = 'avg';
+        SFreq = rmfield(ft_timelockgrandaverage(tcfg,FreqData{cond,:}),'cfg');
+        STime = rmfield(ft_timelockgrandaverage(tcfg,TimeData{cond,:}),'cfg');
         
         ax1 = subplot(2,2,1);
         ax1.XAxisLocation = 'origin';
@@ -594,7 +686,7 @@ if ~isempty(Deci.Plot.PRP)
     
     xlabel(ax3,'Time(secs)');
     ylabel(ax3, 'Rho' );
-    title(ax3,{['Correlation by time  only sigficiant by Fdr MC Corrected']} )
+    title(ax3,{['Correlation by time']} )
     
     xlabel(ax4,'Total Power');
     ylabel(ax4, 'ERP Power (uV)' );
@@ -642,6 +734,7 @@ if ~isempty(Deci.Plot.CFC)
             
             if Deci.Plot.CFC.Hist
                 set(0, 'CurrentFigure', CFChist(subj) )
+                 CFChist(subj).Visible = 'on';
                 chist(subj,cond)    =  subplot(size(CFCData,1),1,cond);
                 chist(subj,cond).UserData = CFCData{cond,subj}.crsspctrm;
                 bar(reshape(CFCData{cond,subj}.crsspctrm,[size(CFCData{cond,subj}.crsspctrm,1)*size(CFCData{cond,subj}.crsspctrm,2) size(CFCData{cond,subj}.crsspctrm,3)]));
@@ -682,7 +775,7 @@ if ~isempty(Deci.Plot.CFC)
                  xticklabels(chist(subj,HistLim), cell2mat(CombVec(CFCData{cond,subj}.labellow',CFCData{cond,subj}.labelhigh')'));
                  xtickangle(chist(subj,HistLim),-20);
                  
-                 legend(num2str([CFCData{cond,subj}.timelow' CFCData{cond,subj}.timehigh']))
+                 legend(chist(subj,HistLim),[repmat('FreqLow Time ',[size(CFCData{cond,subj}.timelow',1) 1]) num2str([CFCData{cond,subj}.timelow']) repmat(' - FreqHigh Time ',[size(CFCData{cond,subj}.timelow',1) 1]) num2str([CFCData{cond,subj}.timelow'])])
              end
              
               
@@ -720,7 +813,7 @@ if ~isempty(Deci.Plot.CFC)
                 'min',1,'max',size(CFCData{1,subj}.crsspctrm,3),'callback',{@ChangeDim,csquare(subj,:),Deci.Plot.CFC.Roi,'C'}, ...
                 'value',1,'SliderStep',[1/size(CFCData{1,subj}.crsspctrm,3) 1/size(CFCData{1,subj}.crsspctrm,3)]);
             
-            UpdateAxes(csquare(subj,:),Deci.Plot.CFC.Roi,'CLim',1);
+            UpdateAxes(csquare(subj,:),Deci.Plot.CFC.Roi,'C',1);
             
             for tick = 1:size(CFCData{1,subj}.crsspctrm,3)
                 uicontrol('style','text','position',[75+[[[slide.Position(3)]/5]*[tick-1]]+20 55 40 25],'String',num2str(round(CFCData{1,subj}.timelow(tick),2)));
@@ -752,7 +845,7 @@ end
         if Userdata == 1
             Dats = cell2mat(arrayfun(@(c) c.UserData,Axes,'un',0));
         else
-            Dats = cell2mat(arrayfun(@(c) c.Children.([Lim 'Data']),Axes,'un',0));
+            Dats = cell2mat(arrayfun(@(c) [c.Children.([Lim 'Data'])],Axes,'un',0));
         end
         
         for Axe = 1:length(Axes(:))

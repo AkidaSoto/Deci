@@ -2,7 +2,7 @@ function Analyzor(Deci)
 
     if Deci.PCom
         for subject_list = 1:length(Deci.SubjectList)
-           PCCom(subject_list)= parfeval(@PCAnalyzor,1,Deci,subject_list);
+           PCCom(subject_list)= parfeval(@PCAnalyzor,0,Deci,subject_list);
         end
         
         wait(PCCom);

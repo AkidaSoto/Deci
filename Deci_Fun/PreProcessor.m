@@ -3,7 +3,7 @@ function PreProcessor(Deci)
 if Deci.PCom
     
     for subject_list = 1:length(Deci.SubjectList)
-        PCCom(subject_list)= parfeval(@PCPreProcessor,1,Deci,subject_list);
+        PCCom(subject_list)= parfeval(@PCPreProcessor,0,Deci,subject_list);
     end
     
     

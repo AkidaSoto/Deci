@@ -26,6 +26,7 @@ for subject_list = 1:length(Deci.SubjectList)
     cfg = [];
     cfg.dataset = [Deci.Folder.Raw filesep Deci.SubjectList{subject_list} files_ending{1}];
     cfg.DT = Deci.DT;
+    cfg.file_ending = files_ending{1};
     
     if strcmpi(Deci.DT.Type,'Manual') 
     cfg.trialfun = 'expfunor';

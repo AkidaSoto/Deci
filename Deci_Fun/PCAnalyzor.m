@@ -1,6 +1,4 @@
-function AllFreq = PCAnalyzor(Deci,subject_list)
-
-AllFreq = [];
+function PCAnalyzor(Deci,subject_list)
 
 if ~isfield(Deci.Analysis,'ArtifactReject')
     Deci.Analysis.ArtifactReject = 0;
@@ -91,23 +89,30 @@ for Cond = 1:length(trialevents)
     
     
     if isfield(Deci.Analysis,'ERP')
-        
-        if redefine
-            cfg.offset = retrl;
-            cfg.shift =  Deci.Analysis.Redefine.ERPToi;
-            datatime = ft_datashift(cfg,data);
-        else
-            datatime = data;
+        if ~isempty(Deci.Analysis.ERP)
+            if redefine
+                cfg.offset = retrl;
+                cfg.shift =  Deci.Analysis.Redefine.ERPToi;
+                datatime = ft_datashift(cfg,data);
+            else
+                datatime = data;
+            end
+            
+            cfg.vartrllength = 2;
+            time =  ft_timelockanalysis(cfg, datatime);
+            
+            mkdir([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list}])
+            label = rmfield(time,'avg');
+            save([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list} filesep num2str(Cond)],'time','label');
+            
+            if Deci.Analysis.ERP.raw
+                time = datatime;
+                mkdir([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list}]);
+                save([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep num2str(Cond)],'time');
+            end
+            clear time datatime;
+            
         end
-        
-        cfg.vartrllength = 2;
-        time =  ft_timelockanalysis(cfg, datatime);
-        clear datatime;
-        
-        mkdir([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list}])
-        label = rmfield(time,'avg');
-        save([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list} filesep num2str(Cond)],'time','label');
-        
     end
     
     if ~isempty(Deci.Analysis.Freq)
@@ -216,7 +221,15 @@ for Cond = 1:length(trialevents)
                 freq  = rmfield(freq,'fourierspctrm');
                 save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep num2str(Cond) filesep Chan{i}],'freq','label','-v7.3');
                 
-               
+                if Deci.Analysis.Freq.kptrls
+                    freq = freqplaceholder;
+                    freq.powspctrm = abs(freq.fourierspctrm).^2;
+                    freq.dimord = 'rpt_chan_freq_time';
+                    freq  = rmfield(freq,'fourierspctrm');
+                    label.dimord = 'rpt_chan_freq_time';
+                    mkdir([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep  Deci.SubjectList{subject_list} filesep num2str(Cond)]);
+                    save([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep Deci.SubjectList{subject_list} filesep num2str(Cond) filesep Chan{i}],'freq','label','-v7.3');     
+                end
                  
                  if ~isempty(Deci.Analysis.Freq.CFC)
                      

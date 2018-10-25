@@ -21,7 +21,9 @@ if cell_value{1}(1) == 'S'
     events = [events{:}];
 end
 
+if isfield(events,'type')
 events = events(~ismember({events.type},'Comment'));
+end
 
 [uniquesamples uniqueindex] = unique([[events.sample]' cellfun(@(c) str2num(c),{events.value})'],'rows');
 events = events(uniqueindex);
