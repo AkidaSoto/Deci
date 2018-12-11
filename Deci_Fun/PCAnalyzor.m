@@ -105,7 +105,7 @@ for Cond = 1:length(trialevents)
             label = rmfield(time,'avg');
             save([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list} filesep num2str(Cond)],'time','label');
             
-            if Deci.Analysis.ERP.raw
+            if isfield(Deci.Analysis.ERP,'raw') & Deci.Analysis.ERP.raw
                 time = datatime;
                 mkdir([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list}]);
                 save([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep num2str(Cond)],'time');
@@ -221,7 +221,7 @@ for Cond = 1:length(trialevents)
                 freq  = rmfield(freq,'fourierspctrm');
                 save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep num2str(Cond) filesep Chan{i}],'freq','label','-v7.3');
                 
-                if Deci.Analysis.Freq.kptrls
+                if isfield(Deci.Analysis.Freq,'kptrls') & Deci.Analysis.Freq.kptrls
                     freq = freqplaceholder;
                     freq.powspctrm = abs(freq.fourierspctrm).^2;
                     freq.dimord = 'rpt_chan_freq_time';
