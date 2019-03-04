@@ -1,4 +1,10 @@
-function PreProcessor(Deci,subject_list)
+function PCPreProcessor(Deci,subject_list)
+
+disp('----------------------');
+disp(['Starting PreProcessor for ' Deci.SubjectList{subject_list}]);
+tic;
+
+feedback  = 'none';
 
 cfg = load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}]);
 cfg = cfg.cfg;
@@ -7,11 +13,13 @@ cfg.datafile = filesyntax(cfg.datafile);
 cfg.headerfile = filesyntax(cfg.headerfile);
 cfg.dataset = filesyntax(cfg.dataset);
 
+cfg.feedback = feedback;
+evalc('data_eeg = ft_preprocessing(cfg)');
 
-
-data_eeg = ft_preprocessing(cfg);
+condinfo = {data_eeg.trialinfo cfg.event};
 
 if ~isempty(Deci.PP.ScalingFactor)
+    disp('Data Scaled');
     data_eeg.trial = cellfun(@(c) c*Deci.PP.ScalingFactor,data_eeg.trial,'un',0);
 end
 
@@ -27,7 +35,9 @@ if ~isempty(Deci.PP.Imp)
     cfg.channel  = 'all';
     cfg.implicitref = Imp{1};
     cfg.refchannel = Imp;
-    data_eeg = ft_preprocessing(cfg,data_eeg);
+    cfg.feedback = feedback;
+    evalc('data_eeg = ft_preprocessing(cfg,data_eeg)');
+    disp('Implicit Rereference');
 end
 
 if ~isempty(Deci.PP.Ocu)
@@ -43,32 +53,41 @@ if ~isempty(Deci.PP.Ocu)
     for i = 1:length(Ocu)
         cfg.channel = Ocu{i};
         cfg.refchannel = Ocu{i}(1);
-        data_eog(i) = ft_preprocessing(cfg,data_eeg);
+        cfg.feedback = feedback;
+        evalc('data_eog(i) = ft_preprocessing(cfg,data_eeg)');
         Hcfg.channel = Ocu{i}(2);
-        data_eog(i)   = ft_preprocessing(Hcfg, data_eog(i)); % nothing will be done, only the selection of the interesting channel
+        cfg.feedback = feedback;
+        evalc('data_eog(i)   = ft_preprocessing(Hcfg, data_eog(i))'); % nothing will be done, only the selection of the interesting channel
     end
     
     cfg.channel = [{'all'} arrayfun(@(c) strjoin(['-' c],''),allOcu,'un',0)] ;
-    data_noeog = ft_selectdata(cfg,data_eeg);
+    cfg.feedback = feedback;
+    evalc('data_noeog = ft_selectdata(cfg,data_eeg)');
     
     arraydata = arrayfun(@(c) {c},[data_noeog, data_eog]);
     clear data_noeog data_eog
-    data_eeg = ft_appenddata([],arraydata{:});
+    cfg.feedback = feedback;
+    evalc('data_eeg = ft_appenddata([],arraydata{:})');
     clear arraydata
+    disp('Ocular Rereference');
 end
 
 if ~isempty(Deci.PP.HBP)
     cfg =[];
     cfg.hpfreq = Deci.PP.HBP;
     cfg.hpfilter      = 'yes';
-    data_eeg = ft_preprocessing(cfg,data_eeg);
+    cfg.feedback = feedback;
+    evalc('data_eeg = ft_preprocessing(cfg,data_eeg)');
+    disp('Highbandpass Filter');
 end
 
 if ~isempty(Deci.PP.Demean)
     cfg = [];
     cfg.demean = 'yes';
     cfg.baselinewindow = Deci.PP.Demean;
-    data_eeg = ft_preprocessing(cfg,data_eeg);
+    cfg.feedback = feedback;
+    evalc('data_eeg = ft_preprocessing(cfg,data_eeg)');
+    disp('Baseline Correction');
 end
 
 
@@ -232,15 +251,22 @@ if isfield(Deci.PP,'HemiFlip')
     end
 end
 
-
-[data_eeg.trialinfo,i] = sort(floor(data_eeg.trialinfo(:,1)));
-data_eeg.sampleinfo = data_eeg.sampleinfo(i,:);
-data_eeg.trial = data_eeg.trial(:,i);
-data_eeg.time = data_eeg.time(:,i);
+% 
+% [data_eeg.trialinfo,i] = sort(floor(data_eeg.trialinfo(:,1)));
+% data_eeg.sampleinfo = data_eeg.sampleinfo(i,:);
+% data_eeg.trial = data_eeg.trial(:,i);
+% data_eeg.time = data_eeg.time(:,i);
 
 data = data_eeg;
+data.condinfo = condinfo;
 
+disp('Saving Preprocessing Data');
 mkdir([Deci.Folder.Preproc])
 save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data','-v7.3');
+%save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data');
+
+
+disp(['Finished PreProcessor at ' num2str(toc)]);
+disp('----------------------');
 
 end

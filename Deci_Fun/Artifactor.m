@@ -1,15 +1,21 @@
 function Artifactor(Deci)
 
+
+disp('----------------------');
+disp('Starting Artifactor');
+tic;
+
 for subject_list = 1:length(Deci.SubjectList)
     
 
-    
+    feedback =  'none';
     %% ICA
     
     if Deci.Art.ICA.Reject
         
         data = [];
         load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
+        condinfo = data.condinfo;
         
           redefine = 0;
         if exist([Deci.Folder.Version  filesep 'Redefine' filesep Deci.SubjectList{subject_list} '.mat']) == 2
@@ -25,6 +31,8 @@ for subject_list = 1:length(Deci.SubjectList)
          cfg.artfctdef.muscle.cutoff      = 25;
          cfg.artfctdef.muscle.channel = 'all';
          cfg.artfctdef.muscle.interactive = 'no';
+         cfg.artfctdef.muscle.bpfreq      = [30 140];
+         
         [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data);
        
          cfg.artfctdef.eog = [];
@@ -42,12 +50,14 @@ for subject_list = 1:length(Deci.SubjectList)
         
         cfg.method  = 'runica';
         cfg.numcomponent= 20;
+        cfg.feedback = feedback;
         data_musc = ft_componentanalysis(cfg, data_musc);
         
         cfg           = [];
         cfg.numcomponent= 20;
         cfg.unmixing  =data_musc.unmixing;
         cfg.topolabel = data_musc.topolabel;
+        cfg.feedback = feedback;
         data_musc     = ft_componentanalysis(cfg, data);
         
         figure;
@@ -83,6 +93,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         cfg.artfctdef.muscle = [];
         cfg.artfctdef.muscle.cutoff      = 25;
+        cfg.artfctdef.muscle.bpfreq      = [30 140];
         cfg.artfctdef.muscle.channel = 'all';
         cfg.artfctdef.muscle.interactive = 'yes';
         [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data_musc);
@@ -93,7 +104,7 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.artfctdef.eog.interactive = 'yes';
         [cfg, cfg.artfctdef.eog.artifact] = ft_artifact_eog(cfg, data_musc);
         
-        cfg.artfctdef.crittoilim = Deci.Art.TR.Toi;
+        %cfg.artfctdef.crittoilim = Deci.Art.TR.Toi;
         data = ft_rejectartifact(cfg, data_musc);
         
         if redefine
@@ -109,12 +120,28 @@ for subject_list = 1:length(Deci.SubjectList)
             cfg.trials = all([artifact.saminfo;data.saminfo],1);
             data = ft_selectdata(cfg,data_musc);
         end
+       
+        condinfo{1} = condinfo{1}(logical(data.saminfo),:);
+        condinfo{2} = condinfo{2}(logical(data.saminfo),:);    
         
         cfg =[];
         cfg.method = 'summary';
         cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
+        cfg.channel = Deci.Art.ICA.Eye.Chans;
+        cfg.keepchannel = 'yes';
         data = ft_rejectvisual(cfg,data);
         
+        condinfo{1} = condinfo{1}(logical(data.saminfo),:);
+        condinfo{2} = condinfo{2}(logical(data.saminfo),:);
+        cfg.channel = 'all';
+        
+        data = ft_rejectvisual(cfg,data);
+        
+        
+        
+        condinfo{1} = condinfo{1}(logical(data.saminfo),:);
+        condinfo{2} = condinfo{2}(logical(data.saminfo),:);
+        data.condinfo = condinfo;
          
         mkdir([Deci.Folder.Artifact])
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
@@ -362,4 +389,8 @@ for subject_list = 1:length(Deci.SubjectList)
     
 end
 
+disp(['Finished Artifactor at ' num2str(toc)]);
+disp('----------------------');
+
+end
 

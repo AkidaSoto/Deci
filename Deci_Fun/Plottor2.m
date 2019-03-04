@@ -6,7 +6,7 @@ ERP     = [];
 
 for subject_list = 1:length(Deci.SubjectList)
     if Deci.Plot.Freq.Plot ||  ~isempty(Deci.Plot.PRP)
-        if ~isdir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}])
+        if ~isdir([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep Deci.SubjectList{subject_list}])
             error(['Freq Analysis not found for '  Deci.SubjectList{subject_list}])
         end
         
@@ -51,9 +51,14 @@ for subject_list = 1:length(Deci.SubjectList)
                 {'TP9'  } ] ;
         end
         
+        if strcmp(Deci.Plot.Freq.Type,'TotalPower Mean/Std')
+           Deci.Plot.Freq.BslType = 'none';  
+           Deci.Plot.Freq.Roi = [0 1];
+        end
         
-        Freq.Conditions     = CleanDir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}]);
-        Freq.Channels       = CleanDir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep Freq.Conditions{1}]);
+        
+        
+        Freq.Channels       = CleanDir([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep Deci.SubjectList{subject_list} filesep Deci.Plot.Lock]);
         Freq.Channels       = cellfun(@(c) c(1:end-4),Freq.Channels,'un',0);
         
         if ~ischar(Deci.Plot.Freq.Channel)
@@ -63,6 +68,8 @@ for subject_list = 1:length(Deci.SubjectList)
             
             Freq.Channels = Deci.Plot.Freq.Channel(ismember(Deci.Plot.Freq.Channel,Freq.Channels));
         end
+        
+        Freq.Conditions = Deci.Plot.Conditions;
     end
     
     if ~isempty(Deci.Plot.ERP) || ~isempty(Deci.Plot.PRP)
@@ -91,20 +98,14 @@ for subject_list = 1:length(Deci.SubjectList)
             Deci.Plot.Freq.ScatterToi =  [-inf inf];
             warning('Cannot Find ScatterToi for PRPplot, setting as  [-inf inf]');
         end
-        
-
-        
     end
     
     if ~isempty(Deci.Plot.CFC)
-        
-        
         if ~isdir([Deci.Folder.Analysis filesep 'Cross_' Deci.Plot.CFC.method])
             error(['CFC for ' Deci.Plot.CFC.method ' not found']);
         end
         
         CFC.Conditions     = CleanDir([Deci.Folder.Analysis filesep 'Cross_' Deci.Plot.CFC.method filesep Deci.SubjectList{subject_list}]);
-        
     end
     
     
@@ -113,14 +114,15 @@ end
 %% Load
 
 if Deci.Plot.Freq.Plot || ~isempty(Deci.Plot.PRP)
-    for  Condition =  1:length(Freq.Conditions)
         for  subject_list = 1:length(Deci.SubjectList)
+            
+            tic;
             for Channel = 1:length(Freq.Channels)
                 
                 display(['Channel ' Freq.Channels{Channel} ' of ' num2str(length(Freq.Channels))])
                 
                 freq = [];
-                load([Deci.Folder.Analysis filesep 'Freq_' Deci.Plot.Freq.Type filesep Deci.SubjectList{subject_list} filesep Freq.Conditions{Condition} filesep Freq.Channels{Channel}],'freq');
+                load([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep Deci.SubjectList{subject_list} filesep Deci.Plot.Lock filesep Freq.Channels{Channel}],'freq');
                 
                 foi = freq.freq >= round(Deci.Plot.Freq.Foi(1),4) & freq.freq <= round(Deci.Plot.Freq.Foi(2),4);
                 toi = round(freq.time,4) >= Deci.Plot.Freq.Toi(1) & round(freq.time,4) <= Deci.Plot.Freq.Toi(2);
@@ -128,87 +130,178 @@ if Deci.Plot.Freq.Plot || ~isempty(Deci.Plot.PRP)
                 Chans{Channel} = freq;
                 Chans{Channel}.freq =  Chans{Channel}.freq(foi);
                 Chans{Channel}.time =  Chans{Channel}.time(toi);
-                Chans{Channel}.powspctrm  =Chans{Channel}.powspctrm(:,foi,toi);
+                Chans{Channel}.powspctrm  =Chans{Channel}.fourierspctrm(:,:,foi,toi);
                 Chans{Channel}.label = Freq.Channels(Channel);
                 
             end
+            toc;
             
             acfg.parameter = 'powspctrm';
             acfg.appenddim = 'chan';
-            Subjects{subject_list} = rmfield(ft_appendfreq(acfg,Chans{:}),'cfg');
+            Chans = rmfield(ft_appendfreq(acfg,Chans{:}),'cfg');
+            
+            acfg.latency = Deci.Plot.Freq.Bsl;
+            acfg.avgovertime = 'yes';
+            
+            
+        
+            for Conditions = 1:length(Deci.Plot.Conditions)
+                
+                maxt = max(sum(ismember(freq.condinfo{2},Deci.Plot.Conditions{Conditions}),2));
+                
+                trl = sum(ismember(freq.condinfo{2},Deci.Plot.Conditions{Conditions}),2) == maxt;
+                
+                Subjects{subject_list,Conditions} = Chans;
+                Subjects{subject_list,Conditions}.powspctrm = Chans.powspctrm(trl,:,:,:);
+                
+                TrialCount{subject_list,Conditions} = length(find(trl));
+                
+                switch Deci.Plot.Freq.Type
+                    case 'TotalPower'
+                Subjects{subject_list,Conditions}.powspctrm = permute(mean(abs(Subjects{subject_list,Conditions}.powspctrm).^2 ,1),[2 3 4 1]);
+                    case 'ITPC'
+                Subjects{subject_list,Conditions}.powspctrm = permute(abs(mean(Subjects{subject_list,Conditions}.powspctrm./abs(Subjects{subject_list,Conditions}.powspctrm),1)),[2 3 4 1]) ;   
+                    case 'TotalPower Std'
+                Subjects{subject_list,Conditions}.powspctrm = permute(std(abs(Subjects{subject_list,Conditions}.powspctrm).^2 ,1),[2 3 4 1]);        
+                   case 'TotalPower Mean/Std'
+                Subjects{subject_list,Conditions}.powspctrm = permute(mean(abs(Subjects{subject_list,Conditions}.powspctrm).^2 ,1),[2 3 4 1])./permute(std(abs(Subjects{subject_list,Conditions}.powspctrm).^2 ,1),[2 3 4 1]);        
+               
+                end
+                
+                bsl = ft_selectdata(acfg, Subjects{subject_list,Conditions});
+                bsl = repmat(bsl.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
+            
+                switch Deci.Plot.Freq.BslType
+                    case 'absolute'
+                        Subjects{subject_list,Conditions}.powspctrm =  Subjects{subject_list,Conditions}.powspctrm - bsl;
+                    case 'relative'
+                        Subjects{subject_list,Conditions}.powspctrm=  Subjects{subject_list,Conditions}.powspctrm ./ bsl;
+                    case 'relchange'
+                       Subjects{subject_list,Conditions}.powspctrm = ( Subjects{subject_list,Conditions}.powspctrm - bsl) ./ bsl;
+                    case 'db'
+                       Subjects{subject_list,Conditions}.powspctrm = 10*log10( Subjects{subject_list,Conditions}.powspctrm ./ bsl);
+                end
+                
+                
+                  Subjects{subject_list,Conditions}.dimord = 'chan_freq_time';
+            end
             clear Chans;
-            
-            if  exist([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list} filesep num2str(Condition) '.mat']) ~= 2 || ~isequal(Deci.Plot.Freq.Bsl,[0 0])
-                
-                acfg.latency = Deci.Plot.Freq.Bsl;
-                acfg.avgovertime = 'yes';
-                bsl = ft_selectdata(acfg,freq);
-            else
-                
-                bsl = [];
-                load([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list} filesep num2str(Condition) '.mat']);
-            end
-            
-            bsl = repmat(bsl.powspctrm(ismember(bsl.label,Freq.Channels),foi,:),[1 1 size(Subjects{subject_list}.powspctrm ,3)]);
-            
-            switch Deci.Plot.Freq.BslType
-                case 'absolute'
-                    Subjects{subject_list}.powspctrm = Subjects{subject_list}.powspctrm - bsl;
-                case 'relative'
-                    Subjects{subject_list}.powspctrm= Subjects{subject_list}.powspctrm ./ bsl;
-                case 'relchange'
-                    Subjects{subject_list}.powspctrm = (Subjects{subject_list} - bsl) ./ bsl;
-                case 'db'
-                    Subjects{subject_list}.powspctrm = 10*log10(Subjects{subject_list}.powspctrm ./ bsl);
-            end
-            
+
+          
         end
         
+        
+        
         if Deci.Plot.GA
-            facfg.parameter =  'powspctrm';
-            FreqData{Condition,1} = rmfield(ft_freqgrandaverage(facfg,Subjects{:}),'cfg');
             
+            for conds = 1:size(Subjects,2)
+            facfg.parameter =  'powspctrm';
+            FreqData{conds} = rmfield(ft_freqgrandaverage(facfg,Subjects{:,conds}),'cfg');
+            
+            TotalCount{conds} = mean(TrialCount{:,conds});
+            
+            end
         else
-            FreqData(Condition,:) = Subjects(:);
+            FreqData = Subjects;
+            TotalCount = TrialCount;
         end
         clear Subjects;
+    
+    
+    if ~isempty(Deci.Plot.PRP)
+        if strcmp(Deci.Plot.PRP.Dim,'trials')
+            for  Condition =  1:length(Freq.Conditions)
+                for  subject_list = 1:length(Deci.SubjectList)
+                    for Channel = 1:length(Freq.Channels)
+                        
+                        display(['Channel ' Freq.Channels{Channel} ' of ' num2str(length(Freq.Channels))])
+                        
+                        freq = [];
+                        load([Deci.Folder.Analysis filesep 'Four_' Deci.Plot.Freq.Type filesep Deci.SubjectList{subject_list} filesep Freq.Conditions{Condition} filesep Freq.Channels{Channel}],'freq');
+                        
+                        foi = freq.freq >= round(Deci.Plot.Freq.Foi(1),4) & freq.freq <= round(Deci.Plot.Freq.Foi(2),4);
+                        toi = round(freq.time,4) >= Deci.Plot.Freq.Toi(1) & round(freq.time,4) <= Deci.Plot.Freq.Toi(2);
+                        
+                        Chans{Channel} = freq;
+                        Chans{Channel}.freq =  Chans{Channel}.freq(foi);
+                        Chans{Channel}.time =  Chans{Channel}.time(toi);
+                        Chans{Channel}.powspctrm  =Chans{Channel}.powspctrm(:,:,foi,toi);
+                        Chans{Channel}.label = Freq.Channels(Channel);
+                        
+                    end
+                    
+                    acfg.parameter = 'powspctrm';
+                    acfg.appenddim = 'chan';
+                    Subjects{subject_list} = rmfield(ft_appendfreq(acfg,Chans{:}),'cfg');
+                    clear Chans;
+                    
+                    if  exist([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list} filesep num2str(Condition) '.mat']) ~= 2 || ~isequal(Deci.Plot.Freq.Bsl,[0 0])
+                        
+                        acfg.latency = Deci.Plot.Freq.Bsl;
+                        acfg.avgovertime = 'yes';
+                        bsl = ft_selectdata(acfg,freq);
+                    else
+                        
+                        bsl = [];
+                        load([Deci.Folder.Version  filesep 'Redefine' filesep 'BSL' filesep Deci.SubjectList{subject_list} filesep num2str(Condition) '.mat']);
+                    end
+                    
+                    bsl = repmat(bsl.powspctrm(:,ismember(bsl.label,Freq.Channels),foi,:),[1 1 1 size(Subjects{subject_list}.powspctrm ,4)]);
+                    
+                    switch Deci.Plot.Freq.BslType
+                        case 'absolute'
+                            Subjects{subject_list}.powspctrm = Subjects{subject_list}.powspctrm - bsl;
+                        case 'relative'
+                            Subjects{subject_list}.powspctrm= Subjects{subject_list}.powspctrm ./ bsl;
+                        case 'relchange'
+                            Subjects{subject_list}.powspctrm = (Subjects{subject_list} - bsl) ./ bsl;
+                        case 'db'
+                            Subjects{subject_list}.powspctrm = 10*log10(Subjects{subject_list}.powspctrm ./ bsl);
+                    end
+                    
+                end
+                
+                if Deci.Plot.GA
+                    facfg.parameter =  'powspctrm';
+                    FreqData{Condition,1} = rmfield(ft_freqgrandaverage(facfg,Subjects{:}),'cfg');
+                    
+                else
+                    FreqData(Condition,:) = Subjects(:);
+                end
+                
+            end
+        end
     end
+    
+    
     
     if Deci.Plot.Math.Type ~= 0
         
         if isequal(Deci.Plot.Math.Form,'Hemifield')
-          
-            if strcmp(Deci.Plot.PRP.Dim,'trials')
-                
-                for subject_list = 1:length(Deci.SubjectList)
-                end
-                
-            end
-            
             
             for subj = 1:size(FreqData,2)
-            HemiData = FreqData(:,subj);
-            Hemis = length(HemiData);
-           
-            for Hem = 1:Hemis
-               HemiData{Hem} = hemifieldflip(HemiData{Hem});
-            end
-            
-            Hemidata = [FreqData(:,subj);HemiData];
-           
-            for Hem = 1:Hemis
-            scfg.operation = ['x' num2str(Hem) '-x' num2str(Hem+Hemis)];
-            
-            scfg.parameter = 'powspctrm';
-            
-            MathData{Hem,subj} = ft_math(scfg,Hemidata{:});
-            
-            scfg.channel =  MathData{Hem,subj}.label(cell2mat(cellfun(@(c) any(rem(c(isstrprop(c,'digit')),2)),  MathData{Hem,subj}.label,'un',0)));
-             MathData{Hem,subj} = ft_selectdata(scfg, MathData{Hem,subj});
-            end
-            
-             
-            
+                HemiData = FreqData(:,subj);
+                Hemis = length(HemiData);
+                
+                for Hem = 1:Hemis
+                    HemiData{Hem} = hemifieldflip(HemiData{Hem});
+                end
+                
+                Hemidata = [FreqData(:,subj);HemiData];
+                
+                for Hem = 1:Hemis
+                    scfg.operation = ['x' num2str(Hem) '-x' num2str(Hem+Hemis)];
+                    
+                    scfg.parameter = 'powspctrm';
+                    
+                    MathData{Hem,subj} = ft_math(scfg,Hemidata{:});
+                    
+                    scfg.channel =  MathData{Hem,subj}.label(cell2mat(cellfun(@(c) any(rem(c(isstrprop(c,'digit')),2)),  MathData{Hem,subj}.label,'un',0)));
+                    MathData{Hem,subj} = ft_selectdata(scfg, MathData{Hem,subj});
+                end
+                
+                
+                
             end
             
             FreqData = MathData;
@@ -216,21 +309,23 @@ if Deci.Plot.Freq.Plot || ~isempty(Deci.Plot.PRP)
         else
             
             for cond = 1:length(Deci.Plot.Math.Form)
-                for subj = 1:size(FreqData,2)
+                for subj = 1:size(FreqData,1)
                     scfg.parameter = 'powspctrm';
                     scfg.operation = Deci.Plot.Math.Form{cond};
-                    MathData{subj} = ft_math(scfg,FreqData{:,subj});
+                    MathData{subj} = ft_math(scfg,FreqData{subj,:});
                 end
                 
-                FreqData(length(Freq.Conditions)+cond,:) = MathData;
+                FreqData(:,length(Freq.Conditions)+cond) = MathData;
+                TotalCount(:,length(Freq.Conditions)+cond) = num2cell(nan(size(FreqData,1),1));
             end
             
             if Deci.Plot.Math.Type == 1
-                FreqData = FreqData(length(Freq.Conditions)+1:end,:);
+                FreqData = FreqData(:,length(Freq.Conditions)+1:end);
+                TotalCount = TotalCount(:,length(Freq.Conditions)+1:end);
             end
         end
         
-
+        
         
     end
     
@@ -238,9 +333,9 @@ end
 
 
 if ~isempty(Deci.Plot.Freq.Wires)
-    for subj = 1:size(FreqData,2)
-        for cond = 1:size(FreqData,1)
-            WireData{cond,subj} =  ft_selectdata(Deci.Plot.Freq.Wires,FreqData{cond,subj});
+    for subj = 1:size(FreqData,1)
+        for cond = 1:size(FreqData,2)
+            WireData{subj,cond} =  ft_selectdata(Deci.Plot.Freq.Wires,FreqData{subj,cond});
         end
     end
 end
@@ -333,7 +428,7 @@ if ~isempty(Deci.Plot.ERP)|| ~isempty(Deci.Plot.PRP)
     end
     
     
-   
+    
     
 end
 
@@ -380,7 +475,7 @@ cfg.interactive = 'yes';
 
 if Deci.Plot.Freq.Plot
     
-    for subj = 1:size(FreqData,2)
+    for subj = 1:size(FreqData,1)
         
         if Deci.Plot.Freq.Square
             square(subj) = figure;
@@ -394,7 +489,7 @@ if Deci.Plot.Freq.Plot
             wire(subj)  = figure;
         end
         
-        for cond = 1:size(FreqData,1)
+        for cond = 1:size(FreqData,2)
             
             
             
@@ -406,8 +501,8 @@ if Deci.Plot.Freq.Plot
                     
                     set(0, 'CurrentFigure', topo(subj) )
                     topo(subj).Visible = 'on';
-                    cirky(subj,cond)    =  subplot(size(FreqData,1),1,cond);
-                    ft_topoplotER(cfg, FreqData{cond,subj});
+                    cirky(subj,cond)    =  subplot(size(FreqData,2),1,cond);
+                    ft_topoplotER(cfg, FreqData{subj,cond});
                     
                     
                     %                     hold on
@@ -440,20 +535,20 @@ if Deci.Plot.Freq.Plot
             
             
             if strcmpi(Deci.Plot.Scale,'log')
-                FreqData{cond,subj}.freq = log(FreqData{cond,subj}.freq);
+                FreqData{subj,cond}.freq = log(FreqData{subj,cond}.freq);
                 
                 if ~isempty(Deci.Plot.Freq.Wires)
-                    WireData{cond,subj}.freq = log(WireData{cond,subj}.freq);
+                    WireData{subj,cond}.freq = log(WireData{subj,cond}.freq);
                 end
             end
             
             if Deci.Plot.Freq.Square
                 set(0, 'CurrentFigure', square(subj) )
                 square(subj).Visible = 'on';
-                subby(subj,cond) = subplot(size(FreqData,1),1,cond);
-                ft_singleplotTFR(cfg,FreqData{cond,subj})
+                subby(subj,cond) = subplot(size(FreqData,2),1,cond);
+                ft_singleplotTFR(cfg,FreqData{subj,cond})
                 
-                title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' Cond'  num2str(cond)]);
+                title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' Cond'  num2str(cond) ' trial count: ' num2str(TotalCount{subj,cond})]);
                 colorbar('vert');
                 map = colormap('jet'); %'hot' 'gray'
                 colormap(map);
@@ -472,22 +567,22 @@ if Deci.Plot.Freq.Plot
             for cond = 1:size(WireData,1)
                 
                 if strcmpi(Deci.Plot.Freq.Wires.Collapse,'Freq')
-                    plot(WireData{cond,subj}.time,squeeze(WireData{cond,subj}.powspctrm));
+                    plot(WireData{subj,cond}.time,squeeze(WireData{subj,cond}.powspctrm));
                     
                     xlabel('Time');
                 elseif  strcmpi(Deci.Plot.Freq.Wires.Collapse,'Time')
                     
                     if strcmpi(Deci.Plot.Scale,'log')
-                        WireData{cond,subj}.freq = exp(WireData{cond,subj}.freq);
+                        WireData{subj,cond}.freq = exp(WireData{subj,cond}.freq);
                     end
                     
-                    plot(WireData{cond,subj}.freq,squeeze(WireData{cond,subj}.powspctrm));
+                    plot(WireData{subj,cond}.freq,squeeze(WireData{subj,cond}.powspctrm));
                     xlabel('Freq')
                 end
                 ylabel('Power')
                 hold on
             end
-            legend(curvy(subj),strsplit(num2str(1:size(FreqData,1))))
+            legend(curvy(subj),strsplit(num2str(1:size(FreqData,2))))
             title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type]);
             
             if ~isempty(Deci.Folder.Plot)
@@ -499,7 +594,7 @@ if Deci.Plot.Freq.Plot
     end
     
     
-    for subj = 1:size(FreqData,2)
+    for subj = 1:size(FreqData,1)
         if length(Freq.Channels) ~= 1
             
             if Deci.Plot.Freq.Topo
@@ -568,8 +663,8 @@ if ~isempty(Deci.Plot.ERP)
             for cond = 1:size(TimeData,1)
                 
                 set(0, 'CurrentFigure', topoERP)
-                tippy(cond,subj)    = subplot(size(TimeData,1),1,cond);
-                ft_topoplotER(cfg, TimeData{cond,subj});
+                tippy(subj,cond)    = subplot(size(TimeData,1),1,cond);
+                ft_topoplotER(cfg, TimeData{subj,cond});
                 
                 
             end
@@ -589,66 +684,66 @@ if ~isempty(Deci.Plot.PRP)
     
     
     PRPPlot = figure;
-    colors = reshape(hsv(size(FreqData,1)),[3 size(FreqData,1) 1]);
+    colors = reshape(hsv(size(FreqData,2)),[3 size(FreqData,2) 1]);
     
-    for subj = 1:size(FreqData,2)
-        for cond = 1:size(FreqData,1)
+    for subj = 1:size(FreqData,1)
+        for cond = 1:size(FreqData,2)
             
             %Collapse Freq and Channel
-            FreqData{cond,subj}.avg = permute(nanmean(nanmean(FreqData{cond,subj}.powspctrm,2),1),[1 3 2]);
-            FreqData{cond,subj} = rmfield(FreqData{cond,subj},'powspctrm');
-            FreqData{cond,subj}.label = {'mix'};
-            FreqData{cond,subj}.dimord = 'chan_time';
-            Hz = regexprep(num2str(num2str(minmax(FreqData{cond,subj}.freq)),'%.3g '),' +','-');
-            FreqData{cond,subj} = rmfield(FreqData{cond,subj},'freq');
+            FreqData{subj,cond}.avg = permute(nanmean(nanmean(FreqData{subj,cond}.powspctrm,2),1),[1 3 2]);
+            FreqData{subj,cond} = rmfield(FreqData{subj,cond},'powspctrm');
+            FreqData{subj,cond}.label = {'mix'};
+            FreqData{subj,cond}.dimord = 'chan_time';
+            Hz = regexprep(num2str(num2str(minmax(FreqData{subj,cond}.freq)),'%.3g '),' +','-');
+            FreqData{subj,cond} = rmfield(FreqData{subj,cond},'freq');
             
             %Collapse Channel
-            TimeData{cond,subj}.avg = mean(TimeData{cond,subj}.avg,1);
-            TimeData{cond,subj}.label = {'mix'};
-            TimeData{cond,subj}.dimord = 'chan_time';
+            TimeData{subj,cond}.avg = mean(TimeData{subj,cond}.avg,1);
+            TimeData{subj,cond}.label = {'mix'};
+            TimeData{subj,cond}.dimord = 'chan_time';
         end
     end
     
     
     
-    for cond = 1:size(FreqData,1)
+    for cond = 1:size(FreqData,2)
         
         clear SF ST
         
-        for  subj = 1:size(FreqData,2)
+        for  subj = 1:size(FreqData,1)
             
-            for k = 1:length(TimeData{cond,subj}.time)
-                SF(subj,k) = FreqData{cond,subj}.avg(:,k);
-                ST(subj,k) = TimeData{cond,subj}.avg(:,k);
+            for k = 1:length(TimeData{subj,cond}.time)
+                SF(subj,k) = FreqData{subj,cond}.avg(:,k);
+                ST(subj,k) = TimeData{subj,cond}.avg(:,k);
             end
             
             ax4 = subplot(2,2,4);
             ax4.XAxisLocation = 'origin';
             ax4.YAxisLocation = 'origin';
             hold(ax4,'on');
-            scattoi = TimeData{cond,subj}.time >= Deci.Plot.PRP.ScatterToi(1) &  TimeData{cond,subj}.time <= Deci.Plot.PRP.ScatterToi(2);
-            scat(cond,subj,1) = nanmean(FreqData{cond,subj}.avg(:,scattoi),2);
-            scat(cond,subj,2) = nanmean(TimeData{cond,subj}.avg(:,scattoi),2);
-            scattitle = regexprep(num2str(num2str(minmax(TimeData{cond,subj}.time(scattoi))),'%.3g '),' +','-');
+            scattoi = TimeData{subj,cond}.time >= Deci.Plot.PRP.ScatterToi(1) &  TimeData{subj,cond}.time <= Deci.Plot.PRP.ScatterToi(2);
+            scat(subj,cond,1) = nanmean(FreqData{subj,cond}.avg(:,scattoi),2);
+            scat(subj,cond,2) = nanmean(TimeData{subj,cond}.avg(:,scattoi),2);
+            scattitle = regexprep(num2str(num2str(minmax(TimeData{subj,cond}.time(scattoi))),'%.3g '),' +','-');
             
-            scatter(ax4,scat(cond,subj,1),scat(cond,subj,2),'MarkerFaceColor',colors(:,cond))
+            scatter(ax4,scat(subj,cond,1),scat(subj,cond,2),'MarkerFaceColor',colors(:,cond))
             
             if Deci.Plot.PRP.label
-                t =  text(ax4, scat(cond,subj,1),scat(cond,subj,2),Deci.SubjectList{subj});
+                t =  text(ax4, scat(subj,cond,1),scat(subj,cond,2),Deci.SubjectList{subj});
                 set(t, 'Clipping', 'on','Interpreter', 'none');
             end
             
             
         end
         
-        for k = 1:length(TimeData{cond,subj}.time)
+        for k = 1:length(TimeData{subj,cond}.time)
             RHO(k) = corr(SF(:,k),ST(:,k));
         end
         
         ax3 = subplot(2,2,3);
         ax3.XAxisLocation = 'origin';
         ax3.YAxisLocation = 'origin';
-        RHOim = plot(ax3,TimeData{cond,subj}.time,RHO,'Color',colors(:,cond));
+        RHOim = plot(ax3,TimeData{subj,cond}.time,RHO,'Color',colors(:,cond));
         hold(ax3,'on');
         
         tcfg.parameter = 'avg';
@@ -658,13 +753,13 @@ if ~isempty(Deci.Plot.PRP)
         ax1 = subplot(2,2,1);
         ax1.XAxisLocation = 'origin';
         ax1.YAxisLocation = 'origin';
-        plot(ax1,FreqData{cond,subj}.time,SFreq.avg,'Color',colors(:,cond));
+        plot(ax1,FreqData{subj,cond}.time,SFreq.avg,'Color',colors(:,cond));
         hold(ax1,'on');
         
         ax2 = subplot(2,2,2);
         ax2.XAxisLocation = 'origin';
         ax2.YAxisLocation = 'origin';
-        plot(ax2,TimeData{cond,subj}.time,STime.avg,'Color',colors(:,cond));
+        plot(ax2,TimeData{subj,cond}.time,STime.avg,'Color',colors(:,cond));
         hold(ax2,'on');
         set(ax2,'YDir','reverse');
         
@@ -720,27 +815,27 @@ if ~isempty(Deci.Plot.CFC)
                 
                 Cross.labelcmb = CombVec(CFCData{1}.labellow',CFCData{1}.labelhigh')';
                 Cross.freq = CFCData{1}.freqlow;
-                Cross.cohspctrm = CFCData{cond,subj}.crsspctrm(:,:,1);
+                Cross.cohspctrm = CFCData{subj,cond}.crsspctrm(:,:,1);
                 Cross.dimord = CFCData{1}.dimord;
                 
                 Crosscfg =[];
                 Crosscfg.foi = [-inf inf];
                 Crosscfg.layout = Deci.Layout.Noeye;
                 title([Deci.SubjectList{subj} ' ' Deci.Plot.CFC.method ' Cond '  num2str(cond)],'Interpreter', 'none');
-%               ft_topoplotCC(Crosscfg,Cross);
+                %               ft_topoplotCC(Crosscfg,Cross);
                 
-                ctopo(subj,cond).UserData = {Cross,Crosscfg,CFCData{cond,subj}.crsspctrm};
+                ctopo(subj,cond).UserData = {Cross,Crosscfg,CFCData{subj,cond}.crsspctrm};
             end
             
             if Deci.Plot.CFC.Hist
                 set(0, 'CurrentFigure', CFChist(subj) )
-                 CFChist(subj).Visible = 'on';
+                CFChist(subj).Visible = 'on';
                 chist(subj,cond)    =  subplot(size(CFCData,1),1,cond);
-                chist(subj,cond).UserData = CFCData{cond,subj}.crsspctrm;
-                bar(reshape(CFCData{cond,subj}.crsspctrm,[size(CFCData{cond,subj}.crsspctrm,1)*size(CFCData{cond,subj}.crsspctrm,2) size(CFCData{cond,subj}.crsspctrm,3)]));
+                chist(subj,cond).UserData = CFCData{subj,cond}.crsspctrm;
+                bar(reshape(CFCData{subj,cond}.crsspctrm,[size(CFCData{subj,cond}.crsspctrm,1)*size(CFCData{subj,cond}.crsspctrm,2) size(CFCData{subj,cond}.crsspctrm,3)]));
                 
                 title([Deci.SubjectList{subj} ' ' Deci.Plot.CFC.method ' Cond '  num2str(cond)],'Interpreter', 'none');
-
+                
             end
             
             
@@ -751,35 +846,35 @@ if ~isempty(Deci.Plot.CFC)
                 
                 xdat = CFCData{1}.labellow;
                 ydat = CFCData{1}.labelhigh;
-                PLVim = imagesc(1:length(xdat),1:length(ydat),CFCData{cond,subj}.crsspctrm(:,:,1));
+                PLVim = imagesc(1:length(xdat),1:length(ydat),CFCData{subj,cond}.crsspctrm(:,:,1));
                 xticks(1:length(xdat));
                 xticklabels(xdat);
                 yticks(1:length(ydat))
                 yticklabels(ydat);
                 title([Deci.SubjectList{subj} ' ' Deci.Plot.CFC.method ' Cond '  num2str(cond)],'Interpreter', 'none');
                 
-                csquare(subj,cond).UserData = CFCData{cond,subj}.crsspctrm;
+                csquare(subj,cond).UserData = CFCData{subj,cond}.crsspctrm;
                 colorbar;
             end
         end
         
         if Deci.Plot.CFC.Hist
-             set(0, 'CurrentFigure', CFChist(subj));
-             UpdateAxes(chist(subj,:),Deci.Plot.CFC.Roi,'Y',0)
-             
-             for HistLim = 1:length(chist(subj,:))
-                 
-                 chist(subj,HistLim).YLim(1) = chist(subj,HistLim).YLim(1) *.98;
-                 chist(subj,HistLim).YLim(2) = chist(subj,HistLim).YLim(2) *1.02;
-                 
-                 xticklabels(chist(subj,HistLim), cell2mat(CombVec(CFCData{cond,subj}.labellow',CFCData{cond,subj}.labelhigh')'));
-                 xtickangle(chist(subj,HistLim),-20);
-                 
-                 legend(chist(subj,HistLim),[repmat('FreqLow Time ',[size(CFCData{cond,subj}.timelow',1) 1]) num2str([CFCData{cond,subj}.timelow']) repmat(' - FreqHigh Time ',[size(CFCData{cond,subj}.timelow',1) 1]) num2str([CFCData{cond,subj}.timelow'])])
-             end
-             
-              
-             
+            set(0, 'CurrentFigure', CFChist(subj));
+            UpdateAxes(chist(subj,:),Deci.Plot.CFC.Roi,'Y',0)
+            
+            for HistLim = 1:length(chist(subj,:))
+                
+                chist(subj,HistLim).YLim(1) = chist(subj,HistLim).YLim(1) *.98;
+                chist(subj,HistLim).YLim(2) = chist(subj,HistLim).YLim(2) *1.02;
+                
+                xticklabels(chist(subj,HistLim), cell2mat(CombVec(CFCData{subj,cond}.labellow',CFCData{subj,cond}.labelhigh')'));
+                xtickangle(chist(subj,HistLim),-20);
+                
+                legend(chist(subj,HistLim),[repmat('FreqLow Time ',[size(CFCData{subj,cond}.timelow',1) 1]) num2str([CFCData{subj,cond}.timelow']) repmat(' - FreqHigh Time ',[size(CFCData{subj,cond}.timelow',1) 1]) num2str([CFCData{subj,cond}.timelow'])])
+            end
+            
+            
+            
         end
         
         
@@ -803,7 +898,7 @@ if ~isempty(Deci.Plot.CFC)
             uicontrol('style','text','position',[45 30 60 25],'String','FreqHigh');
         end
         
-                
+        
         if Deci.Plot.CFC.Square
             
             set(0, 'CurrentFigure', CFCsquare(subj) )
@@ -826,7 +921,7 @@ if ~isempty(Deci.Plot.CFC)
     end
     
     
-
+    
 end
 
     function ChangeDim(popup,event,Axes,Roi,Lim)
@@ -860,17 +955,17 @@ end
     end
 
     function ChangeDimTopo(popup,event,Axes,Roi)
-         popup.Value = round(popup.Value);
-         
-         if isequal(Roi,'maxmin')
-             CLim = cell2mat(arrayfun(@(c) c.UserData{3},Axes,'un',0));
-         elseif isequal(Roi,[0 1])
-             CLim = [0 1];
-         elseif length(Roi) == 2 && isnumeric(Roi)
-             CLim = Roi;
-         end
+        popup.Value = round(popup.Value);
         
-         for Axe =  1:length(Axes)
+        if isequal(Roi,'maxmin')
+            CLim = cell2mat(arrayfun(@(c) c.UserData{3},Axes,'un',0));
+        elseif isequal(Roi,[0 1])
+            CLim = [0 1];
+        elseif length(Roi) == 2 && isnumeric(Roi)
+            CLim = Roi;
+        end
+        
+        for Axe =  1:length(Axes)
             set(Axes(Axe).Parent, 'currentaxes', Axes(Axe))
             
             NewCross = Axes(Axe).UserData{1};
@@ -879,8 +974,8 @@ end
             NewCrossCfg.CLim = minmax(CLim(:)');
             ft_topoplotCC(NewCrossCfg ,NewCross);
             
-         end
-         
+        end
+        
     end
 
 end

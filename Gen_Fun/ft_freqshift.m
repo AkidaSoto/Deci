@@ -29,16 +29,18 @@ center = find(freq.time == min(abs(freq.time)));
 % bsltime = squeeze(mean(bsltime,1));
 % end
 
-datasize = size(freq.(cfg.parameter));
+datasize = num2cell(size(freq.(cfg.parameter)));
+
+freq.shift = nan(datasize{:});
 
 ft_progress('init', 'text',     'Please wait...');
 for trl = 1:size(freq.(cfg.parameter),1)
     ft_progress(trl/size(freq.(cfg.parameter),1), ['freqshift %d, of %d'], trl,size(freq.(cfg.parameter),1));
     
-    offset = round(freq.time,4) - round(cfg.offset(trl),4);
-    offset = round(offset,4) >= min(round(cfg.latency,4)) & round(offset,4) <= max(round(cfg.latency,4));
+    offset = round(freq.time,4) + round(cfg.offset(trl),4)/1000;
+    offset = [min(round(offset,4)) <= round(freq.time,4)] & [max(round(offset,4)) >= round(freq.time,4)];
     
-    freq.shift(trl,:,:,:) = freq.(cfg.parameter)(trl,:,:,offset);
+    freq.shift(trl,:,:,1:length(find(offset))) = freq.(cfg.parameter)(trl,:,:,offset);
 end
 ft_progress('close');
 freq.(cfg.parameter) = freq.shift;

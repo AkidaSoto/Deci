@@ -4,18 +4,21 @@ startstop ={cfg.DT.Starts{:} cfg.DT.Ends{:}};
 startstop = cellfun(@num2str,startstop,'un',0);
 sstime = cfg.DT.Toi;
 
+cfg.DT = Exist(cfg.DT,'Beha',[]);
+cfg.DT.Beha = Exist(cfg.DT.Beha,'Acc',[]);
+cfg.DT.Beha = Exist(cfg.DT.Beha,'RT',[]);
+
+cfg.DT = Exist(cfg.DT,'Conditions',1:length(cfg.DT.Markers));
 
 if ~strcmp(cfg.file_ending,'.mat')
     event = ft_read_event(cfg.dataset);
     hdr   = ft_read_header(cfg.dataset);
-   
 else
     events = [];
     load(cfg.dataset,'events');
     event = events;
     hdr.Fs = 1;
 end
-
 
 trl = [];
 
@@ -37,8 +40,6 @@ for j = 1:length(startstopseg)
     value = cellfun(@str2num,value);
     sample = {event(startstopseg(1,j):startstopseg(2,j)).sample};
     
-    
-    
     for i = 1:length(eachcond)
         
         markers = cfg.DT.Markers(ismember(cfg.DT.Conditions,eachcond(i)));
@@ -50,18 +51,13 @@ for j = 1:length(startstopseg)
         
         if length(condvalue) == 1
             
-            cond = find(ismember(cfg.DT.Conditions,eachcond(i)));
             condlock = [];
-            condlock = sample{ismember(value,cfg.DT.Locks(cond(condvalue)))};
+            condlock = sample{ismember(value,cfg.DT.Locks)};
             
             begsample = condlock + sstime(1)*hdr.Fs;
             endsample = condlock + sstime(2)*hdr.Fs;
             offset        = sstime(1)*hdr.Fs;
-            
-            %             if any(ismember(strsplit(num2str([644772 966643 1451729])),num2str(begsample)))
-            %                K;
-            %             end
-            
+           
             trl(end + 1,:) = [begsample endsample offset  i+condvalue*.01];
             
             if ~isempty(cfg.DT.Beha)

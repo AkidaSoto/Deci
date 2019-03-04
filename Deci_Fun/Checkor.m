@@ -49,7 +49,7 @@ if Deci.Debug
 else
     dbclear if error
 end
-
-copyfile(which(Deci.File),[Deci.Folder.Version 'Parameter.text'])
+% 
+% copyfile(which(Deci.File),[Deci.Folder.Version 'Parameter.text'])
 
 end

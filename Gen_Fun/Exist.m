@@ -2,7 +2,7 @@ function struct = Exist(struct,field,varargin)
 
 if ~isfield(struct, field)
     binary = 0;
-elseif isempty(Exist.(field))
+elseif isempty(struct.(field))
     binary = 0;
 else
     binary = 1;

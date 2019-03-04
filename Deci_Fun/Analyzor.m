@@ -11,7 +11,7 @@ function Analyzor(Deci)
         
     else
        for subject_list = 1:length(Deci.SubjectList)
-            PCAnalyzor(Deci,subject_list);
+            PCAnalyzor3(Deci,subject_list);
         end
     end
 
