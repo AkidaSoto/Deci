@@ -321,7 +321,7 @@ if ~isempty(Deci.Plot.Freq) || ~isempty(Deci.Plot.PRP)
             
         else
             
-            if Deci.Plot.Math.Type ~= 0
+            if Deci.Plot.
             
             for cond = 1:length(Deci.Plot.Math.Form)
                 for subj = 1:size(FreqData,1)
@@ -337,9 +337,6 @@ if ~isempty(Deci.Plot.Freq) || ~isempty(Deci.Plot.PRP)
             if Deci.Plot.Math.Type == 1
                 FreqData = FreqData(:,length(Deci.Plot.Conditions)+1:end);
                 TotalCount = TotalCount(:,length(Deci.Plot.Conditions)+1:end);
-            end
-            
-            
             end
         end
         

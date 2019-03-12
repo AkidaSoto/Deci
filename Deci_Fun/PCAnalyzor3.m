@@ -29,11 +29,11 @@ condinfo = data.condinfo;
 
 if Deci.Analysis.Laplace
     
-    if ~exist(['C:\Users\User\Desktop\John\Instru\RawData' filesep Deci.SubjectList{subject_list} '.bvct'])
+    if ~exist([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct'])
         error([Deci.SubjectList{subject_list} ' does not have bvct file']);
     end
     
-    [elec.label, elec.elecpos] = CapTrakMake(['C:\Users\User\Desktop\John\Instru\RawData' filesep Deci.SubjectList{subject_list} '.bvct']);
+    [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
     ecfg.elec = elec;
     data = ft_scalpcurrentdensity(ecfg, data);
 end
@@ -79,6 +79,7 @@ for Lock = 1:length(Deci.Analysis.Locks)
         a.Visible = 'on';
         title([Deci.SubjectList{subject_list} ' Chan']);
         
+        waitfor(a)
         
         b = figure;
         for Channel = 1:length(Fourier.freq)
@@ -88,6 +89,7 @@ for Lock = 1:length(Deci.Analysis.Locks)
         end
         b.Visible = 'on';
         title([Deci.SubjectList{subject_list} ' Freq'])
+        waitfor(b)
         
     end
     
