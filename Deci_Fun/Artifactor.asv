@@ -83,11 +83,11 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         close(fakeUI)
         
-%         cfg = [];
-%         cfg.method = 'summary';
-%         cfg.layout    = Deci.Layout.eye; 
-%         data_musc = ft_rejectvisual(cfg,data_musc);
-%         
+        cfg = [];
+        cfg.method = 'trial';
+        cfg.layout    = Deci.Layout.eye; 
+        data_musc = ft_rejectvisual(cfg,data_musc);
+        
         data_musc = ft_rejectcomponent(cfg, data_musc);
          
         
@@ -96,13 +96,13 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.artfctdef.muscle.cutoff      = 25;
         cfg.artfctdef.muscle.bpfreq      = [30 140];
         cfg.artfctdef.muscle.channel = 'all';
-        cfg.artfctdef.muscle.interactive = 'no';
+        cfg.artfctdef.muscle.interactive = 'yes';
         [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data_musc);
         
         cfg.artfctdef.eog = [];
         cfg.artfctdef.eog.cutoff      = 12.5;
         cfg.artfctdef.eog.channel = Deci.Art.ICA.Eye.Chans;
-        cfg.artfctdef.eog.interactive = 'no';
+        cfg.artfctdef.eog.interactive = 'yes';
         [cfg, cfg.artfctdef.eog.artifact] = ft_artifact_eog(cfg, data_musc);
         
         cfg.artfctdef.crittoilim = [[abs(condinfo{1}(:,1))/1000]+Deci.Art.crittoilim(1) [abs(condinfo{1}(:,end))/1000]+Deci.Art.crittoilim(2)];
