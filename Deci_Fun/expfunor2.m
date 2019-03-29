@@ -30,12 +30,28 @@ end
 
 startstopseg = reshape(find(ismember({event.value},startstop)'),[2 length(find(ismember({event.value},startstop)'))/2]);
 
-if ~isempty(cfg.DT.Block)
+if isfield(cfg.DT,'Block')
     bstartstop = {cfg.DT.Block.Start{:} cfg.DT.Block.End{:}};
     bstartstop = cellfun(@num2str,bstartstop,'un',0);
     
-    bstartstopseg = reshape(find(ismember({event.value},bstartstop)'),[2 length(find(ismember({event.value},bstartstop)'))/2]);
-
+    if rem(length(find(ismember({event.value},bstartstop)')),2)
+        blockvec = find(ismember({event.value},bstartstop)');
+        blockvec = blockvec(1:end-1);
+        
+        bstartstopseg = reshape(blockvec,[2 length(blockvec)/2]);
+        
+    else
+        bstartstopseg = reshape(find(ismember({event.value},bstartstop)'),[2 length(find(ismember({event.value},bstartstop)'))/2]);
+    end
+    
+    if ~isempty(cfg.DT.Block.Markers)
+        bmarkers = cellfun(@num2str,cfg.DT.Block.Markers,'un',0);
+        
+        bmarkers = find(ismember({event.value},bmarkers)');
+        bmarkers = cellfun(@str2num,{event(bmarkers).value});
+    else
+        
+    end
 end
 
 for j = 1:length(startstopseg)
@@ -62,6 +78,20 @@ for j = 1:length(startstopseg)
                 trialinfo(size(trl,1),i) = cfg.DT.Markers{i}(ismember([cfg.DT.Markers{i}],value));
                 
             end
+        end
+        
+        if isfield(cfg.DT,'Block')
+            
+            if find([event(startstopseg(1,j)).sample] >  [event(bstartstopseg(1,:)).sample],1,'last')
+                k = 0;
+            end
+            
+            if ~isempty(cfg.DT.Block.Markers)
+                trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = bmarkers(find([event(startstopseg(1,j)).sample] >  [event(bstartstopseg(1,:)).sample],1,'last'));
+            else
+                trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = find([event(startstopseg(1,j)).sample] >  [event(bstartstopseg(1,:)).sample],1,'last');
+            end
+            
         end
         
     end
