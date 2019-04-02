@@ -30,7 +30,7 @@ end
 
 startstopseg = reshape(find(ismember({event.value},startstop)'),[2 length(find(ismember({event.value},startstop)'))/2]);
 
-if isfield(cfg.DT,'Block')
+if ~isempty(cfg.DT.Block)
     bstartstop = {cfg.DT.Block.Start{:} cfg.DT.Block.End{:}};
     bstartstop = cellfun(@num2str,bstartstop,'un',0);
     
@@ -80,7 +80,7 @@ for j = 1:length(startstopseg)
             end
         end
         
-        if isfield(cfg.DT,'Block')
+        if ~isempty(cfg.DT.Block)
             
             if find([event(startstopseg(1,j)).sample] >  [event(bstartstopseg(1,:)).sample],1,'last')
                 k = 0;
