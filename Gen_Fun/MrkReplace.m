@@ -41,7 +41,7 @@ for k = 1:length(exp_files)
     event2 = event;
     for j = 1:length(refmrk)
          new_event  = event2(1);
-        for i=2:length(event2)
+        for i=1:length(event2)
             
             
             if reffound && i == idisplace && mean(strcmp(event2(i).value,oldmrk{j})) ~= 0
