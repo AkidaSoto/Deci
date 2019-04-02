@@ -19,7 +19,7 @@ for subject_list = 1:length(Deci.SubjectList)
     elseif  ~isempty(dir([Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.rdf']))
         files_ending = {'.rdf','.vmrk','.vhdr'};
     elseif ~isempty(dir([Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.vhdr']))
-        files_ending = {'.vmrk','.vhdr'};
+        files_ending = {'.vhdr','.vmrk'};
     end
      
     for file_ending = 1:length(files_ending)
