@@ -65,7 +65,7 @@ for subject_list = 1:length(Deci.SubjectList)
         Exist(Deci.Plot.Behv.Acc,'Subtotal');
         
         
-        if isempty(Deci.Plot.Behv.RT.Block)
+        if isempty(Deci.Plot.Behv.Acc.Block)
             
             for draw = 1:length(Deci.Plot.Behv.Acc.Total)
                 
@@ -119,6 +119,14 @@ for subject_list = 1:length(Deci.SubjectList)
     
     
 end
+
+ if ~isempty(Deci.Plot.Behv.Acc)
+     save([Deci.Folder.Version filesep 'Plot' filesep 'Acc'],'Acc');
+ end
+ 
+ if ~isempty(Deci.Plot.Behv.RT)
+     save([Deci.Folder.Version filesep 'Plot' filesep 'RT'],'RT');
+ end
 
 %% sort
 if ~isempty(Deci.Plot.Behv.Acc)

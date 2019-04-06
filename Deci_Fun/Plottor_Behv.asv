@@ -58,21 +58,6 @@ for subject_list = 1:length(Deci.SubjectList)
         %disp(RT(subject_list,:,:));
     end
     
-    cond = [];
-    time = [];
-    for trialcond = 1:length(Deci.Plot.Conditions)
-        maxt = max(sum(ismember(data.event,[ Deci.Plot.Conditions{trl}]),2));
-        trl = sum(ismember(data.event,[ Deci.Plot.Conditions{trl}]),2) == maxt;
-        cond{trialcond} = data.event(trl,:);
-        time{trialcond} = data.trialinfo(trl,:);
-    end
-    
-    if ~isempty(Deci.Plot.Math)
-       for math = 1:length(Deci.Plot.Math)
-          Deci.Plot. 
-           
-       end
-    end
     
     
     if ~isempty(Deci.Plot.Behv.Acc)
@@ -80,13 +65,18 @@ for subject_list = 1:length(Deci.SubjectList)
         Exist(Deci.Plot.Behv.Acc,'Subtotal');
         
         
-        if isempty(Deci.Plot.Behv.RT.Block)
+        if isempty(Deci.Plot.Behv..Block)
             
             for draw = 1:length(Deci.Plot.Behv.Acc.Total)
                 
-                draws = cond{Deci.Plot.Behv.Acc.Total{draw}};
+                draws = Deci.Plot.Conditions(Deci.Plot.Behv.Acc.Total{draw});
+                
+                maxt = max(sum(ismember(data.event,[draws{:}]),2));
+                trl = sum(ismember(data.event,[draws{:}]),2) == maxt;
+                Total = data.event(trl,:);
                 
                 subdraws = Deci.Plot.Conditions(Deci.Plot.Behv.Acc.Subtotal{draw});
+                
                 maxt = max(sum(ismember(data.event,[subdraws{:}]),2));
                 subtrl = sum(ismember(Total,[subdraws{:}]),2) == maxt;
                 
