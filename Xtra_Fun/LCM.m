@@ -87,8 +87,8 @@ for j = 1:length(startstopseg)
             
             new = abs(diff([cfg.DT.Markers{3}(ismember([cfg.DT.Markers{3}],value)) cfg.DT.Markers{4}(ismember([cfg.DT.Markers{4}],value))])-10);
             
-            if new > 5
-                new = 8 - new;
+            if new > 4
+                new = [8 - new];
             end
             
             trialinfo(size(trl,1),length(cfg.DT.Markers)+1) =new;
