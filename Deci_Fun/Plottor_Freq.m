@@ -50,12 +50,12 @@ for  subject_list = 1:length(Deci.SubjectList)
         load([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep Deci.SubjectList{subject_list} filesep Deci.Plot.Lock filesep Freq.Channels{Channel}],'freq');
         
         foi = freq.freq >= round(Deci.Plot.Freq.Foi(1),4) & freq.freq <= round(Deci.Plot.Freq.Foi(2),4);
-        toi = round(freq.time,4) >= Deci.Plot.Freq.Toi(1) & round(freq.time,4) <= Deci.Plot.Freq.Toi(2);
+        %toi = round(freq.time,4) >= Deci.Plot.Freq.Toi(1) & round(freq.time,4) <= Deci.Plot.Freq.Toi(2);
         
         Chans{Channel} = freq;
         Chans{Channel}.freq =  Chans{Channel}.freq(foi);
-        Chans{Channel}.time =  Chans{Channel}.time(toi);
-        Chans{Channel}.powspctrm  =Chans{Channel}.fourierspctrm(:,:,foi,toi);
+        %Chans{Channel}.time =  Chans{Channel}.time(toi);
+        Chans{Channel}.powspctrm  =Chans{Channel}.fourierspctrm(:,:,foi,:);
         Chans{Channel}.label = Freq.Channels(Channel);
         
     end
@@ -101,6 +101,10 @@ for  subject_list = 1:length(Deci.SubjectList)
         
         trl = sum(ismember(freq.condinfo{2},Deci.Plot.Conditions{Conditions}),2) == maxt;
         
+        toi = round(Chans.time,4) >= Deci.Plot.Freq.Toi(1) & round(Chans.time,4) <= Deci.Plot.Freq.Toi(2);
+        
+        
+        
         Subjects{subject_list,Conditions} = Chans;
         Subjects{subject_list,Conditions}.powspctrm = Chans.powspctrm(trl,:,:,:);
         
@@ -117,9 +121,13 @@ for  subject_list = 1:length(Deci.SubjectList)
                 Subjects{subject_list,Conditions}.powspctrm = permute(mean(abs(Subjects{subject_list,Conditions}.powspctrm).^2 ,1),[2 3 4 1])./permute(std(abs(Subjects{subject_list,Conditions}.powspctrm).^2 ,1),[2 3 4 1]);
                 
         end
-        
+
         bsl = ft_selectdata(acfg, Subjects{subject_list,Conditions});
+        
+        Subjects{subject_list,Conditions}.powspctrm =  Subjects{subject_list,Conditions}.powspctrm(:,:,toi);
+        Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(toi);
         bsl = repmat(bsl.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
+        
         
         switch Deci.Plot.Freq.BslType
             case 'absolute'
@@ -289,9 +297,19 @@ end
 
 
 if ~isempty(Deci.Plot.Freq.Wires)
+    
+    switch Deci.Plot.Freq.Wires.avg
+        case 'freq'
+            wcfg.avgoverfreq = 'yes';
+        case 'time'
+            wcfg.avgovertime = 'yes';
+    end
+    
+    wcfg.avgoverchan = 'yes';
+    
     for subj = 1:size(FreqData,1)
         for cond = 1:size(FreqData,2)
-            WireData{subj,cond} =  ft_selectdata(Deci.Plot.Freq.Wires,FreqData{subj,cond});
+            WireData{subj,cond} =  ft_selectdata(wcfg,FreqData{subj,cond});
         end
     end
 end
@@ -355,43 +373,43 @@ for cond = 1:length(Deci.Plot.Draw)
                 colormap(map);
             end
             
+           
+            if ~isempty(Deci.Plot.Freq.Wires)
+                
+                set(0, 'CurrentFigure', wire(subj) )
+                wire(subj).Visible = 'on';
+                 
+                if strcmpi(Deci.Plot.Freq.Wires.avg,'freq')
+                    h = plot(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.time,squeeze(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm));
+                    xlabel('Time');
+                elseif  strcmpi(Deci.Plot.Freq.Wires.avg,'time')
+                    
+                    if strcmpi(Deci.Plot.Scale,'log')
+                        WireData{subj,Deci.Plot.Draw{cond}(subcond)}.freq = exp(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.freq);
+                    end
+                    
+                   h =  plot(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.freq,squeeze(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm));
+                    xlabel('Freq')
+                end
+                ylabel('Power')
+                hold on
+
+                legend(h.Parent,Deci.Plot.Subtitle{cond})
+               title(h.Parent,[Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' Wire'])
+                
+                if ~isempty(Deci.Folder.Plot)
+                    saveas(wire(subj),[Deci.Folder.Plot filesep Deci.SubjectList{subj} '_wire'],Deci.Plot.Save.Format);
+                end
+                
+            end
+            
+            
         end
         
     end
     
     for subj = 1:size(FreqData,1)
-        
-        if ~isempty(Deci.Plot.Freq.Wires)
-            
-            set(0, 'CurrentFigure', wire(subj) )
-            curvy(subj)    =  axes;
-            
-            for cond = 1:size(WireData,1)
-                
-                if strcmpi(Deci.Plot.Freq.Wires.Collapse,'Freq')
-                    plot(WireData{subj,cond}.time,squeeze(WireData{subj,cond}.powspctrm));
-                    
-                    xlabel('Time');
-                elseif  strcmpi(Deci.Plot.Freq.Wires.Collapse,'Time')
-                    
-                    if strcmpi(Deci.Plot.Scale,'log')
-                        WireData{subj,cond}.freq = exp(WireData{subj,cond}.freq);
-                    end
-                    
-                    plot(WireData{subj,cond}.freq,squeeze(WireData{subj,cond}.powspctrm));
-                    xlabel('Freq')
-                end
-                ylabel('Power')
-                hold on
-            end
-            legend(curvy(subj),strsplit(num2str(1:length(Deci.Plot.Draw{cond}))))
-            title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type]);
-            
-            if ~isempty(Deci.Folder.Plot)
-                saveas(wire(subj),[Deci.Folder.Plot filesep Deci.SubjectList{subj} '_wire'],Deci.Plot.Save.Format);
-            end
-            
-        end
+       
         
         if length(Freq.Channels) ~= 1
             
@@ -448,7 +466,7 @@ for cond = 1:length(Deci.Plot.Draw)
             
             if ~isempty(Deci.Folder.Plot)
                 mkdir([Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_square']);
-                saveas(topo(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_square'],Deci.Plot.Save.Format);
+                saveas(square(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_square'],Deci.Plot.Save.Format);
             end
             
         end

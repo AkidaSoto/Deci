@@ -59,6 +59,7 @@ for subject_list = 1:length(Deci.SubjectList)
     end
     
     
+    
     if ~isempty(Deci.Plot.Behv.Acc)
         Exist(Deci.Plot.Behv.Acc,'Total');
         Exist(Deci.Plot.Behv.Acc,'Subtotal');
@@ -81,6 +82,10 @@ for subject_list = 1:length(Deci.SubjectList)
                 
                 Acc{subject_list,draw,1} = subtrl;
                 
+                if Deci.Plot.Behv.Acc.Collapse.Movmean
+                    Acc{subject_list,draw,1} = movmean(Acc{subject_list,draw,1},[length( Acc{subject_list,draw,1}) 0]);
+                end
+                
             end
             
         else
@@ -99,6 +104,9 @@ for subject_list = 1:length(Deci.SubjectList)
                     
                     Acc{subject_list,draw,blk} = subtrl;
                     
+                    if Deci.Plot.Behv.Acc.Collapse.Movmean
+                        Acc{subject_list,draw,blk} = movmean(Acc{subject_list,draw,blk},[length( Acc{subject_list,draw,blk}) 0]);
+                    end
                     
                 end
             end

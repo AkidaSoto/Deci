@@ -58,6 +58,22 @@ for subject_list = 1:length(Deci.SubjectList)
         %disp(RT(subject_list,:,:));
     end
     
+    cond = [];
+    time = [];
+    for trialcond = 1:length(Deci.Plot.Conditions)
+        maxt = max(sum(ismember(data.event,[ Deci.Plot.Conditions{trl}]),2));
+        trl = sum(ismember(data.event,[ Deci.Plot.Conditions{trl}]),2) == maxt;
+        cond{trialcond} = data.event(trl,:);
+        time{trialcond} = data.trialinfo(trl,:);
+    end
+    
+    if ~isempty(Deci.Plot.Math)
+       for math = 1:length(Deci.Plot.Math)
+          Deci.Plot. 
+           
+       end
+    end
+    
     
     if ~isempty(Deci.Plot.Behv.Acc)
         Exist(Deci.Plot.Behv.Acc,'Total');
@@ -68,18 +84,17 @@ for subject_list = 1:length(Deci.SubjectList)
             
             for draw = 1:length(Deci.Plot.Behv.Acc.Total)
                 
-                draws = Deci.Plot.Conditions(Deci.Plot.Behv.Acc.Total{draw});
-                
-                maxt = max(sum(ismember(data.event,[draws{:}]),2));
-                trl = sum(ismember(data.event,[draws{:}]),2) == maxt;
-                Total = data.event(trl,:);
+                draws = cond{Deci.Plot.Behv.Acc.Total{draw}};
                 
                 subdraws = Deci.Plot.Conditions(Deci.Plot.Behv.Acc.Subtotal{draw});
-                
                 maxt = max(sum(ismember(data.event,[subdraws{:}]),2));
                 subtrl = sum(ismember(Total,[subdraws{:}]),2) == maxt;
                 
                 Acc{subject_list,draw,1} = subtrl;
+                
+                if Deci.Plot.Behv.Acc.Collapse.Movmean
+                    Acc{subject_list,draw,1} = movmean(Acc{subject_list,draw,1},[length( Acc{subject_list,draw,1}) 0]);
+                end
                 
             end
             
@@ -99,6 +114,9 @@ for subject_list = 1:length(Deci.SubjectList)
                     
                     Acc{subject_list,draw,blk} = subtrl;
                     
+                    if Deci.Plot.Behv.Acc.Collapse.Movmean
+                        Acc{subject_list,draw,blk} = movmean(Acc{subject_list,draw,blk},[length( Acc{subject_list,draw,blk}) 0]);
+                    end
                     
                 end
             end
@@ -185,7 +203,7 @@ if ~isempty(Deci.Plot.Behv.Acc)
                 h = plot(squeeze(Acc(subj,draw,:))*100);
                 h.Parent.YLim = [0 100];
                 hold on;
-                title(h.Parent,[Deci.Plot.Behv.Acc.Title]);
+                title(h.Parent,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title],'Interpreter','none');
                 
                 if ~Deci.Plot.Behv.Acc.Collapse.Block && length(find(size(squeeze(Acc(subj,draw,:,:))) ~= 1)) ==1
                     h.Parent.XLabel.String = 'Block #';
@@ -194,7 +212,7 @@ if ~isempty(Deci.Plot.Behv.Acc)
                 end
                 
                 h.Parent.YLabel.String = 'Percent (%)';
-                legend(h.Parent,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Subtitle]);
+                legend(h.Parent,[ Deci.Plot.Behv.Acc.Subtitle]);
                 
             elseif length(find(size(squeeze(Acc(subj,draw,:,:))) ~= 1)) ==2
                 
@@ -203,7 +221,7 @@ if ~isempty(Deci.Plot.Behv.Acc)
                 h.Parent.CLim = [0 100];
                 h.Parent.YLabel.String = 'Block #';
                 h.Parent.XLabel.String = 'Trial #';
-                title(h.Parent,[Deci.Plot.Behv.Acc.Subtitle{draw}]);
+                title(h.Parent,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Subtitle{draw}],'Interpreter','none');
                 
             else
                 disp(['Acc Total for ' Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{draw} ':' Deci.Plot.Behv.Acc.Subtitle{draw} ' ' num2str(squeeze(Acc(subj,draw,:,:))*100) '%']);
@@ -236,7 +254,7 @@ if ~isempty(Deci.Plot.Behv.RT)
                 h = plot(squeeze(RT(subj,draw,:)));
                 hold on;
                 
-                title(h.Parent,[Deci.Plot.Behv.RT.Title]);
+                title(h.Parent,[Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Title],'Interpreter','none');
                 
                 if ~Deci.Plot.Behv.RT.Collapse.Block && length(find(size(squeeze(RT(subj,draw,:,:))) ~= 1)) ==1
                     h.Parent.XLabel.String = 'Block #';
@@ -245,7 +263,7 @@ if ~isempty(Deci.Plot.Behv.RT)
                 end
                 
                 h.Parent.YLabel.String = 'Reaction Time (ms)';
-                legend(h.Parent,[Sub.Acc{subj} ' 'Deci.Plot.Behv.RT.Subtitle]);
+                legend(h.Parent,[Deci.Plot.Behv.RT.Subtitle]);
                 
             elseif length(find(size(squeeze(RT(subj,draw,:,:))) ~= 1)) ==2
                 
@@ -253,7 +271,7 @@ if ~isempty(Deci.Plot.Behv.RT)
                 h = imagesc(squeeze(RT(subj,draw,:,:)));
                 h.Parent.YLabel.String = 'Block #';
                 h.Parent.XLabel.String = 'Trial #';
-                title(h.Parent,[Deci.Plot.Behv.RT.Subtitle{draw}]);
+                title(h.Parent,[Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Subtitle{draw}],'Interpreter','none');
                 
             else
                 disp(['RT Total for ' Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Subtitle{draw} ' ' num2str(squeeze(RT(subj,draw,:,:)))])
