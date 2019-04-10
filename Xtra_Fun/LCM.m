@@ -83,15 +83,15 @@ for j = 1:length(startstopseg)
             end
         end
         
-        if any(ismember([cfg.DT.Markers{3}],value)) && any(ismember([cfg.DT.Markers{4}],value))
+        if any(ismember([cfg.DT.Markers{2}],value)) && any(ismember([cfg.DT.Markers{3}],value))
             
-            new = abs(diff([cfg.DT.Markers{3}(ismember([cfg.DT.Markers{3}],value)) cfg.DT.Markers{4}(ismember([cfg.DT.Markers{4}],value))])-10);
+            new = abs(diff([cfg.DT.Markers{2}(ismember([cfg.DT.Markers{2}],value)) cfg.DT.Markers{3}(ismember([cfg.DT.Markers{3}],value))])-10);
             
             if new > 4
                 new = [8 - new];
             end
             
-            trialinfo(size(trl,1),length(cfg.DT.Markers)+1) =new;
+            trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = new + 450;
         end
         
         if ~isempty(cfg.DT.Block)
