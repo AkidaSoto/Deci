@@ -89,10 +89,12 @@ for subject_list = 1:length(Deci.SubjectList)
 %         data_musc = ft_rejectvisual(cfg,data_musc);
 %         
         data_musc = ft_rejectcomponent(cfg, data_musc);
-         
-        bpcfg.bpfreq = Deci.Art.bpf; 
-        data_musc = ft_preprocessing(bpcfg,data_musc);
         
+        if ~isempty(Deci.Art.bpf)
+        bpcfg.bpfreq = Deci.Art.bpf; 
+        bpcfg.bpfilter = 'yes';
+        data_musc = ft_preprocessing(bpcfg,data_musc);
+        end
         
         cfg.artfctdef.muscle = [];
         cfg.artfctdef.muscle.cutoff      = 25;
