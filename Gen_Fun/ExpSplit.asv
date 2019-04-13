@@ -41,9 +41,8 @@ for i = 1:length(begc)
     if ~isempty(event)
         
         dat = dat(:,event(endc(i)).sample:end);
-        sam =  event(endc(i)).sample;
         for j = 1:length(event)
-        event(j).sample = [event(j).sample] - sam;
+        event(j).sample = [event(j).sample] -;
         end
         event = event(endc(i)+1:end);
            

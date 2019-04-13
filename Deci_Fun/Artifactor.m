@@ -90,6 +90,8 @@ for subject_list = 1:length(Deci.SubjectList)
 %         
         data_musc = ft_rejectcomponent(cfg, data_musc);
          
+        bpcfg.bpfreq = Deci.Art.bpf; 
+        data_musc = ft_preprocessing(bpcfg,data_musc);
         
         
         cfg.artfctdef.muscle = [];
