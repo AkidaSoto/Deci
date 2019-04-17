@@ -323,7 +323,7 @@ if Deci.Plot.GA
     Deci.SubjectList = {'Group 1'};
 end
 
-for cond = 1:length(Deci.Plot.Draw(availmath))
+for cond = 1:length(Deci.Plot.Draw)
     for subj = 1:size(FreqData,1)
         
         if Deci.Plot.Freq.Square
@@ -338,7 +338,7 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
             wire(subj)  = figure;
         end
         
-        for subcond = 1:length(Deci.Plot.Draw{availmath(cond)})
+        for subcond = 1:length(Deci.Plot.Draw{cond})
             
             if Deci.Plot.Freq.Topo
                 if length(Freq.Channels) ~= 1
@@ -346,10 +346,10 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
                     
                     set(0, 'CurrentFigure', topo(subj))
                     topo(subj).Visible = 'on';
-                    cirky(subj,subcond)    =  subplot(length(Deci.Plot.Draw{availmath(cond)}),1,subcond);
-                    ft_topoplotER(cfg, FreqData{subj,Deci.Plot.Draw{availmath(cond)}(subcond)});
+                    cirky(subj,subcond)    =  subplot(length(Deci.Plot.Draw{cond}),1,subcond);
+                    ft_topoplotER(cfg, FreqData{subj,Deci.Plot.Draw{cond}(subcond)});
                     
-                    title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{availmath(cond)}{subcond} ' trial count: ' num2str(TotalCount{subj,Deci.Plot.Draw{availmath(cond)}(subcond)})]);
+                    title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond} ' trial count: ' num2str(TotalCount{subj,Deci.Plot.Draw{cond}(subcond)})]);
                     colorbar('vert');
                     map = colormap('jet'); %'hot' 'gray'
                     colormap(map);
@@ -365,10 +365,10 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
             if Deci.Plot.Freq.Square
                 set(0, 'CurrentFigure', square(subj) )
                 square(subj).Visible = 'on';
-                subby(subj,subcond) = subplot(length(Deci.Plot.Draw{availmath(cond)}),1,subcond );
-                ft_singleplotTFR(cfg,FreqData{subj,Deci.Plot.Draw{availmath(cond)}(subcond)})
+                subby(subj,subcond) = subplot(length(Deci.Plot.Draw{cond}),1,subcond );
+                ft_singleplotTFR(cfg,FreqData{subj,Deci.Plot.Draw{cond}(subcond)})
                 
-                title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Subtitle{availmath(cond)}{subcond} ' trial count: ' num2str(TotalCount{subj,Deci.Plot.Draw{availmath(cond)}(subcond)})]);
+                title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Subtitle{cond}{subcond} ' trial count: ' num2str(TotalCount{subj,Deci.Plot.Draw{cond}(subcond)})]);
                 colorbar('vert');
                 map = colormap('jet'); %'hot' 'gray'
                 colormap(map);
@@ -381,22 +381,22 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
                 wire(subj).Visible = 'on';
                  
                 if strcmpi(Deci.Plot.Freq.Wires.avg,'freq')
-                    h = plot(WireData{subj,Deci.Plot.Draw{availmath(cond)}(subcond)}.time,squeeze(WireData{subj,Deci.Plot.Draw{availmath(cond)}(subcond)}.powspctrm));
+                    h = plot(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.time,squeeze(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm));
                     xlabel('Time');
                 elseif  strcmpi(Deci.Plot.Freq.Wires.avg,'time')
                     
                     if strcmpi(Deci.Plot.Scale,'log')
-                        WireData{subj,Deci.Plot.Draw{availmath(cond)}(subcond)}.freq = exp(WireData{subj,Deci.Plot.Draw{availmath(cond)}(subcond)}.freq);
+                        WireData{subj,Deci.Plot.Draw{cond}(subcond)}.freq = exp(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.freq);
                     end
                     
-                   h =  plot(WireData{subj,Deci.Plot.Draw{availmath(cond)}(subcond)}.freq,squeeze(WireData{subj,Deci.Plot.Draw{availmath(cond)}(subcond)}.powspctrm));
+                   h =  plot(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.freq,squeeze(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm));
                     xlabel('Freq')
                 end
                 ylabel('Power')
                 hold on
 
-                legend(h.Parent,Deci.Plot.Subtitle{availmath(cond)})
-               title(h.Parent,[Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{availmath(cond)} ' Wire'])
+                legend(h.Parent,Deci.Plot.Subtitle{cond})
+               title(h.Parent,[Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' Wire'])
                 
                 if ~isempty(Deci.Folder.Plot)
                     saveas(wire(subj),[Deci.Folder.Plot filesep Deci.SubjectList{subj} '_wire'],Deci.Plot.Save.Format);
@@ -417,7 +417,7 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
             if Deci.Plot.Freq.Topo
                 set(0, 'CurrentFigure', topo(subj) )
                 topo(subj).Visible = 'on';
-                suptitle(Deci.Plot.Title{availmath(cond)});
+                suptitle(Deci.Plot.Title{cond});
                 
                 for r = 1:length(cirky(:))
                     
@@ -434,8 +434,8 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
                 
                 
                 if ~isempty(Deci.Folder.Plot)
-                    mkdir([Deci.Folder.Plot filesep Deci.Plot.Title{availmath(cond)} filesep Deci.SubjectList{subj} '_topo']);
-                    saveas(topo(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{availmath(cond)} filesep Deci.SubjectList{subj} '_topo'],Deci.Plot.Save.Format);
+                    mkdir([Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_topo']);
+                    saveas(topo(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_topo'],Deci.Plot.Save.Format);
                 end
                 
             end
@@ -446,7 +446,7 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
         if Deci.Plot.Freq.Square
             set(0, 'CurrentFigure', square(subj))
             square(subj).Visible = 'on';
-            suptitle(Deci.Plot.Title{availmath(cond)});
+            suptitle(Deci.Plot.Title{cond});
             
             for r = 1:length(subby(:))
                 
@@ -466,8 +466,8 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
             end
             
             if ~isempty(Deci.Folder.Plot)
-                mkdir([Deci.Folder.Plot filesep Deci.Plot.Title{availmath(cond)} filesep Deci.SubjectList{subj} '_square']);
-                saveas(square(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{availmath(cond)} filesep Deci.SubjectList{subj} '_square'],Deci.Plot.Save.Format);
+                mkdir([Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_square']);
+                saveas(square(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_square'],Deci.Plot.Save.Format);
             end
             
         end
