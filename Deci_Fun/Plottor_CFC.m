@@ -167,17 +167,14 @@ clear Subjects;
 
 if ~isempty(Deci.Plot.Math)
     
-    
-    availmath = find(Deci.Plot.Figures);
-    
     for m = 1:length(Deci.Plot.CFC.methods)
-        for cond = 1:length(availmath)
+        for cond = 1:length(Deci.Plot.Math.Form)
             
             
             for subj = 1:size(CFCData,1)
                 
                 
-                operation = str2fun(['@(x)' regexprep(Deci.Plot.Math.Form{availmath(cond)},'x(\d*)','x{$1}')]);
+                operation = str2fun(['@(x)' regexprep(Deci.Plot.Math.Form{cond},'x(\d*)','x{$1}')]);
                 
                 MathData(subj) = CFCData(subj,1,m);
                 MathData{subj}.crsspctrm = [feval(operation, cellfun(@(c) c.crsspctrm,CFCData(subj,1:length(Deci.Plot.Conditions)+cond-1,m),'UniformOutput',false))];
@@ -195,7 +192,7 @@ if ~isempty(Deci.Plot.Math)
 end
 
 
-for cond = 1:length(Deci.Plot.Draw(availmath))
+for cond = 1:length(Deci.Plot.Draw)
     for met = 1:size(CFCData,3)
         for subj = 1:size(CFCData,1)
             
@@ -211,13 +208,13 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
                 CFChist(subj,met)  = figure;
             end
             
-            for subcond = 1:length(Deci.Plot.Draw{availmath(cond)})
+            for subcond = 1:length(Deci.Plot.Draw{cond})
                 
                 if Deci.Plot.CFC.Topo
                     set(0, 'CurrentFigure', CFCtopo(subj,met) )
                     CFCtopo(subj,met).Visible = 'on';
                     
-                    ctopo(subj,subcond,met)    =  subplot(length(Deci.Plot.Draw{availmath(cond)}),1,subcond);
+                    ctopo(subj,subcond,met)    =  subplot(length(Deci.Plot.Draw{cond}),1,subcond);
                     
                     
                     Cross.labelcmb = CombVec(CFCData{subj,subcond,1}.labellow',CFCData{subj,subcond,1}.labelhigh')';
@@ -228,7 +225,7 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
                     Crosscfg =[];
                     Crosscfg.foi = [min([Deci.Plot.CFC.freqhigh Deci.Plot.CFC.freqlow]) max([Deci.Plot.CFC.freqhigh Deci.Plot.CFC.freqlow])];
                     Crosscfg.layout = Deci.Layout.Noeye;
-                    title([Deci.SubjectList{subj} ' ' Deci.Plot.CFC.methods{met} ' Cond '  num2str(availmath(cond))],'Interpreter', 'none');
+                    title([Deci.SubjectList{subj} ' ' Deci.Plot.CFC.methods{met} ' Cond '  num2str(cond)],'Interpreter', 'none');
                     ft_topoplotCC(Crosscfg,Cross);
                     
                     ctopo(subj,subcond,met).UserData = {Cross,Crosscfg,CFCData{subj,subcond,met}.crsspctrm};
@@ -238,11 +235,11 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
                     set(0, 'CurrentFigure', CFChist(subj,met) )
                     CFChist(subj,met).Visible = 'on';
                     
-                    chist(subj,subcond,met)    =  subplot(length(Deci.Plot.Draw{availmath(cond)}),1,subcond);
+                    chist(subj,subcond,met)    =  subplot(length(Deci.Plot.Draw{cond}),1,subcond);
                     chist(subj,subcond,met).UserData = CFCData{subj,subcond,met}.crsspctrm;
                     CleanBars(reshape(CFCData{subj,subcond,met}.crsspctrm,[size(CFCData{subj,subcond,met}.crsspctrm,1)*size(CFCData{subj,subcond,met}.crsspctrm,2) size(CFCData{subj,subcond,met}.crsspctrm,3)]));
                     
-                    title([Deci.SubjectList{subj} ' ' Deci.Plot.CFC.methods{met} ' Cond '  num2str(availmath(cond))],'Interpreter', 'none');
+                    title([Deci.SubjectList{subj} ' ' Deci.Plot.CFC.methods{met} ' Cond '  num2str(cond)],'Interpreter', 'none');
                     
                 end
                 
@@ -251,7 +248,7 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
                     
                     set(0, 'CurrentFigure', CFCsquare(subj,met) )
                     CFCsquare(subj,met).Visible = 'on';
-                    csquare(subj,subcond,met)    =  subplot(length(Deci.Plot.Draw{availmath(cond)}),1,subcond);
+                    csquare(subj,subcond,met)    =  subplot(length(Deci.Plot.Draw{cond}),1,subcond);
                     
                     xdat = CFCData{subj,subcond,1}.labellow;
                     ydat = CFCData{subj,subcond,1}.labelhigh;
@@ -260,7 +257,7 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
                     xticklabels(xdat);
                     yticks(1:length(ydat))
                     yticklabels(ydat);
-                    title([Deci.SubjectList{subj} ' ' Deci.Plot.CFC.methods{met} ' Cond '  num2str(availmath(cond))],'Interpreter', 'none');
+                    title([Deci.SubjectList{subj} ' ' Deci.Plot.CFC.methods{met} ' Cond '  num2str(cond)],'Interpreter', 'none');
                     
                     csquare(subj,subcond,met).UserData = CFCData{subj,subcond,met}.crsspctrm;
                     colorbar;
@@ -270,7 +267,7 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
             if Deci.Plot.CFC.Hist
                 set(0, 'CurrentFigure', CFChist(subj,met));
                 UpdateAxes(chist(subj,:,met),Deci.Plot.CFC.Roi,'Y',0)
-                suptitle(Deci.Plot.Title{availmath(cond)});
+                suptitle(Deci.Plot.Title{cond});
                 
                 for HistLim = 1:length(chist(subj,:,met))
                     
@@ -290,7 +287,7 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
             if Deci.Plot.CFC.Topo
                 
                 set(0, 'CurrentFigure', CFCtopo(subj,met) )
-                suptitle(Deci.Plot.Title{availmath(cond)});
+                suptitle(Deci.Plot.Title{cond});
                 uicontrol('style','text','position',[225 75 100 25],'String','Time of Interest');
                 
                 slide = uicontrol('style','slider','position',[75 10 400 20],...
@@ -312,7 +309,7 @@ for cond = 1:length(Deci.Plot.Draw(availmath))
             if Deci.Plot.CFC.Square
                 
                 set(0, 'CurrentFigure', CFCsquare(subj,met) )
-                suptitle(Deci.Plot.Title{availmath(cond)});
+                suptitle(Deci.Plot.Title{cond});
                 uicontrol('style','text','position',[225 75 100 25],'String','Time of Interest');
                 
                 slide = uicontrol('style','slider','position',[75 10 400 20],...
