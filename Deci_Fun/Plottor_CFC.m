@@ -208,6 +208,10 @@ for cond = 1:length(Deci.Plot.Draw)
                 CFChist(subj,met)  = figure;
             end
             
+            if Deci.Plot.CFC.Wire
+                CFCwire(subj,met)  = figure;
+            end
+            
             for subcond = 1:length(Deci.Plot.Draw{cond})
                 
                 if Deci.Plot.CFC.Topo
@@ -262,6 +266,21 @@ for cond = 1:length(Deci.Plot.Draw)
                     csquare(subj,subcond,met).UserData = CFCData{subj,subcond,met}.crsspctrm;
                     colorbar;
                 end
+                
+                if Deci.Plot.CFC.Wire
+                    set(0, 'CurrentFigure', CFCwire(subj,met) )
+                    CFCwire(subj,met).Visible = 'on';
+                    cwire(subj,subcond,met)    =  subplot(length(Deci.Plot.Draw{cond}),1,subcond);
+                    
+                    for chanh = 1:length(CFCData{subj,subcond,met}.labelhigh)
+                        for chanl = 1:length(CFCData{subj,subcond,met}.labellow)
+                        
+                            plot(CFCData{subj,subcond,met}.timelow,squeeze(CFCData{subj,subcond,met}.crsspctrm(chanl,chanh,:)))
+                            hold on
+                        end
+                    end
+                end
+                
             end
             
             if Deci.Plot.CFC.Hist
@@ -281,6 +300,14 @@ for cond = 1:length(Deci.Plot.Draw)
                     
                     legend(chist(subj,HistLim,met),[repmat('FreqLow Time ',[size(CFCData{subj,subcond,met}.timelow',1) 1]) num2str([CFCData{subj,subcond,met}.timelow']) repmat(' - FreqHigh Time ',[size(CFCData{subj,subcond,met}.timelow',1) 1]) num2str([CFCData{subj,subcond,met}.timelow'])])
                 end
+            end
+            
+            if Deci.Plot.CFC.Wire
+                 for WireLim = 1:length(cwire(subj,:,met))
+                   Vect = CombVec(CFCData{subj,subcond,met}.labellow',CFCData{subj,subcond,met}.labelhigh')';
+                   legend(cwire(subj,WireLim,met),arrayfun(@(c) [Vect{c,1} Vect{c,2}],1:size(Vect,1),'un',0));
+                   cwire(subj,WireLim,met).Ylim = minmax([cwire(subj,:,met).YLim]);
+                 end
             end
             
             
