@@ -142,26 +142,11 @@ for  subject_list = 1:length(Deci.SubjectList)
         
         
         Subjects{subject_list,Conditions}.dimord = 'chan_freq_time';
+       
+        
     end
     clear Chans;
 end
-
-
-
-if Deci.Plot.GA
-    
-    for conds = 1:size(Subjects,2)
-        facfg.parameter =  'powspctrm';
-        FreqData{conds} = rmfield(ft_freqgrandaverage(facfg,Subjects{:,conds}),'cfg');
-        
-        TotalCount{conds} = mean([TrialCount{:,conds}]);
-        
-    end
-else
-    FreqData = Subjects;
-    TotalCount = TrialCount;
-end
-clear Subjects;
 
 
 if ~isempty(Deci.Plot.PRP)
@@ -215,14 +200,39 @@ if ~isempty(Deci.Plot.PRP)
                         Subjects{subject_list}.powspctrm = 10*log10(Subjects{subject_list}.powspctrm ./ bsl);
                 end
                 
+                if ~isempty(Deci.Plot.Freq.Wires)
+                    
+                    switch Deci.Plot.Freq.Wires.avg
+                        case 'freq'
+                            wcfg.avgoverfreq = 'yes';
+                        case 'time'
+                            wcfg.avgovertime = 'yes';
+                    end
+                    
+                    wcfg.avgoverchan = 'yes';
+                    
+                    WireSub{subject_list} =  ft_selectdata(wcfg,Subjects{subject_list});
+                end
+            
+                
             end
+            
             
             if Deci.Plot.GA
                 facfg.parameter =  'powspctrm';
-                FreqData{Condition,1} = rmfield(ft_freqgrandaverage(facfg,Subjects{:}),'cfg');
+                FreqData{1,Condition} = rmfield(ft_freqgrandaverage(facfg,Subjects{:}),'cfg');
+                
+                if ~isempty(Deci.Plot.Freq.Wires)
+                    WireData{1,Condition} = rmfield(ft_freqgrandaverage(facfg,WireSub{:}),'cfg');
+                end
                 
             else
-                FreqData(Condition,:) = Subjects(:);
+                FreqData(:,Condition) = Subjects(:);
+                
+                if ~isempty(Deci.Plot.Freq.Wires)
+                     WireData{:,Condition} = WireSub(:);
+                end
+                
             end
             
         end
@@ -264,14 +274,17 @@ if ~isempty(Deci.Plot.Math)
     else
         
         for cond = 1:length(Deci.Plot.Math.Form)
-            for subj = 1:size(FreqData,1)
+            for subj = 1:size(Subjects,1)
                 scfg.parameter = 'powspctrm';
                 scfg.operation = Deci.Plot.Math.Form{cond};
-                MathData{subj} = ft_math(scfg,FreqData{subj,:});
+                MathData{subj} = ft_math(scfg,Subjects{subj,:});
+                
             end
             
-            FreqData(:,length(Deci.Plot.Conditions)+cond) = MathData;
-            TotalCount(:,length(Deci.Plot.Conditions)+cond) = num2cell(nan(size(FreqData,1),1));
+            Subjects(:,length(Deci.Plot.Conditions)+cond) = MathData;
+            TrialCount(:,length(Deci.Plot.Conditions)+cond) = num2cell(nan(size(Subjects,1),1));
+            
+
         end
         
         %             if Deci.Plot.Math.Type == 1
@@ -285,6 +298,55 @@ if ~isempty(Deci.Plot.Math)
     
 end
 
+if ~isempty(Deci.Plot.Freq.Wires)
+    
+    for conds = 1:size(Subjects,2)
+        for subj = 1:size(Subjects,1)
+            bcfg.frequency = Deci.Plot.Freq.Foi;
+            
+            switch Deci.Plot.Freq.Wires.avg
+                case 'freq'
+                    bcfg.avgoverfreq = 'yes';
+                case 'time'
+                   bcfg.avgovertime = 'yes';
+            end
+            
+            WireSub{subj,conds} = ft_selectdata(bcfg,Subjects{subj,conds});
+
+        end
+    end
+end
+
+
+if Deci.Plot.GA
+    
+    if ~isempty(Deci.Plot.Freq.Wires)
+    save([Deci.Folder.Plot filesep 'preGrandAverageSubWire'],'WireSub')
+    end
+    
+    for conds = 1:size(Subjects,2)
+        facfg.parameter =  'powspctrm';
+        FreqData{conds} = rmfield(ft_freqgrandaverage(facfg,Subjects{:,conds}),'cfg');
+        
+        TotalCount{conds} = mean([TrialCount{:,conds}]);
+        
+        if ~isempty(Deci.Plot.Freq.Wires)
+            WireData{conds} = rmfield(ft_freqgrandaverage(facfg,WireSub{:,conds}),'cfg');
+        end
+
+    end
+    
+    save([Deci.Folder.Plot filesep 'GrandAverageSubFreq'],'FreqData')
+    
+    if ~isempty(Deci.Plot.Freq.Wires)
+    save([Deci.Folder.Plot filesep 'GrandAverageSubWire'],'WireData')
+    end
+else
+    FreqData = Subjects;
+    WireData = WireSub;
+    TotalCount = TrialCount;
+end
+clear Subjects;
 
 if strcmpi(Deci.Plot.Scale,'log')
     
@@ -295,24 +357,6 @@ if strcmpi(Deci.Plot.Scale,'log')
     end
 end
 
-
-if ~isempty(Deci.Plot.Freq.Wires)
-    
-    switch Deci.Plot.Freq.Wires.avg
-        case 'freq'
-            wcfg.avgoverfreq = 'yes';
-        case 'time'
-            wcfg.avgovertime = 'yes';
-    end
-    
-    wcfg.avgoverchan = 'yes';
-    
-    for subj = 1:size(FreqData,1)
-        for cond = 1:size(FreqData,2)
-            WireData{subj,cond} =  ft_selectdata(wcfg,FreqData{subj,cond});
-        end
-    end
-end
 
 
 %% Plot
@@ -380,7 +424,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 wire(subj).Visible = 'on';
                  
                 if strcmpi(Deci.Plot.Freq.Wires.avg,'freq')
-                    h = plot(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.time,squeeze(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm));
+                    h = plot(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.time,squeeze(mean(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)));
                     xlabel('Time');
                 elseif  strcmpi(Deci.Plot.Freq.Wires.avg,'time')
                     
@@ -388,7 +432,7 @@ for cond = 1:length(Deci.Plot.Draw)
                         WireData{subj,Deci.Plot.Draw{cond}(subcond)}.freq = exp(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.freq);
                     end
                     
-                   h =  plot(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.freq,squeeze(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm));
+                   h =  plot(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.freq,squeeze(mean(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)));
                     xlabel('Freq')
                 end
                 ylabel('Power')
@@ -398,7 +442,7 @@ for cond = 1:length(Deci.Plot.Draw)
                title(h.Parent,[Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' Wire'])
                 
                 if ~isempty(Deci.Folder.Plot)
-                    saveas(wire(subj),[Deci.Folder.Plot filesep Deci.SubjectList{subj} '_wire'],Deci.Plot.Save.Format);
+                    saveas(wire(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_wire'],Deci.Plot.Save.Format);
                 end
                 
             end

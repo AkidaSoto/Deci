@@ -15,24 +15,16 @@ for subject_list = 1:length(Deci.SubjectList)
         
         data = [];
         load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
-       
+        condinfo = data.condinfo;
         
-        if ~isempty(find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1)) && Deci.Art.RejectNans
+        if ~isempty(find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1))
             nantrials = find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1);
             
-            cfg = [];
+            cfg.trials = ones([s
             
-            cfg.trials = logical(ones([size(data.trial)]));
-            cfg.trials(nantrials) = false;
-            
-            data = ft_selectdata(cfg,data);
-            
-        elseif ~isempty(find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1)) && ~Deci.Art.RejectNans
-            
-            error(['Found trial(s) containing nan in rawdata for ' Deci.SubjectList{subject_list} '. Revise Data and then use .RejectNans']);
             
         end
-         condinfo = data.condinfo;
+        
         
         cfg = [];
         
