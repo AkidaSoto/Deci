@@ -45,33 +45,25 @@ end
 
 
 if Deci.Analysis.ERP.do
-
-    for Lock = 1:length(Deci.Analysis.Locks)
-        
-        mkdir([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep num2str(Deci.Analysis.Locks(Lock))]);
-        
-        
-        cfg.offset = condinfo{1}(:,Deci.Analysis.Locks(Lock));
-        cfg.toilim = Deci.Analysis.Freq.Toilim;
-        
-        dataplaceholder = ft_datashift2(cfg,data);
-        data.condinfo = condinfo;
-        
-        ecfg.latency = Deci.Analysis.ERP.Toi;
-        
-        for chan = 1:length(dataplaceholder.label)
-            ecfg.channel = dataplaceholder.label(chan);
-            erp = ft_selectdata(ecfg,dataplaceholder);
-            erp.condinfo = data.condinfo;
-            save([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep num2str(Deci.Analysis.Locks(Lock)) filesep dataplaceholder.label{chan}],'erp');
-        end
-        clear erp
+    
+    mkdir([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep num2str(Deci.Analysis.Locks(Lock))]);
+    
+    ecfg.latency = Deci.Analysis.ERP.Toi;
+    
+    for chan = 1:length(data.label)
+        ecfg.channel = data.label(chan);
+        erp = ft_selectdata(ecfg,data);
+        save([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep num2str(Deci.Analysis.Locks(Lock)) ],'erp');
     end
+    clear erp
 end
 
 
 
 if Deci.Analysis.Freq.do
+    
+    
+    
     
     if ~isempty(Deci.Analysis.DownSample)
         data = ft_resampledata(struct('resamplefs',Deci.Analysis.DownSample,'detrend','no'),data);

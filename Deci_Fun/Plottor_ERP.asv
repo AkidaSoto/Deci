@@ -83,10 +83,8 @@ for  subject_list = 1:length(Deci.SubjectList)
     
     end
     
-    bpcfg.bpfilter = 'yes';
-    bpcfg.bpfreq = [.1 15];
-    bpcfg.bpfilttype = 'fir';
-    Chans = ft_preprocessing(bpcfg,Chans);
+    acfg.latency = Deci.Plot.ERP.Bsl;
+    acfg.avgovertime = 'yes';
     
     for Conditions = 1:length(Deci.Plot.Conditions)
         
@@ -207,7 +205,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 end
             end
             
-            if  Deci.Plot.ERP.Wires
+            if ~isempty(Deci.Plot.ERP.Wires)
                 
                 set(0, 'CurrentFigure', wire(subj) )
                 wire(subj).Visible = 'on';
@@ -216,10 +214,10 @@ for cond = 1:length(Deci.Plot.Draw)
                     
                     h = plot(ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.time,squeeze(mean(ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1)));
                 else
-                    top = squeeze(mean(ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1)) + squeeze(mean(squeeze(ERPStd{subj,Deci.Plot.Draw{cond}(subcond)}.avg),1))';
-                    bot = squeeze(mean(ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1)) - squeeze(mean(squeeze(ERPStd{subj,Deci.Plot.Draw{cond}(subcond)}.avg),1))';
+                    top = squeeze(mean(ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1)) + squeeze(mean(ERPStd{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1))';
+                    bot = squeeze(mean(ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1)) - squeeze(mean(ERPStd{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1))';
                     
-                    pgon = polyshape([ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.time fliplr(ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.time)],[top fliplr(bot)]);
+                    pgon = polyshape([ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.time fliplr(ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.time)],[top fliplr(bot')]);
                     b = plot(pgon,'HandleVisibility','off');
                     hold on
                     b.EdgeAlpha = 0;
@@ -230,11 +228,11 @@ for cond = 1:length(Deci.Plot.Draw)
                     
                     
                 end
-                ylabel('Amplitude')
+                ylabel('Power')
                 hold on
                 
                 legend(h.Parent,Deci.Plot.Subtitle{cond})
-                title(h.Parent,[Deci.SubjectList{subj} ' ' Deci.Plot.Title{cond} ' Wire'])
+                title(h.Parent,[Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' Wire'])
                 
                 if ~isempty(Deci.Folder.Plot)
                     saveas(wire(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_wire'],Deci.Plot.Save.Format);
@@ -247,20 +245,25 @@ for cond = 1:length(Deci.Plot.Draw)
         
     end
     
-    for subj = 1:size(ERPData,1)
+    for subj = 1:size(FreqData,1)
        
         
-        if length(ERP.Channels) ~= 1
+        if length(Freq.Channels) ~= 1
             
-            if Deci.Plot.ERP.Topo
+            if Deci.Plot.Freq.Topo
                 set(0, 'CurrentFigure', topo(subj) )
                 topo(subj).Visible = 'on';
                 suptitle(Deci.Plot.Title{cond});
                 
                 for r = 1:length(cirky(:))
                     
+                    if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
+                        cirky(r).CLim = Deci.Plot.Freq.Roi;
+                    elseif strcmp(Deci.Plot.Freq.Roi,'maxmin')
+                        cirky(r).CLim = [min([cirky.CLim]) max([cirky.CLim])];
+                    elseif strcmp(Deci.Plot.Freq.Roi,'maxabs')
                         cirky(r).CLim = [-1*max(abs([cirky.CLim])) max(abs([cirky.CLim]))];
-
+                    end
                     
                 end
                 

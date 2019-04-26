@@ -326,12 +326,17 @@ if Deci.Plot.GA
     
     for conds = 1:size(Subjects,2)
         facfg.parameter =  'powspctrm';
+        facfg.type = 'mean';
         FreqData{conds} = rmfield(ft_freqgrandaverage(facfg,Subjects{:,conds}),'cfg');
         
         TotalCount{conds} = mean([TrialCount{:,conds}]);
         
         if ~isempty(Deci.Plot.Freq.Wires)
+            facfg.type = 'mean';
             WireData{conds} = rmfield(ft_freqgrandaverage(facfg,WireSub{:,conds}),'cfg');
+            
+            facfg.type = 'std';
+            WireStd{conds} = rmfield(ft_freqgrandaverage(facfg,WireSub{:,conds}),'cfg');
         end
 
     end
@@ -345,6 +350,7 @@ else
     FreqData = Subjects;
     WireData = WireSub;
     TotalCount = TrialCount;
+    Deci.Plot.Freq.Wires.errorbars = 0;
 end
 clear Subjects;
 
@@ -424,7 +430,25 @@ for cond = 1:length(Deci.Plot.Draw)
                 wire(subj).Visible = 'on';
                  
                 if strcmpi(Deci.Plot.Freq.Wires.avg,'freq')
+                    
+                    if ~Deci.Plot.Freq.Wires.errorbars
+                        
                     h = plot(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.time,squeeze(mean(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)));
+                    else
+                    top = squeeze(mean(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)) + squeeze(mean(WireStd{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
+                    bot = squeeze(mean(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)) - squeeze(mean(WireStd{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
+                    
+                    pgon = polyshape([WireData{subj,Deci.Plot.Draw{cond}(subcond)}.time fliplr(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.time)],[top' fliplr(bot')]);
+                    b = plot(pgon,'HandleVisibility','off');
+                    hold on
+                    b.EdgeAlpha = 0;
+                    b.FaceAlpha = .15;
+                    h = plot(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.time,squeeze(mean(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)));
+                    h.Color = b.FaceColor;
+                    h.LineWidth = 1;
+                    
+                    
+                    end
                     xlabel('Time');
                 elseif  strcmpi(Deci.Plot.Freq.Wires.avg,'time')
                     

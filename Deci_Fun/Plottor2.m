@@ -15,7 +15,7 @@ for subject_list = 1:length(Deci.SubjectList)
     
     if Deci.Run.ERP
         if ~isempty(Deci.Plot.ERP) || ~isempty(Deci.Plot.PRP)
-            if ~isdir([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list}])
+            if ~isdir([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list}])
                 error(['ERP Analysis not found for '  Deci.SubjectList{subject_list}])
             end
         end
@@ -53,7 +53,7 @@ if Deci.Run.Freq && ~isempty(Deci.Plot.Freq)
 end
 
 if Deci.Run.ERP && ~isempty(Deci.Plot.ERP)
-
+    Plottor_ERP(Deci);
 end
 
 % if Deci.Run.PRP && ~isempty(Deci.Plot.PRP)
@@ -69,33 +69,6 @@ if Deci.Run.Behavior && ~isempty(Deci.Plot.Behv)
 end
 
 %% Plot
-
-if ~isempty(Deci.Plot.ERP)
-    if Deci.Plot.ERP.Plot
-        for subj = 1:size(TimeData,2)
-            
-            topoERP(subj)  = figure;
-            
-            
-            for cond = 1:size(TimeData,1)
-                
-                set(0, 'CurrentFigure', topoERP)
-                tippy(subj,cond)    = subplot(size(TimeData,1),1,cond);
-                ft_topoplotER(cfg, TimeData{subj,cond});
-                
-                
-            end
-            
-            wireERP(subj)  = figure;
-            ft_singleplotER(cfg, TimeData{:,subj});
-            
-        end
-        
-        for r = 1:length(tippy(:))
-            tippy(r).CLim = [min([tippy.CLim]) max([tippy.CLim])];
-        end
-    end
-end
 
 if ~isempty(Deci.Plot.PRP)
     
@@ -207,13 +180,6 @@ if ~isempty(Deci.Plot.PRP)
     
     
 end
-
-if ~isempty(Deci.Plot.CFC)
-    
-   
-    
-end
-
 
 end
 
