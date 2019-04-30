@@ -101,7 +101,7 @@ for j = 1:length(startstopseg)
         %dif in distractor to sarch field target
         if any(ismember([cfg.DT.Markers{2}],value)) && any(ismember([cfg.DT.Markers{6}],value))
             
-            new = abs(diff([cfg.DT.Markers{2}(ismember([cfg.DT.Markers{2}],value)) cfg.DT.Markers{6}(ismember([cfg.DT.Markers{6}],value))])-10);
+            new = abs(diff([cfg.DT.Markers{2}(ismember([cfg.DT.Markers{2}],value)) cfg.DT.Markers{6}(ismember([cfg.DT.Markers{6}],value))])+60);
             
             if new > 4
                 new = [8 - new];
