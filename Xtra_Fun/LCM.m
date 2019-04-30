@@ -25,7 +25,11 @@ trl = [];
 event =  StandardizeEventMarkers(event);
 
 if rem(length(find(ismember({event.value},startstop)')),2) ~= 0
-    error('invalid number of start and end pairings, check data!')
+%     base = strsplit(cfg.headerfile,'.');
+%     movefile(strcat(base{1},'.*'),'C:\Users\User\Desktop\Kyle\TheLostandDamned');
+%     x = strsplit(base{1},'\');
+%     error(x{end})
+    error('invalid number of start and end pairings, check data!');
 end
 
 startstopseg = reshape(find(ismember({event.value},startstop)'),[2 length(find(ismember({event.value},startstop)'))/2]);
@@ -82,7 +86,8 @@ for j = 1:length(startstopseg)
                 
             end
         end
-        
+        %% Marker Make 2.0
+        %dif in primer orientations
         if any(ismember([cfg.DT.Markers{2}],value)) && any(ismember([cfg.DT.Markers{3}],value))
             
             new = abs(diff([cfg.DT.Markers{2}(ismember([cfg.DT.Markers{2}],value)) cfg.DT.Markers{3}(ismember([cfg.DT.Markers{3}],value))])-10);
@@ -92,6 +97,28 @@ for j = 1:length(startstopseg)
             end
             
             trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = new + 450;
+        end
+        %dif in distractor to sarch field target
+        if any(ismember([cfg.DT.Markers{2}],value)) && any(ismember([cfg.DT.Markers{6}],value))
+            
+            new = abs(diff([cfg.DT.Markers{2}(ismember([cfg.DT.Markers{2}],value)) cfg.DT.Markers{6}(ismember([cfg.DT.Markers{6}],value))])-10);
+            
+            if new > 4
+                new = [8 - new];
+            end
+            
+            trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = new + 550;
+        end
+        %dif in sarch field distractor and search field target.
+        if any(ismember([cfg.DT.Markers{5}],value)) && any(ismember([cfg.DT.Markers{6}],value))
+            
+            new = abs(diff([cfg.DT.Markers{5}(ismember([cfg.DT.Markers{5}],value)) cfg.DT.Markers{6}(ismember([cfg.DT.Markers{6}],value))])-10);
+            
+            if new > 4
+                new = [8 - new];
+            end
+            
+            trialinfo(size(trl,1),length(cfg.DT.Markers)+3) = new + 650;
         end
         
         if ~isempty(cfg.DT.Block)

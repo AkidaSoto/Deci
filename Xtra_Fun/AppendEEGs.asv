@@ -1,0 +1,31 @@
+function AppendEEGs(Dir)
+
+b = CleanDir(Dir);
+b = unique(cellfun(@(d) d(1),cellfun(@(c) strsplit(c,'.'),b,'un',0)));
+
+a = cellfun(@(c) isequal('2',c{end}(1)),cellfun(@(c) strsplit(c,'_'),b,'UniformOutput',false));
+
+c = b(~a);
+d = b(a);
+
+d2 = cellfun(@(e) e([1:end-2]),d,'UniformOutput',false);
+
+commons = intersect(d2,c);
+
+for j = 1:length(commons)
+    
+    
+    hdr   = ft_read_header([commons{j} '.vhdr']);
+    event1 = ft_read_event([commons{j} '.vhdr']); 
+    dat1   = ft_read_data([commons{j} '.vhdr']);
+    
+    event2 = ft_read_event([commons{j} '_2.vhdr']); 
+    dat2   = ft_read_data([commons{j} '_2.vhdr']);
+    
+    event1(end)
+    
+    ft_write_data([folder '_new' filesep  string{1}],dat,'header',hdr,'dataformat','brainvision_eeg','event',event2)
+    
+end
+
+end

@@ -222,7 +222,9 @@ if ~isempty(Deci.Plot.Behv.Acc)
                 title(h.Parent,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Subtitle{draw}],'Interpreter','none');
                 
             else
-                disp(['Acc Total for ' Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{1} ':' Deci.Plot.Behv.Acc.Subtitle{draw} ' ' num2str(squeeze(Acc(subj,draw,:,:))*100) '%']);
+%                   disp(['Acc Total for ' Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{1} ':' Deci.Plot.Behv.Acc.Subtitle{draw} ' ' num2str(squeeze(Acc(subj,draw,:,:))*100) '%']);
+                  disp(num2str(squeeze(Acc(subj,draw,:,:))*100))
+                  disp('Blah Blah Blah')
             end
             
             
