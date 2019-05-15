@@ -87,39 +87,38 @@ for j = 1:length(startstopseg)
             end
         end
         %% Marker Make 2.0
-        %dif in primer orientations
-        if any(ismember([cfg.DT.Markers{2}],value)) && any(ismember([cfg.DT.Markers{3}],value))
-            
-            new = abs(diff([cfg.DT.Markers{2}(ismember([cfg.DT.Markers{2}],value)) cfg.DT.Markers{3}(ismember([cfg.DT.Markers{3}],value))])-10);
-            
-            if new > 4
-                new = [8 - new];
+        %Currently only works with markers that differ by exactly 8 between
+        %their minimum and maximum code. More or less will result in
+        %incorrect orientation. 
+        mkval1 = [211,221;211,151;141,151;141,211;141,221];
+        code=[450,550,650,700,750];
+        for gw = 1:size(mkval1,1) 
+            id1 = findelement(max(mkval1(gw,:)),cfg.DT.Markers);
+            id2 = findelement(min(mkval1(gw,:)),cfg.DT.Markers);
+            difofmk = (max(mkval1(gw,:)) - min(mkval1(gw,:))); 
+            if any(ismember([cfg.DT.Markers{id1}],value)) && any(ismember([cfg.DT.Markers{id2}],value))
+                new = abs([cfg.DT.Markers{id1}(ismember([cfg.DT.Markers{id1}],value)) - cfg.DT.Markers{id2}(ismember([cfg.DT.Markers{id2}],value))]-difofmk);
+                if new > 4
+                    new = [8 - new];
+                end
+                trialinfo(size(trl,1),length(cfg.DT.Markers)+gw) = new + code(gw);
             end
-            
-            trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = new + 450;
         end
-        %dif in distractor to sarch field target
-        if any(ismember([cfg.DT.Markers{2}],value)) && any(ismember([cfg.DT.Markers{6}],value))
-            
-            new = abs(diff([cfg.DT.Markers{2}(ismember([cfg.DT.Markers{2}],value)) cfg.DT.Markers{6}(ismember([cfg.DT.Markers{6}],value))])+60);
-            
-            if new > 4
-                new = [8 - new];
-            end
-            
-            trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = new + 550;
-        end
-        %dif in sarch field distractor and search field target.
-        if any(ismember([cfg.DT.Markers{5}],value)) && any(ismember([cfg.DT.Markers{6}],value))
-            
-            new = abs(diff([cfg.DT.Markers{5}(ismember([cfg.DT.Markers{5}],value)) cfg.DT.Markers{6}(ismember([cfg.DT.Markers{6}],value))])-10);
-            
-            if new > 4
-                new = [8 - new];
-            end
-            
-            trialinfo(size(trl,1),length(cfg.DT.Markers)+3) = new + 650;
-        end
+        
+        
+%         %dif in primer orientations 2,3 - original code or debug purposes
+%         if any(ismember([cfg.DT.Markers{2}],value)) && any(ismember([cfg.DT.Markers{3}],value))
+%             
+%             new = abs(diff([cfg.DT.Markers{2}(ismember([cfg.DT.Markers{2}],value)) cfg.DT.Markers{3}(ismember([cfg.DT.Markers{3}],value))])-10);
+%             
+%             if new > 4
+%                 new = [8 - new];
+%             end
+%             
+%             trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = new + 450;
+%         end
+%         %dif in distractor to sarch field target 2,6
+      
         
         if ~isempty(cfg.DT.Block)
             
@@ -138,6 +137,14 @@ for j = 1:length(startstopseg)
     end
     
 end
+
+    function tarelement = findelement(marker,cells)
+        for tridex = 1:numel(cells)
+            if ismember(marker,cells{tridex})
+               tarelement = tridex;
+            end 
+        end
+    end
 
 end
 

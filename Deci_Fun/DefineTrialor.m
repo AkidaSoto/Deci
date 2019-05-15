@@ -41,7 +41,7 @@ for subject_list = 1:length(Deci.SubjectList)
     
     cfg.Raw = Deci.Folder.Version;
     cfg.Subject = Deci.SubjectList{subject_list};
-    evalc('cfg = ft_definetrial(cfg)'); % will return cfg.trl, the segmented data
+    evalc('cfg = ft_definetrial(cfg);'); % will return cfg.trl, the segmented data
     
     trllength = size(cfg.trl,1);
     disp(['Found ' num2str(trllength) ' trials for ' Deci.SubjectList{subject_list}]);

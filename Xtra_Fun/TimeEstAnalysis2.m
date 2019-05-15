@@ -512,19 +512,16 @@ SHUBins4 = cell2mat(cellfun(@(c) nanmean(c,1),UBins(~Stim)','un',0));
 
 gLSTF = cell2mat(cellfun(@(c) nanmean(c,1),LBinsFHalf(Stim)','un',0));
 gLSHF = cell2mat(cellfun(@(c) nanmean(c,1),LBinsFHalf(~Stim)','un',0));
-gUSTF = cell2mat(cellfun(@(c) nanmean(c,1),UBinsFHalf(Stim)','un',0));
-gUSHF = cell2mat(cellfun(@(c) nanmean(c,1),UBinsFHalf(~Stim)','un',0));
+% gUSTF = cell2mat(cellfun(@(c) nanmean(c,1),UBinsFHalf(Stim)','un',0));
+% gUSHF = cell2mat(cellfun(@(c) nanmean(c,1),UBinsFHalf(~Stim)','un',0));
 
 gLSTL = cell2mat(cellfun(@(c) nanmean(c,1),LBinsLHalf(Stim)','un',0));
 gLSHL = cell2mat(cellfun(@(c) nanmean(c,1),LBinsLHalf(~Stim)','un',0));
-gUSTL = cell2mat(cellfun(@(c) nanmean(c,1),UBinsLHalf(Stim)','un',0));
-gUSHL = cell2mat(cellfun(@(c) nanmean(c,1),UBinsLHalf(~Stim)','un',0));
+% gUSTL = cell2mat(cellfun(@(c) nanmean(c,1),UBinsLHalf(Stim)','un',0));
+% gUSHL = cell2mat(cellfun(@(c) nanmean(c,1),UBinsLHalf(~Stim)','un',0));
 
 STLFBins = squeeze(mean(cell2mat(cellfun(@(c) nanmean(c,1),LBinsFHalf(Stim)','un',0)),1));
 STUFBins = squeeze(mean(cell2mat(cellfun(@(c) nanmean(c,1),UBinsFHalf(Stim)','un',0)),1));
-
-STLFBins1 = squeeze(mean(cell2mat(cellfun(@(c) nanmean(c,1),LBinsFHalf(Stim)','un',0)),1));
-STUFBins2 = squeeze(mean(cell2mat(cellfun(@(c) nanmean(c,1),UBinsFHalf(Stim)','un',0)),1));
 
 STLLBins = squeeze(mean(cell2mat(cellfun(@(c) nanmean(c,1),LBinsLHalf(Stim)','un',0)),1));
 STULBins = squeeze(mean(cell2mat(cellfun(@(c) nanmean(c,1),UBinsLHalf(Stim)','un',0)),1));
@@ -629,55 +626,65 @@ zstd = [StLFHsd StLLHsd; ShLFHsd ShLLHsd; StULFHsd StULLHsd; ShULFHsd ShULLHsd];
 % [h,p,ci,stats]=ttest(STLBins1(:,2,2), STLBins1(:,4,2))
 % [h,p,ci,stats]=ttest(STLBins1(:,3,2), STLBins1(:,4,2))
 
-% b = [repmat({'Stim'},[13,1]);repmat({'Sham'},[13,1])];
-% t = table(b, [gLSTF(:,1,2); gLSHF(:,1,2)],[gLSTF(:,2,2) ; gLSHF(:,2,2)],[gLSTF(:,3,2);gLSHF(:,3,2)], [gLSTF(:,4,2);gLSHF(:,4,2)],...
-%     'VariableNames', {'StimCondition', 'Bin1', 'Bin2', 'Bin3', 'Bin4'});
-% Bins = table([1 2 3 4]', 'VariableNames', {'Measurements'});
-% 
-% rm = fitrm(t, 'Bin1-Bin4~StimCondition','WithinDesign',Bins)
+b = [repmat({'Stim'},[13,1]);repmat({'Sham'},[13,1])];
+t = table(b, [gLSTF(:,1,2); gLSHF(:,1,2)],[gLSTF(:,2,2) ; gLSHF(:,2,2)],[gLSTF(:,3,2);gLSHF(:,3,2)], [gLSTF(:,4,2);gLSHF(:,4,2)],...
+    'VariableNames', {'StimCondition', 'Bin1', 'Bin2', 'Bin3', 'Bin4'});
+Bins = table([1 2 3 4]', 'VariableNames', {'Measurements'});
 
-% c = [repmat({'Stim'},[13,1]);repmat({'Sham'},[13,1])];
-% s = table(c, [gUSTF(:,1,2); gUSHF(:,1,2)],[gUSTF(:,2,2) ; gUSHF(:,2,2)],[gUSTF(:,3,2);gUSHF(:,3,2)], [gUSTF(:,4,2);gUSHF(:,4,2)],...
-%     'VariableNames', {'StimCondition', 'Bin1', 'Bin2', 'Bin3', 'Bin4'});
-% Bins = table([1 2 3 4]', 'VariableNames', {'Measurements'});
-% 
-% rm = fitrm(s, 'Bin1-Bin4~StimCondition','WithinDesign',Bins)
+rm = fitrm(t, 'Bin1-Bin4~StimCondition','WithinDesign',Bins)
 
-% d = [repmat({'Stim'},[13,1]);repmat({'Sham'},[13,1])];
-% f = table(d, [gLSTL(:,1,2); gLSHL(:,1,2)],[gLSTL(:,2,2) ; gLSHL(:,2,2)],[gLSTL(:,3,2);gLSHL(:,3,2)], [gLSTL(:,4,2);gLSHL(:,4,2)],...
-%     'VariableNames', {'StimCondition', 'Bin1', 'Bin2', 'Bin3', 'Bin4'});
-% Bins = table([1 2 3 4]', 'VariableNames', {'Measurements'});
-% 
-% rm = fitrm(f, 'Bin1-Bin4~StimCondition','WithinDesign',Bins)
+l = [gLSTF(:,1,2) gLSHF(:,1,2)]
+l2 = [gLSTF(:,2,2) gLSHF(:,2,2)]
+l3 = [gLSTF(:,3,2) gLSHF(:,3,2)]
+l4 = [gLSTF(:,4,2) gLSHF(:,4,2)]
 
-% e = [repmat({'Stim'},[13,1]);repmat({'Sham'},[13,1])];
-% g = table(e, [gUSTL(:,1,2); gUSHL(:,1,2)],[gUSTL(:,2,2) ; gUSHL(:,2,2)],[gUSTL(:,3,2);gUSHL(:,3,2)], [gUSTL(:,4,2);gUSHL(:,4,2)],...
-%     'VariableNames', {'StimCondition', 'Bin1', 'Bin2', 'Bin3', 'Bin4'});
-% Bins = table([1 2 3 4]', 'VariableNames', {'Measurements'});
-% 
-% rm = fitrm(g, 'Bin1-Bin4~StimCondition','WithinDesign',Bins)
+m1 = [gLSTL(:,1,2) gLSHL(:,1,2)]
+m2 = [gLSTL(:,2,2) gLSHL(:,2,2)]
+m3 = [gLSTL(:,3,2) gLSHL(:,3,2)]
+m4 = [gLSTL(:,4,2) gLSHL(:,4,2)]
+
+c = [repmat({'Stim'},[13,1]);repmat({'Sham'},[13,1])];
+s = table(c, [gUSTF(:,1,2); gUSHF(:,1,2)],[gUSTF(:,2,2) ; gUSHF(:,2,2)],[gUSTF(:,3,2);gUSHF(:,3,2)], [gUSTF(:,4,2);gUSHF(:,4,2)],...
+    'VariableNames', {'StimCondition', 'Bin1', 'Bin2', 'Bin3', 'Bin4'});
+Bins = table([1 2 3 4]', 'VariableNames', {'Measurements'});
+
+rm = fitrm(s, 'Bin1-Bin4~StimCondition','WithinDesign',Bins)
 
 d = [repmat({'Stim'},[13,1]);repmat({'Sham'},[13,1])];
-f = table(d, [STLBins1(:,1,2); SHLBins2(:,1,2)],[STLBins1(:,2,2) ; SHLBins2(:,2,2)],[STLBins1(:,3,2);SHLBins2(:,3,2)], [STLBins1(:,4,2);SHLBins2(:,4,2)],...
+f = table(d, [gLSTL(:,1,2); gLSHL(:,1,2)],[gLSTL(:,2,2) ; gLSHL(:,2,2)],[gLSTL(:,3,2);gLSHL(:,3,2)], [gLSTL(:,4,2);gLSHL(:,4,2)],...
     'VariableNames', {'StimCondition', 'Bin1', 'Bin2', 'Bin3', 'Bin4'});
 Bins = table([1 2 3 4]', 'VariableNames', {'Measurements'});
 
 rm = fitrm(f, 'Bin1-Bin4~StimCondition','WithinDesign',Bins)
+
+e = [repmat({'Stim'},[13,1]);repmat({'Sham'},[13,1])];
+g = table(e, [gUSTL(:,1,2); gUSHL(:,1,2)],[gUSTL(:,2,2) ; gUSHL(:,2,2)],[gUSTL(:,3,2);gUSHL(:,3,2)], [gUSTL(:,4,2);gUSHL(:,4,2)],...
+    'VariableNames', {'StimCondition', 'Bin1', 'Bin2', 'Bin3', 'Bin4'});
+Bins = table([1 2 3 4]', 'VariableNames', {'Measurements'});
 % 
+% rm = fitrm(g, 'Bin1-Bin4~StimCondition','WithinDesign',Bins)
+
+% d = [repmat({'Stim'},[13,1]);repmat({'Sham'},[13,1])];
+% f = table(d, [STLBins1(:,1,2); SHLBins2(:,1,2)],[STLBins1(:,2,2) ; SHLBins2(:,2,2)],[STLBins1(:,3,2);SHLBins2(:,3,2)], [STLBins1(:,4,2);SHLBins2(:,4,2)],...
+%     'VariableNames', {'StimCondition', 'Bin1', 'Bin2', 'Bin3', 'Bin4'});
+% Bins = table([1 2 3 4]', 'VariableNames', {'Measurements'});
+% 
+% rm = fitrm(f, 'Bin1-Bin4~StimCondition','WithinDesign',Bins)
+% % 
+% % e = [repmat({'Stim'},[13,1]);repmat({'Sham'},[13,1])];
+% % g = table(e, [STUBins3(:,1,2); SHUBins4(:,1,2)],[STUBins3(:,2,2) ; SHUBins4(:,2,2)],[STUBins3(:,3,2);SHUBins4(:,3,2)], [STUBins3(:,4,2);SHUBins4(:,4,2)],...
+% %     'VariableNames', {'StimCondition', 'Bin1', 'Bin2', 'Bin3', 'Bin4'});
+% % Bins = table([1 2 3 4]', 'VariableNames', {'Measurements'});
+% % 
+% % rm = fitrm(g, 'Bin1-Bin4~StimCondition','WithinDesign',Bins)
 % e = [repmat({'Stim'},[13,1]);repmat({'Sham'},[13,1])];
-% g = table(e, [STUBins3(:,1,2); SHUBins4(:,1,2)],[STUBins3(:,2,2) ; SHUBins4(:,2,2)],[STUBins3(:,3,2);SHUBins4(:,3,2)], [STUBins3(:,4,2);SHUBins4(:,4,2)],...
+% g = table(e, [STLBins1(:,1,2); SHLBins2(:,1,2)],[STLBins1(:,2,2) ; SHLBins2(:,2,2)],[STLBins1(:,3,2);SHLBins2(:,3,2)], [STLBins1(:,4,2);SHLBins2(:,4,2)],...
 %     'VariableNames', {'StimCondition', 'Bin1', 'Bin2', 'Bin3', 'Bin4'});
 % Bins = table([1 2 3 4]', 'VariableNames', {'Measurements'});
 % 
 % rm = fitrm(g, 'Bin1-Bin4~StimCondition','WithinDesign',Bins)
-e = [repmat({'Stim'},[13,1]);repmat({'Sham'},[13,1])];
-g = table(e, [STLBins1(:,1,2); SHLBins2(:,1,2)],[STLBins1(:,2,2) ; SHLBins2(:,2,2)],[STLBins1(:,3,2);SHLBins2(:,3,2)], [STLBins1(:,4,2);SHLBins2(:,4,2)],...
-    'VariableNames', {'StimCondition', 'Bin1', 'Bin2', 'Bin3', 'Bin4'});
-Bins = table([1 2 3 4]', 'VariableNames', {'Measurements'});
-
-rm = fitrm(g, 'Bin1-Bin4~StimCondition','WithinDesign',Bins)
-
-i =[STLBins1(:,1,2) SHLBins2(:,1,2)];
+% 
+% i =[STLBins1(:,1,2) SHLBins2(:,1,2)];
 %%
 
 figure(1); clf; hold on;
@@ -727,7 +734,7 @@ errorbar(SHLBins(:,2),semSHLBins);
 %errorbar(STUBins(:,2),semSTUBins);
 %errorbar(SHUBins(:,2),semSHUBins);
 title('Absolute Deviations from Target Window')
-legend({'Learned Stim' 'Learned Sham' 'UnLearned Stim' 'UnLearned Sham'});
+legend({'Learned Stim' 'Learned Sham'});
 xticks(1:4);
 ylabel('ms')
 xticklabels({'Bin 1' 'Bin 2' 'Bin 3' 'Bin 4'});
@@ -836,25 +843,25 @@ ylim([0 60])
 
 figure(11); clf; hold on;
 errorbar(STLFBins(:,2),semSTLFBins);
-errorbar(STUFBins(:,2),semSTUFBins);
+% errorbar(STUFBins(:,2),semSTUFBins);
 errorbar(SHLFBins(:,2),semSHLFBins);
-errorbar(SHUFBins(:,2),semSHUFBins);
-title('Absolute Deviations from Target Window')
-legend({'FH Learned Stim' 'FH Unlearned Stim' 'FH Learned Sham' 'FH Unlearned Sham'});
+% errorbar(SHUFBins(:,2),semSHUFBins);
+title('Absolute Deviations from Target Window in Early Blocks')
+legend({'FH Learned Stim' 'FH Learned Sham' });
 xticks(1:4);
-ylim([-10 650])
+ylim([-20 180])
 ylabel('ms')
 xticklabels({'Bin 1' 'Bin 2' 'Bin 3' 'Bin 4'});
 
 figure(12); clf; hold on;
 errorbar(STLLBins(:,2),semSTLLBins);
-errorbar(STULBins(:,2),semSTULBins);
+%errorbar(STULBins(:,2),semSTULBins);
 errorbar(SHLLBins(:,2),semSHLLBins);
-errorbar(SHULBins(:,2),semSHULBins);
-title('Absolute Deviations from Target Window')
-legend({'LH Learned Stim' 'LH Unlearned Stim' 'LH Learned Sham' 'LH Unlearned Sham'});
+%errorbar(SHULBins(:,2),semSHULBins);
+title('Absolute Deviations from Target Window in Late Blocks')
+legend({'LH Learned Stim'  'LH Learned Sham'});
 xticks(1:4);
-ylim([-10 650])
+ylim([-20 200])
 ylabel('ms')
 xticklabels({'Bin 1' 'Bin 2' 'Bin 3' 'Bin 4'});
 
