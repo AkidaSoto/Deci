@@ -105,24 +105,22 @@ for j = 1:length(startstopseg)
     
 end
 
-blocks = [0;find(diff(trialinfo(:,4)) ~= 0)];
+blocks = [0;find(diff(trialinfo(:,4)) ~= 0);length(trialinfo(:,4))];
 
 for p = 1:length(blocks)-1
     
-    
-    RLT = rem(length(blocks(p):blocks(p+1)),floor(length(blocks(p):blocks(p+1))/4));
-    
-    Dev = trialinfo(blocks(p)+1:blocks(p+1)-RLT,4);
-    
-    v = 0;
-    for k = 1:4
-        y = k > [ceil([length(Dev)+.01]/4)*4 - length(Dev)];
+    if floor(length(blocks(p):blocks(p+1))/4) > 0
+        Dev = trialinfo(blocks(p)+1:blocks(p+1),4);
         
-        trialinfo(blocks(p)+floor(length(Dev)/4)*(k-1)+v+1:blocks(p)+floor(length(Dev)/4)*k+y+v,5) = 500+k;
-        v = v + y;
-        
+        v = 0;
+        for k = 1:4
+            y = k > [ceil([length(Dev)+.01]/4)*4 - length(Dev)];
+            
+            trialinfo(blocks(p)+floor(length(Dev)/4)*(k-1)+v+1:blocks(p)+floor(length(Dev)/4)*k+y+v,5) = 500+k;
+            v = v + y;
+            
+        end
     end
-    
 end
 
 end
