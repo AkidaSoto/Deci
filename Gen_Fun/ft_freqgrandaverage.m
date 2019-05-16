@@ -207,11 +207,11 @@ for k=1:numel(cfg.parameter)
         if strcmpi(cfg.type,'mean')
         
         tmp = permute(nanmean(tmp,1),[2:sizetmp 1]);
-        elseif strcmpi(cfg.type,'std')
+        elseif strcmpi(cfg.type,'sem')
             
-        tmp = permute(stdmean(tmp,1),[2:sizetmp 1]);    
+        tmp = permute(nanstd(tmp,1)./sqrt(size(tmp,1)),[2:sizetmp 1]);    
         else
-            error('cfg.type == mean or std only')
+            error('cfg.type == mean or sem only')
         end
     elseif strcmp(cfg.keepindividual, 'yes')
         tmp = zeros([Nsubj dim{k}]);

@@ -130,8 +130,7 @@ for  subject_list = 1:length(Deci.SubjectList)
         
         
         switch Deci.Plot.Freq.BslType
-            case 'none'
-                
+            
             case 'absolute'
                 Subjects{subject_list,Conditions}.powspctrm =  Subjects{subject_list,Conditions}.powspctrm - bsl;
             case 'relative'

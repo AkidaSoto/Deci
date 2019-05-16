@@ -152,7 +152,7 @@ if Deci.Plot.GA
         
         TotalCount{conds} = mean([TrialCount{:,conds}]);
         
-        facfg.type = 'std';
+        facfg.type = 'sem';
         ERPStd{conds} = rmfield(ft_timelockgrandaverage(facfg,Subjects{:,conds}),'cfg');
         
 

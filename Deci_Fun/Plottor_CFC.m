@@ -141,16 +141,50 @@ for  subject_list = 1:length(Deci.SubjectList)
 end
 
 
+if ~isempty(Deci.Plot.Math)
+    
+    for m = 1:length(Deci.Plot.CFC.methods)
+        for cond = 1:length(Deci.Plot.Math.Form)
+            
+            
+            for subj = 1:size(Subjects,1)
+                
+                
+                operation = str2fun(['@(x)' regexprep(Deci.Plot.Math.Form{cond},'x(\d*)','x{$1}')]);
+
+                MathData{subj} = Subjects{subj,1,m};
+                MathData{subj}.crsspctrm = [feval(operation, cellfun(@(c) c.crsspctrm,Subjects(subj,1:length(Deci.Plot.Conditions)+cond-1,m),'UniformOutput',false))];
+                
+                
+            end
+            Subjects(:,length(Deci.Plot.Conditions)+cond,m) = MathData;
+            TotalCount(:,length(Deci.Plot.Conditions)+cond) = num2cell(nan(size(Subjects,1),1));
+        end
+        
+        
+    end
+    
+    
+end
+
 if Deci.Plot.GA
     
     for conds = 1:size(Subjects,2)
         for m = 1:length(Deci.Plot.CFC.methods)
             facfg.parameter =  'crsspctrm';
-            
+            facfg.type = 'mean';
             CFCData{1,conds,m} = Subjects{1,conds,m};
             CFCData{1,conds,m}.crsspctrm =  mean([cell2mat(cellfun(@(c) c.crsspctrm,Subjects(:,conds,m),'UniformOutput',false))],1);
             
-            TotalCount{1,conds} = mean([TrialCount{:,conds}]);
+             %TotalCount{1,conds} = mean([TrialCount{:,conds}]);
+             
+             if Deci.Plot.CFC.errorbars
+                 facfg.type = 'std';
+                 CFCStd{1,conds,m} = Subjects{1,conds,m};
+                 CFCStd{1,conds,m}.crsspsctrm = std([cell2mat(cellfun(@(c) c.crsspctrm,Subjects(:,conds,m),'UniformOutput',false))],1);
+             end
+             
+           
         end
     end
     
@@ -165,31 +199,7 @@ else
 end
 clear Subjects;
 
-if ~isempty(Deci.Plot.Math)
-    
-    for m = 1:length(Deci.Plot.CFC.methods)
-        for cond = 1:length(Deci.Plot.Math.Form)
-            
-            
-            for subj = 1:size(CFCData,1)
-                
-                
-                operation = str2fun(['@(x)' regexprep(Deci.Plot.Math.Form{cond},'x(\d*)','x{$1}')]);
-                
-                MathData(subj) = CFCData(subj,1,m);
-                MathData{subj}.crsspctrm = [feval(operation, cellfun(@(c) c.crsspctrm,CFCData(subj,1:length(Deci.Plot.Conditions)+cond-1,m),'UniformOutput',false))];
-                
-                
-            end
-            CFCData(:,length(Deci.Plot.Conditions)+cond,m) = MathData;
-            TotalCount(:,length(Deci.Plot.Conditions)+cond) = num2cell(nan(size(CFCData,1),1));
-        end
-        
-        
-    end
-    
-    
-end
+
 
 
 for cond = 1:length(Deci.Plot.Draw)
@@ -270,12 +280,31 @@ for cond = 1:length(Deci.Plot.Draw)
                 if Deci.Plot.CFC.Wire
                     set(0, 'CurrentFigure', CFCwire(subj,met) )
                     CFCwire(subj,met).Visible = 'on';
-                    cwire(subj,subcond,met)    =  subplot(length(Deci.Plot.Draw{cond}),1,subcond);
+                    
                     
                     for chanh = 1:length(CFCData{subj,subcond,met}.labelhigh)
                         for chanl = 1:length(CFCData{subj,subcond,met}.labellow)
+                            
+                            cwire(subj,chanl,met)    =  subplot(length(CFCData{subj,subcond,met}.labellow),1,chanl);
                         
-                            plot(CFCData{subj,subcond,met}.timelow,squeeze(CFCData{subj,subcond,met}.crsspctrm(chanl,chanh,:)))
+                            
+                            if ~Deci.Plot.CFC.errorbars
+                                plot(CFCData{subj,subcond,met}.timelow,squeeze(CFCData{subj,subcond,met}.crsspctrm(chanl,chanh,:)))
+                                
+                            else
+                                top = squeeze(mean(CFCData{subj,Deci.Plot.Draw{cond}(subcond),met}.crsspctrm(chanl,chanh,:),1)) + squeeze(mean(CFCStd{subj,Deci.Plot.Draw{cond}(subcond),met}.crsspctrm(chanl,chanh,:),1));
+                                bot = squeeze(mean(CFCData{subj,Deci.Plot.Draw{cond}(subcond),met}.crsspctrm(chanl,chanh,:),1)) - squeeze(mean(CFCStd{subj,Deci.Plot.Draw{cond}(subcond),met}.crsspctrm(chanl,chanh,:),1));
+                                
+                                pgon = polyshape([CFCData{subj,Deci.Plot.Draw{cond}(subcond)}.timelow fliplr(CFCData{subj,Deci.Plot.Draw{cond}(subcond)}.timelow)],[top' fliplr(bot')],'Simplify', false);
+                                b = plot(pgon,'HandleVisibility','off');
+                                hold on
+                                b.EdgeAlpha = 0;
+                                b.FaceAlpha = .15;
+                                h =  plot(CFCData{subj,subcond,met}.timelow,squeeze(CFCData{subj,subcond,met}.crsspctrm(chanl,chanh,:)));
+                                h.Color = b.FaceColor;
+                                h.LineWidth = 1;
+                                
+                            end
                             hold on
                         end
                     end
@@ -306,7 +335,7 @@ for cond = 1:length(Deci.Plot.Draw)
                  for WireLim = 1:length(cwire(subj,:,met))
                    Vect = CombVec(CFCData{subj,subcond,met}.labellow',CFCData{subj,subcond,met}.labelhigh')';
                    legend(cwire(subj,WireLim,met),arrayfun(@(c) [Vect{c,1} Vect{c,2}],1:size(Vect,1),'un',0));
-                   cwire(subj,WireLim,met).Ylim = minmax([cwire(subj,:,met).YLim]);
+                   cwire(subj,WireLim,met).YLim = minmax([cwire(subj,:,met).YLim]);
                  end
             end
             
