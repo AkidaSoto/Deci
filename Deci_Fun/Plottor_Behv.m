@@ -138,22 +138,29 @@ if ~isempty(Deci.Plot.Behv.Acc)
             end
         end
         Acc = fAcc;
+        Accstd = [];
     end
     
     if Deci.Plot.Behv.Acc.Collapse.Trial
+        Accstd = nanstd(Acc,[],4);
         Acc = nanmean(Acc,4);
+        
     end
     
     if Deci.Plot.Behv.Acc.Collapse.Block
+        Accstd = nanstd(Acc,[],3);
         Acc = nanmean(Acc,3);
+        
     end
     
     Sub.Acc = Deci.SubjectList;
     if Deci.Plot.Behv.Acc.Collapse.Subject
+        Accstd =  nanstd(Acc,[],1);
         Acc =  nanmean(Acc,1);
+        
         Sub.Acc = {'SubjAvg'};
     end
-    
+    save([Deci.Folder.Version filesep 'Plot' filesep 'RTstd'],'Accstd');    
 end
 
 if ~isempty(Deci.Plot.Behv.RT)
@@ -165,22 +172,26 @@ if ~isempty(Deci.Plot.Behv.RT)
             end
         end
         RT = fRT;
+        RTstd = [];
     end
     
     if Deci.Plot.Behv.RT.Collapse.Trial
+        RTstd = nanstd(RT,[],4);
         RT = nanmean(RT,4);
     end
     
     if Deci.Plot.Behv.RT.Collapse.Block
+        RTstd = nanstd(RT,[],3);
         RT = nanmean(RT,3);
     end
     
     Sub.RT = Deci.SubjectList;
     if Deci.Plot.Behv.RT.Collapse.Subject
+        RTstd = nanstd(RT,[],1);
         RT =  nanmean(RT,1);
         Sub.RT = {'SubjAvg'};
     end
-    
+    save([Deci.Folder.Version filesep 'Plot' filesep 'RTstd'],'RTstd');
 end
 
 
@@ -222,15 +233,15 @@ if ~isempty(Deci.Plot.Behv.Acc)
                 title(h.Parent,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Subtitle{draw}],'Interpreter','none');
                 
             else
-                    disp(['Acc Total for ' Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{draw} ' ' num2str(squeeze(Acc(subj,draw,:,:))*100) '%']);
-                   %disp(num2str(squeeze(Acc(subj,draw,:,:))*100))
+                    disp(['Acc Total for ' Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{draw} ' ' num2str(squeeze(Acc(subj,draw,:,:))*100) '%' ' +- ' num2str(squeeze(Accstd(subj,draw,:,:))*100)]);
+                    %disp(num2str(squeeze(Acc(subj,draw,:,:))*100))
 
             end
             
             
         end
         
-        if length(find(size(squeeze(Acc(subj,draw,:,:))) ~= 1)) ==2
+        if length(find(size(squeeze(Acc(subj,draw,:,:))) ~= 1)) == 2
             suptitle([Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title]);
         end
     end
@@ -274,7 +285,7 @@ if ~isempty(Deci.Plot.Behv.RT)
                 title(h.Parent,[Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Subtitle{draw}],'Interpreter','none');
                 
             else
-                disp(['RT Total for ' Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Subtitle{draw} ' ' num2str(squeeze(RT(subj,draw,:,:)))])
+                disp(['RT Total for ' Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Subtitle{draw} ' ' num2str(squeeze(RT(subj,draw,:,:))) ' +- ' num2str(squeeze(RTstd(subj,draw,:,:)))])
             end
             
         end
