@@ -93,7 +93,6 @@ for  subject_list = 1:length(Deci.SubjectList)
         maxt = max(sum(ismember(erp.condinfo{2},Deci.Plot.Conditions{Conditions}),2));
         
         trl = sum(ismember(erp.condinfo{2},Deci.Plot.Conditions{Conditions}),2) == maxt;
-        
         tcfg = [];
         tcfg.trials = trl;
         [timelock] = ft_timelockanalysis(tcfg, Chans);
@@ -119,7 +118,7 @@ end
 
 
 
-if Deci.Plot.Math.Type ~= 0
+if ~isempty(Deci.Plot.Math)
     
     
     for cond = 1:length(Deci.Plot.Math.Form)
@@ -211,7 +210,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 
                 set(0, 'CurrentFigure', wire(subj) )
                 wire(subj).Visible = 'on';
-                
+
                 if ~Deci.Plot.ERP.errorbars
                     
                     h = plot(ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.time,squeeze(mean(ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1)));
@@ -230,6 +229,9 @@ for cond = 1:length(Deci.Plot.Draw)
                     
                     
                 end
+                a = gca;
+                a.YDir = 'reverse';
+                
                 ylabel('Amplitude')
                 hold on
                 

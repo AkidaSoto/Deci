@@ -88,9 +88,7 @@ if Deci.Analysis.Freq.do
         data = ft_datashift2(cfg,dataplaceholder);
         
         data.condinfo = condinfo;
-        
-        
-        
+
         fcfg = Deci.Analysis.Freq;
         fcfg.output='fourier';
         fcfg.pad = 'maxperlen';

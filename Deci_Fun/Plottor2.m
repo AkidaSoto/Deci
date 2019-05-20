@@ -57,7 +57,7 @@ if Deci.Run.ERP && ~isempty(Deci.Plot.ERP)
 end
 
 % if Deci.Run.PRP && ~isempty(Deci.Plot.PRP)
-% 
+%
 % end
 
 if Deci.Run.CFC && ~isempty(Deci.Plot.CFC)
@@ -66,6 +66,13 @@ end
 
 if Deci.Run.Behavior && ~isempty(Deci.Plot.Behv)
     Plottor_Behv(Deci);
+end
+
+if Deci.Run.Extra && ~isempty(Deci.Plot.Extra)
+    for fun = find(Deci.Plot.Extra.List)
+        
+        Deci.Plot.Extra.Functions{fun}(Deci.Plot.Extra.Params{fun})
+    end
 end
 
 %% Plot

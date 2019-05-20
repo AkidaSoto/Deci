@@ -93,6 +93,10 @@ for subject_list = 1:length(Deci.SubjectList)
             for blk = 1:length(Deci.Plot.Behv.Acc.Block)
                 for draw = 1:length(Deci.Plot.Behv.Acc.Total)
                     
+                    if any(~any(data.event > 1))
+                        blk = blk*-1;
+                    end
+                    
                     draws = Deci.Plot.Conditions(Deci.Plot.Behv.Acc.Total{draw});
                     maxt = max(sum(ismember(data.event,[draws{:} Deci.Plot.Behv.Acc.Block(blk)]),2));
                     trl = sum(ismember(data.event,[draws{:}  Deci.Plot.Behv.Acc.Block(blk)]),2) == maxt;

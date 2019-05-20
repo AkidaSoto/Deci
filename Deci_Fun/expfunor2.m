@@ -89,7 +89,7 @@ for j = 1:length(startstopseg)
             if ~isempty(cfg.DT.Block.Markers)
                 trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = bmarkers(find([event(startstopseg(1,j)).sample] >  [event(bstartstopseg(1,:)).sample],1,'last'));
             else
-                trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = find([event(startstopseg(1,j)).sample] >  [event(bstartstopseg(1,:)).sample],1,'last');
+                trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = -1*find([event(startstopseg(1,j)).sample] >  [event(bstartstopseg(1,:)).sample],1,'last');
             end
             
         end
