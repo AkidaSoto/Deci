@@ -405,8 +405,8 @@ for cond = 1:length(Deci.Plot.Draw)
                         
                     h = plot(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.time,squeeze(mean(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)));
                     else
-                    top = squeeze(mean(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)) + squeeze(mean(WireStd{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
-                    bot = squeeze(mean(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)) - squeeze(mean(WireStd{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
+                    top = squeeze(nanmean(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)) + squeeze(nanmean(WireStd{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
+                    bot = squeeze(nanmean(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)) - squeeze(nanmean(WireStd{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
                     
                     pgon = polyshape([WireData{subj,Deci.Plot.Draw{cond}(subcond)}.time fliplr(WireData{subj,Deci.Plot.Draw{cond}(subcond)}.time)],[top' fliplr(bot')],'Simplify', false);
                     b = plot(pgon,'HandleVisibility','off');
