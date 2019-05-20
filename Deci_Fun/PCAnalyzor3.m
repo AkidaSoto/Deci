@@ -105,7 +105,7 @@ if Deci.Analysis.Freq.do
             a = figure;
             for Channel = 1:length(Fourier.label)
                 
-                plot(reshape(squeeze(10*log10(mean(mean(abs(Fourier.fourierspctrm(:,Channel,:,:)).^2,3),2)))',[1 size(Fourier.fourierspctrm,1)*size(Fourier.fourierspctrm,4)]));
+                plot(reshape(squeeze(10*log10(nanmean(nanmean(abs(Fourier.fourierspctrm(:,Channel,:,:)).^2,3),2)))',[1 size(Fourier.fourierspctrm,1)*size(Fourier.fourierspctrm,4)]));
                 hold on
             end
             a.Visible = 'on';
@@ -116,7 +116,7 @@ if Deci.Analysis.Freq.do
             b = figure;
             for Channel = 1:length(Fourier.freq)
                 
-                plot(reshape(squeeze(10*log10(mean(mean(abs(Fourier.fourierspctrm(:,:,Channel,:)).^2,3),2)))',[1 size(Fourier.fourierspctrm,1)*size(Fourier.fourierspctrm,4)]));
+                plot(reshape(squeeze(10*log10(nanmean(nanmean(abs(Fourier.fourierspctrm(:,:,Channel,:)).^2,3),2)))',[1 size(Fourier.fourierspctrm,1)*size(Fourier.fourierspctrm,4)]));
                 hold on
             end
             b.Visible = 'on';
@@ -129,7 +129,7 @@ if Deci.Analysis.Freq.do
         if Deci.Analysis.Clean
             fakedata = [];
             cfg =[];
-            fakedata.trial = squeeze(mat2cell(10*log10(squeeze(permute(squeeze(mean(abs(Fourier.fourierspctrm).^2,3)),[2 3 1]))),size(Fourier.fourierspctrm,2),size(Fourier.fourierspctrm,4),ones(1,size(Fourier.fourierspctrm,1))));
+            fakedata.trial = squeeze(mat2cell(10*log10(squeeze(permute(squeeze(nanmean(abs(Fourier.fourierspctrm).^2,3)),[2 3 1]))),size(Fourier.fourierspctrm,2),size(Fourier.fourierspctrm,4),ones(1,size(Fourier.fourierspctrm,1))));
             fakedata.time = repmat({Fourier.time},[size(Fourier.fourierspctrm,1) 1 ]);
             fakedata.label = Fourier.label;
             cfg.demean        = 'yes';
@@ -144,12 +144,12 @@ if Deci.Analysis.Freq.do
             cfg =[];
             cfg.artfctdef.zvalue.channel = Fourier.label;
             cfg.artfctdef.zvalue.cutoff = 18.5;
-            %cfg.artfctdef.zvalue.interactive = 'yes';
+            cfg.artfctdef.zvalue.interactive = 'yes';
             %cfg.artfctdef.zvalue.cumulative = 'no';
             [cfg, ecfg.artfctdef.muscle.artifact] = ft_artifact_abszvalue(cfg,fakedata);
             
             cfg =[];
-            fakedata.trial = squeeze(mat2cell(10*log10(squeeze(permute(squeeze(mean(abs(Fourier.fourierspctrm).^2,2)),[2 3 1]))),size(Fourier.fourierspctrm,3),size(Fourier.fourierspctrm,4),ones(1,size(Fourier.fourierspctrm,1))));
+            fakedata.trial = squeeze(mat2cell(10*log10(squeeze(permute(squeeze(nanmean(abs(Fourier.fourierspctrm).^2,2)),[2 3 1]))),size(Fourier.fourierspctrm,3),size(Fourier.fourierspctrm,4),ones(1,size(Fourier.fourierspctrm,1))));
             fakedata.time = repmat({Fourier.time},[size(Fourier.fourierspctrm,1) 1 ]);
             fakedata.label = strsplit(num2str(Fourier.freq),' ');
             cfg.demean        = 'yes';
@@ -163,7 +163,7 @@ if Deci.Analysis.Freq.do
             cfg =[];
             cfg.artfctdef.zvalue.channel = strsplit(num2str(Fourier.freq),' ');
             cfg.artfctdef.zvalue.cutoff = 18.5;
-            %cfg.artfctdef.zvalue.interactive = 'yes';
+            cfg.artfctdef.zvalue.interactive = 'yes';
             %cfg.artfctdef.zvalue.cumulative = 'no';
             [cfg, ecfg.artfctdef.eog.artifact] = ft_artifact_abszvalue(cfg,fakedata);
             
