@@ -16,7 +16,7 @@ cfg.dataset = filesyntax(cfg.dataset);
 cfg.feedback = feedback;
 evalc('data_eeg = ft_preprocessing(cfg)');
 
-condinfo = {data_eeg.trialinfo cfg.event};
+condinfo = {data_eeg.trialinfo cfg.event cfg.trialnum};
 
 if ~isempty(Deci.PP.ScalingFactor)
     disp('Data Scaled');

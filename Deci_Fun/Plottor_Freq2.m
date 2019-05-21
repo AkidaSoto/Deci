@@ -30,7 +30,7 @@ end
 for  subject_list = 1:length(Deci.SubjectList)
     
     tic;
-
+    
     Freq.Channels       = CleanDir([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep Deci.SubjectList{subject_list} filesep Deci.Plot.Lock]);
     Freq.Channels       = cellfun(@(c) c(1:end-4),Freq.Channels,'un',0);
     
@@ -47,18 +47,8 @@ for  subject_list = 1:length(Deci.SubjectList)
         display(['Channel ' Freq.Channels{Channel} ' of ' num2str(length(Freq.Channels))])
         
         freq = [];
+        load([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep Deci.SubjectList{subject_list} filesep Deci.Plot.Lock filesep Freq.Channels{Channel}],'freq');
         
-            
-        switch Deci.Plot.Freq.Type
-            case 'TotalPower'
-                load([Deci.Folder.Plot filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep num2str(Deci.Deci.Plot.Lock(Lock)) filesep Freq.Channels{Channel}],'freq');
-            case 'ITPC'
-                load([Deci.Folder.Plot filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep num2str(Deci.Plot.Lock(Lock)) filesep Freq.Channels{Channel}],'freq');
-            case 'TotalPower Mean/Var'
-                load([Deci.Folder.Plot filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep num2str(Deci.Deci.Plot.Lock(Lock)) filesep Freq.Channels{Channel}],'freq');
-        end
-        
-       
         foi = freq.freq >= round(Deci.Plot.Freq.Foi(1),4) & freq.freq <= round(Deci.Plot.Freq.Foi(2),4);
         %toi = round(freq.time,4) >= Deci.Plot.Freq.Toi(1) & round(freq.time,4) <= Deci.Plot.Freq.Toi(2);
         
@@ -119,6 +109,18 @@ for  subject_list = 1:length(Deci.SubjectList)
         Subjects{subject_list,Conditions}.powspctrm = Chans.powspctrm(trl,:,:,:);
         
         TrialCount{subject_list,Conditions} = length(find(trl));
+        
+        switch Deci.Plot.Freq.Type
+            case 'TotalPower'
+                Subjects{subject_list,Conditions}.powspctrm = permute(mean(abs(Subjects{subject_list,Conditions}.powspctrm).^2 ,1),[2 3 4 1]);
+            case 'ITPC'
+                Subjects{subject_list,Conditions}.powspctrm = permute(abs(mean(Subjects{subject_list,Conditions}.powspctrm./abs(Subjects{subject_list,Conditions}.powspctrm),1)),[2 3 4 1]) ;
+            case 'TotalPower Std'
+                Subjects{subject_list,Conditions}.powspctrm = permute(std(abs(Subjects{subject_list,Conditions}.powspctrm).^2 ,1),[2 3 4 1]);
+            case 'TotalPower Mean/Std'
+                Subjects{subject_list,Conditions}.powspctrm = permute(mean(abs(Subjects{subject_list,Conditions}.powspctrm).^2 ,1),[2 3 4 1])./permute(std(abs(Subjects{subject_list,Conditions}.powspctrm).^2 ,1),[2 3 4 1]);
+                
+        end
 
         bsl = ft_selectdata(acfg, Subjects{subject_list,Conditions});
         

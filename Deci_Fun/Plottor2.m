@@ -49,7 +49,7 @@ end
 %% Split
 
 if Deci.Run.Freq && ~isempty(Deci.Plot.Freq)
-    Plottor_Freq(Deci);
+    Plottor_Freq2(Deci);
 end
 
 if Deci.Run.ERP && ~isempty(Deci.Plot.ERP)
@@ -61,7 +61,7 @@ end
 % end
 
 if Deci.Run.CFC && ~isempty(Deci.Plot.CFC)
-    Plottor_CFC(Deci);
+    Plottor_CFC2(Deci);
 end
 
 if Deci.Run.Behavior && ~isempty(Deci.Plot.Behv)

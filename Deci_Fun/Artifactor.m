@@ -33,20 +33,20 @@ for subject_list = 1:length(Deci.SubjectList)
             
         end
          condinfo = data.condinfo;
-        
+         preart   = condinfo;
         cfg = [];
         
         cfg.artfctdef.muscle = [];
          cfg.artfctdef.muscle.cutoff      = 25;
          cfg.artfctdef.muscle.channel = 'all';
          cfg.artfctdef.muscle.interactive = 'no';
-         cfg.artfctdef.muscle.bpfreq      = [30 140];
+         cfg.artfctdef.muscle.bpfreq      = Deci.Art.Muscbpf;
          
         [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data);
        
          cfg.artfctdef.eog = [];
          cfg.artfctdef.eog.cutoff      = 12.5;
-         cfg.artfctdef.eog.channel = {'RHEOG' 'BVEOG' 'AF7' 'AF8'};
+         cfg.artfctdef.eog.channel = Deci.Art.ICA.Eye.Chans;
          cfg.artfctdef.eog.interactive = 'no';
         [cfg, cfg.artfctdef.eog.artifact] = ft_artifact_eog(cfg, data);
         
@@ -115,7 +115,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         cfg.artfctdef.muscle = [];
         cfg.artfctdef.muscle.cutoff      = 25;
-        cfg.artfctdef.muscle.bpfreq      = [30 140];
+        cfg.artfctdef.muscle.bpfreq      = Deci.Art.Muscbpf;
         cfg.artfctdef.muscle.channel = 'all';
         cfg.artfctdef.muscle.interactive = 'no';
         [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data_musc);
@@ -131,6 +131,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         condinfo{1} = condinfo{1}(logical(data.saminfo),:);
         condinfo{2} = condinfo{2}(logical(data.saminfo),:);    
+        condinfo{3} = condinfo{3}(logical(data.saminfo));
         
         cfg =[];
         cfg.method = 'summary';
@@ -146,6 +147,7 @@ for subject_list = 1:length(Deci.SubjectList)
         data.saminfo = data_rej.saminfo;
         condinfo{1} = condinfo{1}(logical(data_rej.saminfo),:);
         condinfo{2} = condinfo{2}(logical(data_rej.saminfo),:);
+        condinfo{3} = condinfo{3}(logical(data.saminfo));
         
         cfg = [];
         cfg.channel = 'all';
@@ -157,8 +159,9 @@ for subject_list = 1:length(Deci.SubjectList)
 
         condinfo{1} = condinfo{1}(logical(data_rej.saminfo),:);
         condinfo{2} = condinfo{2}(logical(data_rej.saminfo),:);
+        condinfo{3} = condinfo{3}(logical(data.saminfo));
         data.condinfo = condinfo;
-         
+        data.preart = preart;
         mkdir([Deci.Folder.Artifact])
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
     else

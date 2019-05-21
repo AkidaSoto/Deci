@@ -68,7 +68,7 @@ for j = 1:length(startstopseg)
         
         offsets = begsample - [sample{ismember(value,cfg.DT.Locks)}];
         
-        trl(end + 1,:) = [begsample endsample 0 offsets];
+        trl(end + 1,:) = [begsample endsample 0 j offsets];
         
         
         for i = 1:length(cfg.DT.Markers)

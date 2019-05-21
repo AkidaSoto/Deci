@@ -45,7 +45,7 @@ end
 
 
 if Deci.Analysis.ERP.do
-
+    
     for Lock = 1:length(Deci.Analysis.Locks)
         
         mkdir([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep num2str(Deci.Analysis.Locks(Lock))]);
@@ -88,7 +88,7 @@ if Deci.Analysis.Freq.do
         data = ft_datashift2(cfg,dataplaceholder);
         
         data.condinfo = condinfo;
-
+        
         fcfg = Deci.Analysis.Freq;
         fcfg.output='fourier';
         fcfg.pad = 'maxperlen';
@@ -188,40 +188,46 @@ if Deci.Analysis.Freq.do
             freq = ft_selectdata(dcfg,Fourier);
             freq.condinfo = Fourier.condinfo;
             
-            %         mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock))]);
-            %         mkdir([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep  Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock))]);
-            %
-            %
-            %         freq = freqplaceholder;
-            %         freq.dimord = 'chan_freq_time';
-            %         freq.powspctrm      = permute(abs(mean(freq.fourierspctrm./abs(freq.fourierspctrm),1)),[2 3 4 1]);         % divide by amplitude
-            %         freq  = rmfield(freq,'fourierspctrm');
-            %         save([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock)) filesep Chan{i}],'freq','-v7.3');
-            %
-            %         freq = freqplaceholder;
-            %         freq.powspctrm = permute(mean(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1]);
-            %         freq.dimord = 'chan_freq_time';
-            %         freq  = rmfield(freq,'fourierspctrm');
-            %         save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock)) filesep Chan{i}],'freq','-v7.3');
-            %
-            %         if Deci.Analysis.Freq.kptrls
-            %freq = freqplaceholder;
-            %freq.dimord = 'rpt_chan_freq_time';
-            %label.dimord = 'rpt_chan_freq_time';
-            mkdir([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep  Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock))]);
-            save([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock)) filesep Chan{i}],'freq','-v7.3');
-            %         end
-            
+            if  strcmpi({Deci.Analysis.Freq.Version},{'Version 2: Efficient'})
+                mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock))]);
+                mkdir([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep  Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock))]);
+                mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock))]);
+                
+                freqplaceholder = freq;
+                
+                freq = freqplaceholder;
+                freq.dimord = 'chan_freq_time';
+                freq.powspctrm      = permute(abs(mean(freq.fourierspctrm./abs(freq.fourierspctrm),1)),[2 3 4 1]);         % divide by amplitude
+                freq  = rmfield(freq,'fourierspctrm');
+                save([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock)) filesep Chan{i}],'freq','-v7.3');
+                
+                freq = freqplaceholder;
+                freq.powspctrm = permute(mean(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1]);
+                freq.dimord = 'chan_freq_time';
+                freq  = rmfield(freq,'fourierspctrm');
+                save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock)) filesep Chan{i}],'freq','-v7.3');
+                
+                freq = freqplaceholder;
+                freq.powspctrm = permute(mean(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1])./permute(var(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1]);
+                freq.dimord = 'chan_freq_time';
+                freq  = rmfield(freq,'fourierspctrm');
+                save([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock)) filesep Chan{i}],'freq','-v7.3');
+                
+                
+            else
+                mkdir([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep  Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock))]);
+                save([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep Deci.SubjectList{subject_list}  filesep num2str(Deci.Analysis.Locks(Lock)) filesep Chan{i}],'freq','-v7.3');
+                
+                
+            end
+            toc;
+            clear Fourier
             
         end
-        toc;
-        clear Fourier
-        
     end
-end
-
-
-
+    
+    
+    
 end
 
 
