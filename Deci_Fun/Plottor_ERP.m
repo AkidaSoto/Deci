@@ -163,7 +163,7 @@ if Deci.Plot.GA
 else
     ERPData = Subjects;
     TotalCount = TrialCount;
-    Deci.Plot.Freq.Wires.errorbars = 0;
+    Deci.Plot.ERP.Ws.errorbars = 0;
 end
 clear Subjects;
 
@@ -211,7 +211,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 set(0, 'CurrentFigure', wire(subj) )
                 wire(subj).Visible = 'on';
 
-                if ~Deci.Plot.ERP.errorbars
+                if ~Deci.Plot.ERP.Ws.errorbars
                     
                     h = plot(ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.time,squeeze(mean(ERPData{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1)));
                 else

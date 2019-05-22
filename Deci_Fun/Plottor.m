@@ -7,7 +7,7 @@ for subject_list = 1:length(Deci.SubjectList)
     
     if Deci.Run.Freq 
         if ~isempty(Deci.Plot.Freq) 
-            if ~isdir([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep Deci.SubjectList{subject_list}])
+            if ~isdir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}])
                 error(['Freq Analysis not found for '  Deci.SubjectList{subject_list}])
             end
         end

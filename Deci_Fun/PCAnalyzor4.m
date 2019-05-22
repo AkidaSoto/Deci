@@ -81,7 +81,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 ecfg.channel = dataplaceholder.label(chan);
                 erp = ft_selectdata(ecfg,dataplaceholder);
                 erp.condinfo = condinfo;
-                save([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep num2str(Cond) filesep dataplaceholder.label{chan}],'erp');
+                save([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep dataplaceholder.label{chan}],'erp');
             end
             clear erp
         end
@@ -111,7 +111,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             
             Fourier = rmfield(ft_freqanalysis(fcfg, dat),'cfg');
             Fourier.condinfo = condinfo;
-            
+            trllength = size(Fourier.fourierspctrm,1);
             
             if pa
                 Fourier.preart   = preart;
@@ -214,9 +214,9 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 freq = ft_selectdata(dcfg,Fourier);
                 freq.condinfo = Fourier.condinfo;
                 
-                mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep num2str(Cond)]);
-                mkdir([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep num2str(Cond)]);
-                mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep num2str(Cond)]);
+                mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                mkdir([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
                 
                 freqplaceholder = freq;
                 
@@ -224,56 +224,19 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 freq.dimord = 'chan_freq_time';
                 freq.powspctrm      = permute(abs(mean(freq.fourierspctrm./abs(freq.fourierspctrm),1)),[2 3 4 1]);         % divide by amplitude
                 
-                
-                
-                bsl = ft_selectdata(acfg, freq);
-                bsl = repmat(bsl.powspctrm,[1 1 size(freq.powspctrm ,3)]);
-                
-                
-                switch Deci.Analysis.Freq.ITPC.BslType
-                    case 'none'
-                        
-                    case 'absolute'
-                        freq.powspctrm =  freq.powspctrm - bsl;
-                    case 'relative'
-                        freq.powspctrm=  freq.powspctrm ./ bsl;
-                    case 'relchange'
-                        freq.powspctrm = (freq.powspctrm - bsl) ./ bsl;
-                    case 'db'
-                        freq.powspctrm = 10*log10(freq.powspctrm ./ bsl);
-                end
-                
                 freq  = rmfield(freq,'fourierspctrm');
-                save([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep num2str(Cond) filesep Chan{i}],'freq','-v7.3');
+                freq.trllength = trllength;
+                save([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
                 
                 
                 freq = freqplaceholder;
                 freq.powspctrm = permute(mean(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1]);
                 
-                switch Deci.Analysis.Freq.TotalPower.BslType
-                    case 'none'
-                        
-                    case 'absolute'
-                        freq.powspctrm =  freq.powspctrm - bsl;
-                    case 'relative'
-                        freq.powspctrm=  freq.powspctrm ./ bsl;
-                    case 'relchange'
-                        freq.powspctrm = (freq.powspctrm - bsl) ./ bsl;
-                    case 'db'
-                        freq.powspctrm = 10*log10(freq.powspctrm ./ bsl);
-                end
-                
                 freq.dimord = 'chan_freq_time';
+                freq.varspctrm = permute(mean(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1])./permute(var(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1]);
                 freq  = rmfield(freq,'fourierspctrm');
-                save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep num2str(Cond) filesep Chan{i}],'freq','-v7.3');
-                
-                freq = freqplaceholder;
-                freq.powspctrm = permute(mean(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1])./permute(var(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1]);
-                freq.dimord = 'chan_freq_time';
-                freq  = rmfield(freq,'fourierspctrm');
-                save([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep num2str(Cond) filesep Chan{i}],'freq','-v7.3');
-
-                
+                freq.trllength = trllength;
+                save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
                 
             end
             disp(['s:' num2str(subject_list) ' c:' num2str(Cond) ' Lock' num2str(Lock) ' time: ' num2str(etime(clock ,TimerChan))]);

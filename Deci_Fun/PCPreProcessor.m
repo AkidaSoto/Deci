@@ -80,15 +80,15 @@ if ~isempty(Deci.PP.HBP)
     evalc('data_eeg = ft_preprocessing(cfg,data_eeg)');
     disp('Highbandpass Filter');
 end
-
-if ~isempty(Deci.PP.Demean)
-    cfg = [];
-    cfg.demean = 'yes';
-    cfg.baselinewindow = Deci.PP.Demean;
-    cfg.feedback = feedback;
-    evalc('data_eeg = ft_preprocessing(cfg,data_eeg)');
-    disp('Baseline Correction');
-end
+% 
+% if ~isempty(Deci.PP.Demean)
+%     cfg = [];
+%     cfg.demean = 'yes';
+%     cfg.baselinewindow = Deci.PP.Demean;
+%     cfg.feedback = feedback;
+%     evalc('data_eeg = ft_preprocessing(cfg,data_eeg)');
+%     disp('Baseline Correction');
+% end
 
 
 if ~isempty(Deci.PP.Repair)
@@ -257,8 +257,21 @@ end
 % data_eeg.trial = data_eeg.trial(:,i);
 % data_eeg.time = data_eeg.time(:,i);
 
+
+if ~isempty(Deci.PP.DownSample)
+    data_eeg = ft_resampledata(struct('resamplefs',Deci.PP.DownSample,'detrend','no'),data_eeg);
+end
+
+if ~isempty(Deci.PP.More)
+    cfg = Deci.PP.More;
+    cfg.feedback = feedback;
+    evalc('data_eeg = ft_preprocessing(cfg,data_eeg)');
+    disp('Additional Preprocessing');
+end
+
 data = data_eeg;
 data.condinfo = condinfo;
+
 
 disp('Saving Preprocessing Data');
 mkdir([Deci.Folder.Preproc])

@@ -3,7 +3,7 @@ function Analyzor(Deci)
     if Deci.PCom
         %#function parallel.internal.queue.evaluateRequest
         for subject_list = 1:length(Deci.SubjectList)
-           PCCom(subject_list)= parfeval(gcp,@PC2Analyzor4,0,Deci,subject_list);
+           PCCom(subject_list)= parfeval(gcp,@PCAnalyzor4,0,Deci,subject_list);
         end
     
         wait(PCCom);
