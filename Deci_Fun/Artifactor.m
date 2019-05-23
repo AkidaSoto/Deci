@@ -7,7 +7,7 @@ tic;
 
 for subject_list = 1:length(Deci.SubjectList)
     
-
+    
     feedback =  'none';
     %% ICA
     
@@ -15,7 +15,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         data = [];
         load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
-       
+        
         
         if ~isempty(find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1)) && Deci.Art.RejectNans
             nantrials = find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1);
@@ -32,16 +32,16 @@ for subject_list = 1:length(Deci.SubjectList)
             error(['Found trial(s) containing nan in rawdata for ' Deci.SubjectList{subject_list} '. Revise Data and then use .RejectNans']);
             
         end
-         condinfo = data.condinfo;
-         preart   = condinfo;
+        condinfo = data.condinfo;
+        preart   = condinfo;
         cfg = [];
         
         cfg.artfctdef.muscle = Deci.Art.muscle;
-
+        
         [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data);
-       
-         cfg.artfctdef.eog = Deci.Art.eye;
-
+        
+        cfg.artfctdef.eog = Deci.Art.eog;
+        
         [cfg, cfg.artfctdef.eog.artifact] = ft_artifact_eog(cfg, data);
         
         cfg.artfctdef.crittoilim = [[abs(condinfo{1}(:,1))/1000]+Deci.Art.crittoilim(1) [abs(condinfo{1}(:,end))/1000]+Deci.Art.crittoilim(2)];
@@ -94,36 +94,39 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         close(fakeUI)
         
-%         cfg = [];
-%         cfg.method = 'summary';
-%         cfg.layout    = Deci.Layout.eye; 
-%         data_musc = ft_rejectvisual(cfg,data_musc);
-%         
+        %         cfg = [];
+        %         cfg.method = 'summary';
+        %         cfg.layout    = Deci.Layout.eye;
+        %         data_musc = ft_rejectvisual(cfg,data_musc);
+        %
         data_musc = ft_rejectcomponent(cfg, data_musc);
         
-        if ~isempty(Deci.Art.bpf)
-        bpcfg.bpfreq = Deci.Art.bpf; 
-        bpcfg.bpfilter = 'yes';
-        data_musc = ft_preprocessing(bpcfg,data_musc);
+        if ~isempty(Deci.Art.PostICAbpf)
+            bpcfg.bpfreq = Deci.Art.PostICAbpf;
+            bpcfg.bpfilter = 'yes';
+            data_musc = ft_preprocessing(bpcfg,data_musc);
         end
         
         cfg.artfctdef.muscle = Deci.Art.muscle;
         [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data_musc);
         
-        cfg.artfctdef.eog = eog;
+        cfg.artfctdef.eog = Deci.Art.eog;
         [cfg, cfg.artfctdef.eog.artifact] = ft_artifact_eog(cfg, data_musc);
         
         cfg.artfctdef.crittoilim = [[abs(condinfo{1}(:,1))/1000]+Deci.Art.crittoilim(1) [abs(condinfo{1}(:,end))/1000]+Deci.Art.crittoilim(2)];
         data = ft_rejectartifact(cfg, data_musc);
         
         condinfo{1} = condinfo{1}(logical(data.saminfo),:);
-        condinfo{2} = condinfo{2}(logical(data.saminfo),:);    
-        condinfo{3} = condinfo{3}(logical(data.saminfo));
+        condinfo{2} = condinfo{2}(logical(data.saminfo),:);
+        
+        if length(condinfo) > 2
+            condinfo{3} = condinfo{3}(logical(data.saminfo));
+        end
         
         cfg =[];
         cfg.method = 'summary';
         cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
-        cfg.channel = Deci.Art.ICA.Eye.Chans;
+        cfg.channel = Deci.Art.eog.channel;
         cfg.keepchannel = 'yes';
         tcfg.toilim = [[abs(condinfo{1}(:,1))/1000]+Deci.Art.crittoilim(1) [abs(condinfo{1}(:,end))/1000]+Deci.Art.crittoilim(2)];
         data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data));
@@ -134,7 +137,10 @@ for subject_list = 1:length(Deci.SubjectList)
         data.saminfo = data_rej.saminfo;
         condinfo{1} = condinfo{1}(logical(data_rej.saminfo),:);
         condinfo{2} = condinfo{2}(logical(data_rej.saminfo),:);
-        condinfo{3} = condinfo{3}(logical(data_rej.saminfo));
+        
+        if length(condinfo) > 2
+            condinfo{3} = condinfo{3}(logical(data_rej.saminfo));
+        end
         
         cfg = [];
         cfg.channel = 'all';
@@ -143,10 +149,12 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg = [];
         cfg.trials = data_rej.saminfo;
         data = ft_selectdata(cfg,data);
-
+        
         condinfo{1} = condinfo{1}(logical(data_rej.saminfo),:);
         condinfo{2} = condinfo{2}(logical(data_rej.saminfo),:);
-        condinfo{3} = condinfo{3}(logical(data_rej.saminfo));
+        if length(condinfo) > 2
+            condinfo{3} = condinfo{3}(logical(data_rej.saminfo));
+        end
         data.condinfo = condinfo;
         data.preart = preart;
         mkdir([Deci.Folder.Artifact])

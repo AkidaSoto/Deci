@@ -228,7 +228,9 @@ for cond = 1:length(Deci.Plot.Draw)
                     cirky(subj,subcond)    =  subplot(length(Deci.Plot.Draw{cond}),1,subcond);
                     ft_topoplotER(cfg, FreqData{subj,Deci.Plot.Draw{cond}(subcond)});
                     
-                    title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond} ' trial count: ' num2str(TotalCount{subj,Deci.Plot.Draw{cond}(subcond)})]);
+                    %title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond} ' trial count: ' num2str(TotalCount{subj,Deci.Plot.Draw{cond}(subcond)})]);
+                    title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
+
                     colorbar('vert');
                     map = colormap('jet'); %'hot' 'gray'
                     colormap(map);
