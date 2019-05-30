@@ -79,8 +79,7 @@ for j = 1:length(startstopseg)
             
             
             trialinfo(size(trl,1),i) = cfg.DT.Markers{i}(ismember([cfg.DT.Markers{i}],value));
-        else
-            trialinfo(size(trl,1),i) = nan;
+            
         end
     end
     
@@ -89,8 +88,6 @@ for j = 1:length(startstopseg)
         if find([event(startstopseg(1,j)).sample] >  [event(bstartstopseg(1,:)).sample],1,'last')
             k = 0;
         end
-        
-        trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = nan;
         
         if ~isempty(cfg.DT.Block.Markers)
             trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = bmarkers(find([event(startstopseg(1,j)).sample] >  [event(bstartstopseg(1,:)).sample],1,'last'));

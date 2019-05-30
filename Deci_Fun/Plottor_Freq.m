@@ -31,9 +31,8 @@ for  subject_list = 1:length(Deci.SubjectList)
     
     tic;
     
-    c = CleanDir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep Deci.Plot.Lock filesep]);
     
-    Freq.Channels       = CleanDir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep Deci.Plot.Lock filesep c{1} filesep]);
+    Freq.Channels       = CleanDir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep Deci.Plot.Lock filesep Deci.Plot.IndexTitle{1} filesep]);
     Freq.Channels       = cellfun(@(c) c(1:end-4),Freq.Channels,'un',0);
     
     if ~ischar(Deci.Plot.Freq.Channel)
@@ -45,7 +44,7 @@ for  subject_list = 1:length(Deci.SubjectList)
     end
     
     
-    for Conditions = 1:length(Deci.Analysis.Conditions)
+    for Conditions = 1:length(Deci.Plot.IndexTitle)
         
         for Channel = 1:length(Freq.Channels)
             
@@ -56,11 +55,11 @@ for  subject_list = 1:length(Deci.SubjectList)
             
             switch Deci.Plot.Freq.Type
                 case 'TotalPower'
-                    load([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Analysis.CondTitle{Conditions} filesep Freq.Channels{Channel} '.mat'],'freq');
+                    load([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.IndexTitle{Conditions} filesep Freq.Channels{Channel} '.mat'],'freq');
                 case 'ITPC'
-                    load([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Analysis.CondTitle{Conditions} filesep Freq.Channels{Channel} '.mat'],'freq');
+                    load([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.IndexTitle{Conditions} filesep Freq.Channels{Channel} '.mat'],'freq');
                 case 'TotalPower Mean/Var'
-                    load([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Analysis.CondTitle{Conditions} filesep Freq.Channels{Channel} '.mat'],'freq');
+                    load([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.IndexTitle{Conditions} filesep Freq.Channels{Channel} '.mat'],'freq');
             end
             
             foi = freq.freq >= round(Deci.Plot.Freq.Foi(1),4) & freq.freq <= round(Deci.Plot.Freq.Foi(2),4);
@@ -228,7 +227,9 @@ for cond = 1:length(Deci.Plot.Draw)
                     cirky(subj,subcond)    =  subplot(length(Deci.Plot.Draw{cond}),1,subcond);
                     ft_topoplotER(cfg, FreqData{subj,Deci.Plot.Draw{cond}(subcond)});
                     
-                    title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond} ' trial count: ' num2str(TotalCount{subj,Deci.Plot.Draw{cond}(subcond)})]);
+                    %title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond} ' trial count: ' num2str(TotalCount{subj,Deci.Plot.Draw{cond}(subcond)})]);
+                    title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
+
                     colorbar('vert');
                     map = colormap('jet'); %'hot' 'gray'
                     colormap(map);

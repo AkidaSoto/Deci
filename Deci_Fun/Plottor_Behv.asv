@@ -35,9 +35,6 @@ for subject_list = 1:length(Deci.SubjectList)
                 trl = sum(ismember(data.event,[draws{:}]),2) == maxt;
                 
                 if strcmpi(Deci.Plot.Behv.RT.Collapse.Uneven,'positional:nans')
-                    
-                    
-                    
                     RT{subject_list,draw,1} = nan([size(data.trialinfo(trl,:),1) 1]);
                     RT{subject_list,draw,1}(~isnan(mean(data.trialinfo(trl,:),2))) =  [-data.trialinfo(trl,Deci.Plot.Behv.RT.Locks(2)) - -data.trialinfo(trl,Deci.Plot.Behv.RT.Locks(1))];
                 else
@@ -101,8 +98,8 @@ for subject_list = 1:length(Deci.SubjectList)
                 
                 
                 if strcmpi(Deci.Plot.Behv.Acc.Collapse.Uneven,'positional:nans')
-                    Acc{subject_list,draw,1} = nan([size(data.trialinfo(trl,:),1) 1]);
-                    Acc{subject_list,draw,1}(~isnan(mean(data.trialinfo(trl,:),2))) =   subtrl;
+                    Acc{subject_list,draw,blk} = nan([size(data.trialinfo(trl,:),1) 1]);
+                    Acc{subject_list,draw,blk}(~isnan(mean(data.trialinfo(trl,:),2))) =   subtrl;
                 else
                     Acc{subject_list,draw,1} = subtrl;
                 end
@@ -136,12 +133,13 @@ for subject_list = 1:length(Deci.SubjectList)
                     
                     
                     if strcmpi(Deci.Plot.Behv.Acc.Collapse.Uneven,'positional:nans')
-                        Acc{subject_list,draw,blk} = nan([length(Total) 1]);
+                        Acc{subject_list,draw,blk} = nan([size(data.trialinfo(trl,:),1) 1]);
                         Acc{subject_list,draw,blk}(~isnan(mean(data.trialinfo(trl,:),2))) =   subtrl;
                     else
-                        Acc{subject_list,draw,blk} = subtrl;
+                        Acc{subject_list,draw,1} = subtrl;
                     end
                     
+                    Acc{subject_list,draw,blk} = subtrl;
                     
                     if Deci.Plot.Behv.Acc.Collapse.Movmean
                         Acc{subject_list,draw,blk} = movmean(Acc{subject_list,draw,blk},[length( Acc{subject_list,draw,blk}) 0]);
