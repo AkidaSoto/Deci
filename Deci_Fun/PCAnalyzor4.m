@@ -198,11 +198,6 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             %scfg.trials = logical(fakedata.saminfo);
             
             %Fourier = ft_selectdata(scfg,Fourier);
-            
-           
-            
-            acfg.latency = Deci.Analysis.Freq.Bsl;
-            acfg.avgovertime = 'yes';
 
             TimerChan = clock;
             for i = 1:length(Chan)
