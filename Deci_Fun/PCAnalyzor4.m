@@ -234,6 +234,10 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
                 
             end
+            
+            %CFC Occurs
+            %cfc = ft_singlecfc(Deci.Analysis.CFC,Low,High)
+            
             disp(['s:' num2str(subject_list) ' c:' num2str(Cond) ' Lock' num2str(Lock) ' time: ' num2str(etime(clock ,TimerChan))]);
         end
         
