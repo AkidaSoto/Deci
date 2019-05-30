@@ -55,7 +55,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     TimerCond = clock;
     
     maxt = max(sum(ismember(condinfo{2},Deci.Analysis.Conditions{Cond}),2));
-    ccfg.trials = sum(ismember(condinfo{2},Deci.Analysis.Conditions{Cond}),2) == maxt;
+    ccfg.trials = sum(ismember(condinfo{2},Deci.Analysis.Conditions{Cond}),2) == maxt & ~isnan(mean(condinfo{1},2));
     
     
     dat = ft_selectdata(ccfg,data);

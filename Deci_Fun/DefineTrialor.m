@@ -46,8 +46,8 @@ for subject_list = 1:length(Deci.SubjectList)
     cfg.trialnum = cfg.trl(:,4);
     cfg.trl = cfg.trl(:,[1:3 5:end]);
     
-    trllength = size(cfg.trl,1);
-    disp(['Found ' num2str(trllength) ' trials for ' Deci.SubjectList{subject_list}]);
+    trllength = num2str(length(find(~isnan(mean(cfg.trl,2)))));
+    disp(['Found ' num2str(trllength) ' trials out of ' num2str(size(cfg.trl,1)) ' for ' Deci.SubjectList{subject_list}]);
     
 %     [~,i] = sort(cfg.trl(:,4));
 %     cfg.trl = cfg.trl(i,:);
