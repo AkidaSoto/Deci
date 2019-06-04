@@ -58,7 +58,7 @@ for k = 1:length(exp_files)
                 if mean(strcmp(event2(i).value,refmrk{j})) ~= 0
                     
                     reffound = 1;
-                    idisplace = i + displace;
+                    idisplace = i + displace(j);
                     
                 end
                 new_event(end+1) = event2(i);
