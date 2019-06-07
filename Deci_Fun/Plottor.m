@@ -3,6 +3,12 @@ function Plottor(Deci)
 
 %% File Checks
 
+if ~isempty(Deci.Plot.Version)
+    Deci.Folder.Analysis = [Deci.Plot.Version filesep 'Analysis'];
+    Deci.Folder.Plot = [Deci.Plot.Version filesep 'Plot'];
+    mkdir(Deci.Folder.Plot);
+end
+
 for subject_list = 1:length(Deci.SubjectList)
     
     if Deci.Run.Freq 

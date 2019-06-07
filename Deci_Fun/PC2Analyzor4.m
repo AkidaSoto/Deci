@@ -1,5 +1,8 @@
 function PCAnalyzor3(Deci,subject_list)
 
+
+error('')
+
 if ~isfield(Deci.Analysis,'Channels')
     Deci.Analysis.Channels = 'all';
     warning('Parameter for Channels not found, presuming all')
@@ -25,6 +28,7 @@ if ~Deci.Analysis.ERP.do && ~Deci.Analysis.Freq.do
 end
 
 
+
 Deci.Analysis = Exist(Deci.Analysis,'DownSample',[]);
 
 if isfield(data,'preart')
@@ -44,6 +48,7 @@ if Deci.Analysis.Laplace
     ecfg.elec = elec;
     data = ft_scalpcurrentdensity(ecfg, data);
 end
+
 
 
 for Cond = 1:length(Deci.Analysis.Conditions)
