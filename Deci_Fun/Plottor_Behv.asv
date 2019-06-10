@@ -6,9 +6,11 @@ for subject_list = 1:length(Deci.SubjectList)
     
     switch Deci.Plot.Behv.Source
         case 'PostArt'
-            load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info']);
-            data.trialinfo = data.condinfo{1};
-            data.event = data.condinfo{2};
+            lock1 = CleanDir([Deci.Folder. filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}]);
+            cond1 = CleanDir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep lock1{1}]);
+            chan1 = CleanDir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep lock1{1} filesep cond1{1}]);
+            
+            load([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list} filesep lock1{1} filesep cond1{1} filesep chan1{1}]);
         case 'Definition'
             load([Deci.Folder.Version filesep 'Definition' filesep Deci.SubjectList{subject_list}]);
             data = cfg;

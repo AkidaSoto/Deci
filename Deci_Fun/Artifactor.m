@@ -51,7 +51,7 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg =[];
         cfg.method = 'summary';
         cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
-        
+        cfg.eog = Deci.Art.eog.channel;
         
         data_musc = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data_musc));
         
@@ -144,6 +144,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         cfg = [];
         cfg.channel = 'all';
+        cfg.eog = Deci.Art.eog.channel;
         data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data));
         
         cfg = [];
@@ -159,6 +160,8 @@ for subject_list = 1:length(Deci.SubjectList)
         data.preart = preart;
         mkdir([Deci.Folder.Artifact])
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
+        data = rmfield(data,'trial');
+        save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
     else
         mkdir([Deci.Folder.Artifact])
         copyfile([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat'], [Deci.Folder.Artifact]);
