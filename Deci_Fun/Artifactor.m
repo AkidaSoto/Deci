@@ -127,6 +127,7 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.method = 'summary';
         cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
         cfg.channel = Deci.Art.eog.channel;
+        cfg.eog = Deci.Art.eog.channel;
         cfg.keepchannel = 'yes';
         tcfg.toilim = [[abs(condinfo{1}(:,1))/1000]+Deci.Art.crittoilim(1) [abs(condinfo{1}(:,end))/1000]+Deci.Art.crittoilim(2)];
         data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data));
