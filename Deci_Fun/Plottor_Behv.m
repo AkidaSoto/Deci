@@ -107,10 +107,12 @@ for subject_list = 1:length(Deci.SubjectList)
 end
 
  if ~isempty(Deci.Plot.Behv.Acc)
+     mkdir([Deci.Folder.Version filesep 'Plot'])
      save([Deci.Folder.Version filesep 'Plot' filesep 'Acc'],'Acc');
  end
  
  if ~isempty(Deci.Plot.Behv.RT)
+     mkdir([Deci.Folder.Version filesep 'Plot'])
      save([Deci.Folder.Version filesep 'Plot' filesep 'RT'],'RT');
  end
 
