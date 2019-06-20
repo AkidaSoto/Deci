@@ -287,7 +287,6 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         end
                     end
                 end
-                
             end
             
             %CFC Occurs

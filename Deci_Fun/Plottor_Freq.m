@@ -77,9 +77,7 @@ for  subject_list = 1:length(Deci.SubjectList)
         acfg.appenddim = 'chan';
         Subjects{subject_list,Conditions} = rmfield(ft_appendfreq(acfg,Chans{:}),'cfg');
         
-        acfg.latency = Deci.Plot.Freq.Bsl;
-        acfg.avgovertime = 'yes';
-        
+
         Subjects{subject_list,Conditions}.dimord = 'chan_freq_time';
         
         
@@ -91,14 +89,58 @@ end
 for Conditions = 1:size(Subjects,2)
     for subject_list = 1:size(Subjects,1)
 
-        toi = round(Subjects{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Toi(1) & round(Subjects{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Toi(2);
+        if ~strcmpi(Deci.Plot.BslRef,Deci.Plot.Lock)
+            
+            for Channel = 1:length(Freq.Channels)
+
+                freq = [];
+                    
+                switch Deci.Plot.Freq.Type
+                    case 'TotalPower'
+                        load([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.IndexTitle{Conditions} filesep Freq.Channels{Channel} '.mat'],'freq');
+                    case 'ITPC'
+                        load([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.IndexTitle{Conditions} filesep Freq.Channels{Channel} '.mat'],'freq');
+                    case 'TotalPower Mean/Var'
+                        load([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.IndexTitle{Conditions} filesep Freq.Channels{Channel} '.mat'],'freq');
+                end
+                
+                foi = freq.freq >= round(Deci.Plot.Freq.Foi(1),4) & freq.freq <= round(Deci.Plot.Freq.Foi(2),4);
+                Chans{Channel} = freq;
+                Chans{Channel}.freq =  Chans{Channel}.freq(foi);
+                %Chans{Channel}.time =  Chans{Channel}.time(toi);
+                Chans{Channel}.powspctrm  =Chans{Channel}.powspctrm(:,foi,:);
+                Chans{Channel}.label = Freq.Channels(Channel);
+                
+            end
+            
+            acfg.parameter = 'powspctrm';
+            acfg.appenddim = 'chan';
+            Bsl{subject_list,Conditions} = rmfield(ft_appendfreq(acfg,Chans{:}),'cfg');
+            
+            ccfg.latency = Deci.Plot.Freq.Bsl;
+            ccfg.avgovertime = 'yes';
+            
+            toi = round(Bsl{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Toi(1) & round(Bsl{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Toi(2);
+            bsl = ft_selectdata(ccfg, Bsl{subject_list,Conditions});
+            
+            Bsl{subject_list,Conditions}.powspctrm =  Bsl{subject_list,Conditions}.powspctrm(:,:,toi);
+            Bsl{subject_list,Conditions}.time = Bsl{subject_list,Conditions}.time(toi);
+            bsl = repmat(bsl.powspctrm,[1 1 size(Bsl{subject_list,Conditions}.powspctrm ,3)]);
+            
+        else
+            
+            ccfg.latency = Deci.Plot.Freq.Bsl;
+            ccfg.avgovertime = 'yes';
+            
+            toi = round(Subjects{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Toi(1) & round(Subjects{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Toi(2);
+            bsl = ft_selectdata(ccfg, Subjects{subject_list,Conditions});
+            
+            Subjects{subject_list,Conditions}.powspctrm =  Subjects{subject_list,Conditions}.powspctrm(:,:,toi);
+            Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(toi);
+            bsl = repmat(bsl.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
+        end
         
-        bsl = ft_selectdata(acfg, Subjects{subject_list,Conditions});
-        
-        Subjects{subject_list,Conditions}.powspctrm =  Subjects{subject_list,Conditions}.powspctrm(:,:,toi);
-        Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(toi);
-        bsl = repmat(bsl.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
-        
+
         switch Deci.Plot.Freq.BslType
             case 'none'
                 
@@ -127,7 +169,7 @@ if ~isempty(Deci.Plot.Math)
     end
 end
 
-if Deci.Plot.Freq.Wires
+if Deci.Plot.Freq.Wire
     
     for conds = 1:size(Subjects,2)
         for subj = 1:size(Subjects,1)
@@ -149,7 +191,7 @@ end
 
 if Deci.Plot.GrandAverage
     
-    if Deci.Plot.Freq.Wires
+    if Deci.Plot.Freq.Wire
         save([Deci.Folder.Plot filesep 'preGrandAverageSubWire'],'WireSub')
     end
     
@@ -160,7 +202,48 @@ if Deci.Plot.GrandAverage
         
         %TotalCount{conds} = mean([TrialCount{:,conds}]);
         
-        if Deci.Plot.Freq.Wires
+        if Deci.Plot.Freq.Topo
+           tcfg = [];
+           tcfg.avgoverfreq = 'yes';
+           tcfg.avgovertime = 'yes';
+           
+           for subj = 1:size(Subjects,1)
+               dt =   ft_selectdata(tcfg,Subjects{subj,conds});
+               topodata(subj,conds,:) = dt.powspctrm;
+           end
+           
+        end
+        
+        if Deci.Plot.Freq.Square
+            tcfg = [];
+            tcfg.avgoverchan = 'yes';
+            ttest.squaredata = ft_selectdata(tcfg,Subjects{:,conds});
+            
+            for subj = 1:size(Subjects,1)
+                dt =   ft_selectdata(tcfg,Subjects{subj,conds});
+                squaredata(subj,conds,:,:) = dt.powspctrm;
+            end
+        end
+        
+        if Deci.Plot.Freq.Bar
+            tcfg = [];
+            tcfg.avgoverchan = 'yes';
+            tcfg.avgoverfreq = 'yes';
+            tcfg.avgovertime = 'yes';
+            ttest.bardata = ft_selectdata(tcfg,Subjects{:,conds});
+            
+            for subj = 1:size(Subjects,1)
+                dt =   ft_selectdata(tcfg,Subjects{subj,conds});
+                bardata(subj,conds) = dt.powspctrm;
+            end      
+        end
+        
+        if Deci.Plot.Freq.Wire
+            
+            for subj = 1:size(Subjects,1)
+                wiredata(subj,conds,:) =  WireSub{subj,conds}.powspctrm;
+            end
+            
             facfg.type = 'mean';
             WireData{conds} = rmfield(ft_freqgrandaverage(facfg,WireSub{:,conds}),'cfg');
             
@@ -172,7 +255,7 @@ if Deci.Plot.GrandAverage
     
     save([Deci.Folder.Plot filesep 'GrandAverageSubFreq'],'FreqData')
     
-    if ~isempty(Deci.Plot.Freq.Wires)
+    if ~isempty(Deci.Plot.Freq.Wire)
         save([Deci.Folder.Plot filesep 'GrandAverageSubWire'],'WireData')
     end
 else
@@ -212,7 +295,7 @@ for cond = 1:length(Deci.Plot.Draw)
             topo(subj)  = figure;
         end
         
-        if Deci.Plot.Freq.Wires
+        if Deci.Plot.Freq.Wire
             wire(subj)  = figure;
         end
         
@@ -258,7 +341,7 @@ for cond = 1:length(Deci.Plot.Draw)
             end
             
             
-            if Deci.Plot.Freq.Wires
+            if Deci.Plot.Freq.Wire
                 
                 set(0, 'CurrentFigure', wire(subj) )
                 wire(subj).Visible = 'on';
