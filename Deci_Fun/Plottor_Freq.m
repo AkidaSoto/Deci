@@ -473,7 +473,7 @@ for cond = 1:length(Deci.Plot.Draw)
             
             pcfg.ylim = ylim;
             pcfg.graphcolor = lines;
-            
+            pcfg.linewidth = 1;
             ft_singleplotER(pcfg,wiredata{subj,Deci.Plot.Draw{cond}});
             
             arrayfun(@(c) uistack(c,'top'),b);
@@ -484,9 +484,14 @@ for cond = 1:length(Deci.Plot.Draw)
             plot([0 0], ylim, 'k--') % vert. l
             
             if Deci.Plot.Stat.do
-                wire(subj).Children(2).Children(end).FaceAlpha = .35;
-                uistack(wire(subj).Children(2).Children(end),'bottom')
-                wire(subj).Children(2).Children(end).HandleVisibility = 'off';
+                
+                boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
+                
+                if ~isempty(boxes)
+                boxes.FaceAlpha = .35;
+                uistack(boxes,'bottom')
+                boxes.HandleVisibility = 'off';
+                end
             end
             title([Deci.Plot.Subtitle{cond}{subcond}]);
             
