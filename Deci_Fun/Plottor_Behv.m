@@ -125,24 +125,22 @@ for subject_list = 1:length(Deci.SubjectList)
     end
 end
 
-if ~isempty(Deci.Plot.Behv.Acc)
+if ~isempty(Deci.Plot.Behv.Acc) && ~isempty(find(Deci.Plot.Behv.Acc.Figure))
     mkdir([Deci.Folder.Version filesep 'Plot'])
     save([Deci.Folder.Version filesep 'Plot' filesep 'Acc'],'Acc');
 end
 
-if ~isempty(Deci.Plot.Behv.RT)
+if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
     mkdir([Deci.Folder.Version filesep 'Plot'])
     save([Deci.Folder.Version filesep 'Plot' filesep 'RT'],'RT');
 end
 
 %% sort
-
-for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
-    
     clear fAcc
     clear fRT
+for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
     
-    if ~isempty(Deci.Plot.Behv.Acc)
+    if ~isempty(Deci.Plot.Behv.Acc) && ~isempty(find(Deci.Plot.Behv.Acc.Figure))
         if ismember(Deci.Plot.Behv.Acc.Collapse.Uneven,{'maxlength:nans','positional:nans'})
             
             for subject_list = 1:length(Deci.SubjectList)
@@ -177,8 +175,8 @@ for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
     end
 end
 
-for fig = 1:length(find(Deci.Plot.Behv.RT.Figure))
-    if ~isempty(Deci.Plot.Behv.RT)
+for fig = 1:length(find(Deci.Plot.Behv.RT.Figure)) 
+    if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
         if ismember(Deci.Plot.Behv.RT.Collapse.Uneven,{'maxlength:nans','positional:nans'})
             
             for subject_list = 1:length(Deci.SubjectList)
@@ -291,7 +289,7 @@ end
 
 for fig = 1:length(find(Deci.Plot.Behv.RT.Figure))
     
-    if ~isempty(Deci.Plot.Behv.RT)
+    if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
         for subj = 1:size(RT{fig},1)
             
             

@@ -478,15 +478,13 @@ for cond = 1:length(Deci.Plot.Draw)
             
             arrayfun(@(c) uistack(c,'top'),b);
             
-            axis tight
+            axis auto
             hold on
             plot([wirestat{cond}.time(1), wirestat{cond}.time(end)], [0 0], 'k--') % hor. line
             plot([0 0], ylim, 'k--') % vert. l
             
             if Deci.Plot.Stat.do
-                wire(subj).Children(2).Children(end).FaceAlpha = .35;
-                uistack(wire(subj).Children(2).Children(end),'bottom')
-                wire(subj).Children(2).Children(end).HandleVisibility = 'off';
+                wire(subj).Children(2).Children(2).HandleVisibility = 'off';
             end
             title([Deci.Plot.Subtitle{cond}{subcond}]);
             
