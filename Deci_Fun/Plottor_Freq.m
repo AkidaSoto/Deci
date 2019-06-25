@@ -499,7 +499,7 @@ for cond = 1:length(Deci.Plot.Draw)
                     end
                 end
             end
-            title([Deci.Plot.Subtitle{cond}{subcond}]);
+            %title([Deci.Plot.Subtitle{cond}{subcond}]);
             
             %h = plot(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time,squeeze(mean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)));
             %h.Color = b.FaceColor;
@@ -508,7 +508,7 @@ for cond = 1:length(Deci.Plot.Draw)
             
             legend(Deci.Plot.Subtitle{cond})
             title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' Wire'])
-            
+            xlim([wiredata{cond}.time(1) wiredata{cond}.time(end)])
             %                         if Deci.Plot.Freq.Wire &&subcond == 1
             %                          ax1 = axes;
             %                          hold on
