@@ -456,8 +456,9 @@ for cond = 1:length(Deci.Plot.Draw)
                 b(subcond).EdgeAlpha = 0;
                 b(subcond).FaceAlpha = .15;
                 
+                if Deci.Plot.Stat.do
                 wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(wirestat{cond}.mask,[length(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
-            
+                end
             end
             
         end
