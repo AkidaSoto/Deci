@@ -456,8 +456,9 @@ for cond = 1:length(Deci.Plot.Draw)
                 b(subcond).EdgeAlpha = 0;
                 b(subcond).FaceAlpha = .15;
                 
+                if Deci.Plot.Stat.do
                 wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(wirestat{cond}.mask,[length(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
-            
+                end
             end
             
         end
@@ -469,22 +470,32 @@ for cond = 1:length(Deci.Plot.Draw)
             
             pcfg = cfg;
             pcfg.clim = 'maxmin';
-            pcfg.maskparameter ='mask';
             
+            if Deci.Plot.Stat.do
+                pcfg.maskparameter ='mask';
+                
+            end
             pcfg.ylim = ylim;
             pcfg.graphcolor = lines;
-            
+            pcfg.linewidth = 1;
             ft_singleplotER(pcfg,wiredata{subj,Deci.Plot.Draw{cond}});
             
             arrayfun(@(c) uistack(c,'top'),b);
             
-            axis auto
+            axis tight
             hold on
-            plot([wirestat{cond}.time(1), wirestat{cond}.time(end)], [0 0], 'k--') % hor. line
+            plot([wiredata{cond}.time(1), wirestat{cond}.time(end)], [0 0], 'k--') % hor. line
             plot([0 0], ylim, 'k--') % vert. l
             
             if Deci.Plot.Stat.do
-                wire(subj).Children(2).Children(2).HandleVisibility = 'off';
+                
+                boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
+                
+                if ~isempty(boxes)
+                boxes.FaceAlpha = .35;
+                uistack(boxes,'bottom')
+                boxes.HandleVisibility = 'off';
+                end
             end
             title([Deci.Plot.Subtitle{cond}{subcond}]);
             

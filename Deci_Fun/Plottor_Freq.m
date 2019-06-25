@@ -470,8 +470,11 @@ for cond = 1:length(Deci.Plot.Draw)
             
             pcfg = cfg;
             pcfg.clim = 'maxmin';
-            pcfg.maskparameter ='mask';
             
+            if Deci.Plot.Stat.do
+                pcfg.maskparameter ='mask';
+                
+            end
             pcfg.ylim = ylim;
             pcfg.graphcolor = lines;
             pcfg.linewidth = 1;
@@ -481,7 +484,7 @@ for cond = 1:length(Deci.Plot.Draw)
             
             axis tight
             hold on
-            plot([wirestat{cond}.time(1), wirestat{cond}.time(end)], [0 0], 'k--') % hor. line
+            plot([wiredata{cond}.time(1), wiredata{cond}.time(end)], [0 0], 'k--') % hor. line
             plot([0 0], ylim, 'k--') % vert. l
             
             if Deci.Plot.Stat.do
