@@ -506,8 +506,9 @@ for cond = 1:length(Deci.Plot.Draw)
             %h.LineWidth = 1;
             
             
-            legend(Deci.Plot.Subtitle{cond})
+            l = legend(Deci.Plot.Subtitle{cond});
             title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' Wire'])
+            set(l, 'Interpreter', 'none')
             xlim([wiredata{cond}.time(1) wiredata{cond}.time(end)])
             %                         if Deci.Plot.Freq.Wire &&subcond == 1
             %                          ax1 = axes;
@@ -537,9 +538,9 @@ for cond = 1:length(Deci.Plot.Draw)
                 nanstd(cell2mat(arrayfun(@(c) c.powspctrm,[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1) ...
                 /sqrt(size(cell2mat(arrayfun(@(c) c.powspctrm,[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1)));
             
-            legend(Deci.Plot.Subtitle{cond})
+            l = legend(Deci.Plot.Subtitle{cond});
             title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' Wire'])
-            
+            set(l, 'Interpreter', 'none')
             if Deci.Plot.Stat.do
                 hold on
                 

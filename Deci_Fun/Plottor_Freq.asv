@@ -484,20 +484,22 @@ for cond = 1:length(Deci.Plot.Draw)
             
             axis tight
             hold on
-            plot([wiredata{cond}.time(1), wirestat{cond}.time(end)], [0 0], 'k--') % hor. line
+            plot([wiredata{cond}.time(1), wiredata{cond}.time(end)], [0 0], 'k--') % hor. line
             plot([0 0], ylim, 'k--') % vert. l
             
             if Deci.Plot.Stat.do
                 
                 boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
                 
-                if ~isempty(boxes)
-                boxes.FaceAlpha = .35;
-                uistack(boxes,'bottom')
-                boxes.HandleVisibility = 'off';
+                for bb = 1:length(boxes)
+                    if ~isempty(boxes)
+                        boxes(bb).FaceAlpha = .35;
+                        uistack(boxes(bb),'bottom')
+                        boxes(bb).HandleVisibility = 'off';
+                    end
                 end
             end
-            title([Deci.Plot.Subtitle{cond}{subcond}]);
+            %title([Deci.Plot.Subtitle{cond}{subcond}]);
             
             %h = plot(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time,squeeze(mean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)));
             %h.Color = b.FaceColor;
@@ -505,8 +507,8 @@ for cond = 1:length(Deci.Plot.Draw)
             
             
             legend(Deci.Plot.Subtitle{cond})
-            title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' Wire'])
-            
+            title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' Wire'],)
+            xlim([wiredata{cond}.time(1) wiredata{cond}.time(end)])
             %                         if Deci.Plot.Freq.Wire &&subcond == 1
             %                          ax1 = axes;
             %                          hold on
