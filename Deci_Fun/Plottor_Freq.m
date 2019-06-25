@@ -491,10 +491,12 @@ for cond = 1:length(Deci.Plot.Draw)
                 
                 boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
                 
-                if ~isempty(boxes)
-                boxes.FaceAlpha = .35;
-                uistack(boxes,'bottom')
-                boxes.HandleVisibility = 'off';
+                for bb = 1:length(boxes)
+                    if ~isempty(boxes)
+                        boxes(bb).FaceAlpha = .35;
+                        uistack(boxes(bb),'bottom')
+                        boxes(bb).HandleVisibility = 'off';
+                    end
                 end
             end
             title([Deci.Plot.Subtitle{cond}{subcond}]);
