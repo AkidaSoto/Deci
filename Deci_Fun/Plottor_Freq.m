@@ -404,7 +404,7 @@ for cond = 1:length(Deci.Plot.Draw)
                         
                         pcfg.clim = 'maxmin';
                         pcfg.maskparameter ='mask';
-                        FreqData{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(topostat{cond}.mask,[1 length(FreqData{subj,Deci.Plot.Draw{cond}(subcond)}.freq) length(FreqData{subj,Deci.Plot.Draw{cond}(subcond)}.time)]);
+                     FreqData{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(topostat{cond}.mask,[1 length(FreqData{subj,Deci.Plot.Draw{cond}(subcond)}.freq) length(FreqData{subj,Deci.Plot.Draw{cond}(subcond)}.time)]);
                     end
                     
                     ft_topoplotER(pcfg, FreqData{subj,Deci.Plot.Draw{cond}(subcond)});
@@ -650,11 +650,12 @@ end
             imag = Axes(a).Children.findobj('Type','Image');
             
             if isempty(imag)
-               imag =  Axes(a).Children.findobj('Type','Surface');
+                imag =  Axes(a).Children.findobj('Type','Surface');
+                
             end
             
             if isempty(imag.UserData)
-                imag.UserData = PushButton.UserData(size(imag.AlphaData));
+                imag.UserData = logical(~isnan(imag.CData));
             end
             
             placeholder = imag.UserData;
