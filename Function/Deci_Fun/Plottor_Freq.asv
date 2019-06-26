@@ -295,8 +295,8 @@ for cond = 1:length(Deci.Plot.Draw)
 %             mask = double(squarestat{cond}.prob < Deci.Plot.Stat.alpha);
 %             mask(mask == 0) = .2;
 %             squarestat{cond}.mask = mask;
-            squarestat{cond}.mask = double(squarestat{cond}.mask);
-            squarestat{cond}.mask(squarestat{cond}.mask == 0) = .2;
+            squarestat{cond}.mask = squarestat{cond}.mask;
+            
             tacfg.maskparameter = 'mask';
             
             if Deci.Plot.Stat.FPlots
@@ -315,11 +315,9 @@ for cond = 1:length(Deci.Plot.Draw)
             tcfg = cfg;
             tcfg.parameter = 'stat';
             
-%             mask = double(topostat{cond}.prob < Deci.Plot.Stat.alpha);
-%             mask(mask == 0) = .2;
-%             topostat{cond}.mask = mask;
-            topostat{cond}.mask = double(topostat{cond}.mask);
-            topostat{cond}.mask(topostat{cond}.mask == 0) = .2;
+            mask = double(topostat{cond}.prob < Deci.Plot.Stat.alpha);
+            mask(mask == 0) = .2;
+            topostat{cond}.mask = mask;
             
             if Deci.Plot.Stat.FPlots
                 topot(cond)  = figure;
@@ -336,11 +334,9 @@ for cond = 1:length(Deci.Plot.Draw)
             tcfg = cfg;
             tcfg.parameter = 'stat';
             
-%             mask = double(wirestat{cond}.prob < Deci.Plot.Stat.alpha);
-%             %mask(mask == 0) = .2;
-%             wirestat{cond}.mask = mask;
-            wirestat{cond}.mask = double(wirestat{cond}.mask);
-            wirestat{cond}.mask(wirestat{cond}.mask == 0) = .2;
+            mask = double(wirestat{cond}.prob < Deci.Plot.Stat.alpha);
+            %mask(mask == 0) = .2;
+            wirestat{cond}.mask = mask;
             
             if Deci.Plot.Stat.FPlots
                 wiret(cond)  = figure;
@@ -356,12 +352,10 @@ for cond = 1:length(Deci.Plot.Draw)
             tcfg = cfg;
             tcfg.parameter = 'stat';
             
-%             mask = double(barstat{cond}.prob < Deci.Plot.Stat.alpha);
-%             mask(mask == 0) = .2;
-%             barstat{cond}.mask = mask;
-              barstat{cond}.mask= double(barstat{cond}.mask);
-              barstat{cond}.mask(barstat{cond}.mask == 0) = .2;
-
+            mask = double(barstat{cond}.prob < Deci.Plot.Stat.alpha);
+            mask(mask == 0) = .2;
+            barstat{cond}.mask = mask;
+            
             if Deci.Plot.Stat.FPlots
                 bart(cond)  = figure;
                 bart(cond).Visible = 'on';
