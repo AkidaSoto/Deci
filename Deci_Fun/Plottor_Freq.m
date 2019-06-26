@@ -61,7 +61,9 @@ for  subject_list = 1:length(Deci.SubjectList)
             end
             
             foi = freq.freq >= round(Deci.Plot.Freq.Foi(1),4) & freq.freq <= round(Deci.Plot.Freq.Foi(2),4);
-
+            toi = round(freq.time,4) >= Deci.Plot.Freq.Toi(1) & round(freq.time,4) <= Deci.Plot.Freq.Toi(2);
+            
+            
             Chans{Channel} = freq;
             Chans{Channel}.freq =  Chans{Channel}.freq(foi);
             %Chans{Channel}.time =  Chans{Channel}.time(toi);
@@ -114,23 +116,23 @@ for Conditions = 1:size(Subjects,2)
             ccfg.latency = Deci.Plot.Freq.Bsl;
             ccfg.avgovertime = 'yes';
             
-            toi = round(Bsl{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Toi(1) & round(Bsl{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Toi(2);
-            bsl = ft_selectdata(ccfg, Bsl{subject_list,Conditions});
+            toi1 = round(Bsl{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Bsl(1) & round(Bsl{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Bsl(2);
             
-            Bsl{subject_list,Conditions}.powspctrm =  Bsl{subject_list,Conditions}.powspctrm(:,:,toi);
-            Bsl{subject_list,Conditions}.time = Bsl{subject_list,Conditions}.time(toi);
-            bsl = repmat(bsl.powspctrm,[1 1 size(Bsl{subject_list,Conditions}.powspctrm ,3)]);
+            Bsl{subject_list,Conditions}.powspctrm =  Bsl{subject_list,Conditions}.powspctrm(:,:,toi1);
+            Bsl{subject_list,Conditions}.time = Bsl{subject_list,Conditions}.time(toi1);
+            bsl = ft_selectdata(ccfg, Bsl{subject_list,Conditions});
+            bsl = repmat(bsl.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
             
         else
             
             ccfg.latency = Deci.Plot.Freq.Bsl;
             ccfg.avgovertime = 'yes';
             
-            toi = round(Subjects{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Toi(1) & round(Subjects{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Toi(2);
-            bsl = ft_selectdata(ccfg, Subjects{subject_list,Conditions});
+            toi1 = round(Subjects{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Bsl(1) & round(Subjects{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Bsl(2);
+            Subjects{subject_list,Conditions}.powspctrm =  Subjects{subject_list,Conditions}.powspctrm(:,:,toi1);
+            Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(toi1);
             
-            Subjects{subject_list,Conditions}.powspctrm =  Subjects{subject_list,Conditions}.powspctrm(:,:,toi);
-            Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(toi);
+            bsl = ft_selectdata(ccfg, Subjects{subject_list,Conditions});
             bsl = repmat(bsl.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
         end
         
@@ -148,6 +150,8 @@ for Conditions = 1:size(Subjects,2)
                 Subjects{subject_list,Conditions}.powspctrm = 10*log10( Subjects{subject_list,Conditions}.powspctrm ./ bsl);
         end
         
+        Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(toi);
+        Subjects{subject_list,Conditions}.powspctrm = Subjects{subject_list,Conditions}.powspctrm(:,:,toi);
     end
 end
 

@@ -114,11 +114,11 @@ for Conditions = 1:size(Subjects,2)
             ccfg.latency = Deci.Plot.Freq.Bsl;
             ccfg.avgovertime = 'yes';
             
-            toi = round(Bsl{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Toi(1) & round(Bsl{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Toi(2);
-            bsl = ft_selectdata(ccfg, Bsl{subject_list,Conditions});
+            toi = round(Bsl{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Bsl(1) & round(Bsl{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Bsl(2);
             
             Bsl{subject_list,Conditions}.powspctrm =  Bsl{subject_list,Conditions}.powspctrm(:,:,toi);
             Bsl{subject_list,Conditions}.time = Bsl{subject_list,Conditions}.time(toi);
+            bsl = ft_selectdata(ccfg, Bsl{subject_list,Conditions});
             bsl = repmat(bsl.powspctrm,[1 1 size(Bsl{subject_list,Conditions}.powspctrm ,3)]);
             
         else
@@ -126,11 +126,11 @@ for Conditions = 1:size(Subjects,2)
             ccfg.latency = Deci.Plot.Freq.Bsl;
             ccfg.avgovertime = 'yes';
             
-            toi = round(Subjects{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Toi(1) & round(Subjects{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Toi(2);
-            bsl = ft_selectdata(ccfg, Subjects{subject_list,Conditions});
-            
+            toi = round(Subjects{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Bsl(1) & round(Subjects{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Bsl(2);
             Subjects{subject_list,Conditions}.powspctrm =  Subjects{subject_list,Conditions}.powspctrm(:,:,toi);
             Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(toi);
+            
+            bsl = ft_selectdata(ccfg, Subjects{subject_list,Conditions});
             bsl = repmat(bsl.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
         end
         
@@ -147,6 +147,8 @@ for Conditions = 1:size(Subjects,2)
             case 'db'
                 Subjects{subject_list,Conditions}.powspctrm = 10*log10( Subjects{subject_list,Conditions}.powspctrm ./ bsl);
         end
+        
+        
         
     end
 end
@@ -650,11 +652,12 @@ end
             imag = Axes(a).Children.findobj('Type','Image');
             
             if isempty(imag)
-               imag =  Axes(a).Children.findobj('Type','Surface');
+                imag =  Axes(a).Children.findobj('Type','Surface');
+                
             end
             
             if isempty(imag.UserData)
-                imag.UserData = PushButton.UserData(size(imag.AlphaData));
+                imag.UserData = logical(~isnan(imag.CData));
             end
             
             placeholder = imag.UserData;
