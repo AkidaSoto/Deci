@@ -154,13 +154,13 @@ for subject_list = 1:length(Deci.SubjectList)
         if length(condinfo) > 2
             condinfo{3} = condinfo{3}(logical(data_rej.saminfo));
         end
-        data.condinfo = condinfo;
-        data.preart = preart;
-        
-        
+
         if ~isempty(Deci.Art.postArtpreprocessing)
             data = ft_preprocessing(Deci.Art.postArtpreprocessing,data);
         end
+        
+        data.condinfo = condinfo;
+        data.preart = preart;
         
         mkdir([Deci.Folder.Artifact])
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')

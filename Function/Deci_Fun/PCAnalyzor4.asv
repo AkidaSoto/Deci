@@ -36,7 +36,13 @@ Deci.Analysis = Exist(Deci.Analysis,'DownSample',[]);
 data = [];
 load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data');
 
+if isfield(data,'condinfo')
     condinfo = data.condinfo;
+else
+    condinfo =  data.cfg.previous.previous.previous.previous.trl;
+    
+    condinfo{2} = data.cfg.previous.previous.previous.previous.previous.previous{1}.previous.previous{1}.previous.event;
+end
 
 if isfield(data,'preart')
     pa = 1;
