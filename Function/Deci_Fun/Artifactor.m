@@ -15,7 +15,6 @@ for subject_list = 1:length(Deci.SubjectList)
         
         data = [];
         load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
-        data = rmfield(data,'cfg');
         
         if ~isempty(find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1)) && Deci.Art.RejectNans
             nantrials = find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1);
