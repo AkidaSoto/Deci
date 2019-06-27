@@ -18,6 +18,11 @@ evalc('data_eeg = ft_preprocessing(cfg)');
 
 condinfo = {data_eeg.trialinfo cfg.event cfg.trialnum};
 
+% for test = 1:length(data_eeg.trial)
+%     data_eeg.trial{test}(10,:) = 0;
+%     data_eeg.trial{test}(end,:) = 0;
+% end
+
 if ~isempty(Deci.PP.ScalingFactor)
     disp('Data Scaled');
     data_eeg.trial = cellfun(@(c) c*Deci.PP.ScalingFactor,data_eeg.trial,'un',0);
@@ -275,6 +280,13 @@ data.condinfo = condinfo;
 
 disp('Saving Preprocessing Data');
 mkdir([Deci.Folder.Preproc])
+
+% for test = 1:length(data.trial)
+%     
+%     data.trial{test}(find(ismember(data.label,'FCz')),:) = 0;
+% end
+
+
 save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data','-v7.3');
 %save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data');
 

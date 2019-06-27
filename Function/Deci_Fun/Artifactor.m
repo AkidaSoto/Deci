@@ -37,11 +37,11 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg = [];
         
         cfg.artfctdef.muscle = Deci.Art.muscle;
-        
+        cfg.continuous = 'no';
         [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data);
         
         cfg.artfctdef.eog = Deci.Art.eog;
-        
+        cfg.continuous = 'no';
         [cfg, cfg.artfctdef.eog.artifact] = ft_artifact_eog(cfg, data);
         
         cfg.artfctdef.crittoilim = [[abs(condinfo{1}(:,1))/1000]+Deci.Art.crittoilim(1) [abs(condinfo{1}(:,end))/1000]+Deci.Art.crittoilim(2)];
@@ -100,14 +100,9 @@ for subject_list = 1:length(Deci.SubjectList)
         %         data_musc = ft_rejectvisual(cfg,data_musc);
         %
         data_musc = ft_rejectcomponent(cfg, data_musc);
-        
-        if ~isempty(Deci.Art.PostICAbpf)
-            bpcfg.bpfreq = Deci.Art.PostICAbpf;
-            bpcfg.bpfilter = 'yes';
-            data_musc = ft_preprocessing(bpcfg,data_musc);
-        end
-        
+
         cfg.artfctdef.muscle = Deci.Art.muscle;
+        cfg.continuous = 'no';
         [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data_musc);
         
         cfg.artfctdef.eog = Deci.Art.eog;
@@ -159,6 +154,12 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         data.condinfo = condinfo;
         data.preart = preart;
+        
+        
+        if ~isempty(Deci.Art.postArtpreprocessing)
+            data = ft_preprocessing(Deci.Art.postArtpreprocessing,data);
+        end
+        
         mkdir([Deci.Folder.Artifact])
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
         data = rmfield(data,'trial');
