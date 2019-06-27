@@ -286,6 +286,7 @@ mkdir([Deci.Folder.Preproc])
 %     data.trial{test}(find(ismember(data.label,'FCz')),:) = 0;
 % end
 
+data = rmfield(data,'cfg');
 
 save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data','-v7.3');
 %save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data');
