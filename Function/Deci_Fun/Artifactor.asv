@@ -15,7 +15,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         data = [];
         load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
-        data = rmfield(data,'cfg');
+        
         
         if ~isempty(find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1)) && Deci.Art.RejectNans
             nantrials = find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1);
@@ -60,8 +60,6 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.feedback = feedback;
         
         cfg.trials = data_rej.saminfo;
-        
-        data_musc = rmfield(data_musc,'cfg');
         data_musc = ft_componentanalysis(cfg, data_musc);
         
         cfg           = [];
@@ -70,7 +68,6 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.topolabel = data_musc.topolabel;
         cfg.feedback = feedback;
         data_musc     = ft_componentanalysis(cfg, data);
-        data_musc = rmfield(data_musc,'cfg');
         
         figure;
         cfg.component = [1:20];
