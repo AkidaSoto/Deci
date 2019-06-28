@@ -166,30 +166,26 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.viewmode = 'butterfly';
         
         
-        [B,I] = sort(cellfun(@(c) max(max(c,[],1),[],2),data.trial),'descend');
+        [B,I] = sort(cellfun(@(c) max(max(abs(c),[],1),[],2),data.trial),'descend');
         
-        tempdata = [];
-        tempdata.trial = data.trial(I);
-        %tempdata.sampleinfo = data.sampleinfo(I,:);
-        tempdata.time = data.time(I);
-        tempdata.trialinfo = data.trialinfo(I);
-        tempdata.label = data.label;
-        tempdata.fsample = 1000;
+        cfg.trials = I;
+        tempdata = ft_selectdata_unsorted(cfg,data);
         
-        tempdata = ft_redefinetrial(tcfg,tempdata);
-        cfg = ft_databrowser(cfg,tempdata);
+        tempcond = cellfun(@(c) c(I,:),condinfo,'un',0);
+        %%tcfg.toilim = [[abs(tempcond{1}(:,1))/1000]+Deci.Art.crittoilim(1) [abs(tempcond{1}(:,end))/1000]+Deci.Art.crittoilim(2)];
+        %tempdata = ft_redefinetrial(tcfg,tempdata);
+        cfg = ft_databrowser(tcfg,tempdata);
         tempdata = ft_rejectartifact(cfg,tempdata);
         
-        tempdata.saminfo
-        
+        tempdata.saminfo = tempdata.saminfo(I);
         cfg = [];
-        cfg.trials = data_rej.saminfo;
+        cfg.trials = logical(tempdata.saminfo);
         data = ft_selectdata(cfg,data);
         
-        condinfo{1} = condinfo{1}(logical(data_rej.saminfo),:);
-        condinfo{2} = condinfo{2}(logical(data_rej.saminfo),:);
+        condinfo{1} = condinfo{1}(logical(tempdata.saminfo),:);
+        condinfo{2} = condinfo{2}(logical(tempdata.saminfo),:);
         if length(condinfo) > 2
-            condinfo{3} = condinfo{3}(logical(data_rej.saminfo));
+            condinfo{3} = condinfo{3}(logical(tempdata.saminfo));
         end
         
         data.condinfo = condinfo;

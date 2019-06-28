@@ -35,33 +35,40 @@ for subject_list = 1:length(Deci.SubjectList)
         preart   = condinfo;
         cfg = [];
         
-        cfg.artfctdef.muscle = Deci.Art.muscle;
-        cfg.continuous = 'no';
-        [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data);
+%         cfg.artfctdef.muscle = Deci.Art.muscle;
+%         cfg.continuous = 'no';
+%         [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data);
+%         
+%         cfg.artfctdef.eog = Deci.Art.eog;
+%         cfg.continuous = 'no';
+%         [cfg, cfg.artfctdef.eog.artifact] = ft_artifact_eog(cfg, data);
+%         
+%         cfg.artfctdef.crittoilim = [[abs(condinfo{1}(:,1))/1000]+Deci.Art.crittoilim(1) [abs(condinfo{1}(:,end))/1000]+Deci.Art.crittoilim(2)];
+%         data_musc = ft_rejectartifact(cfg, data);
+%         
+%         tcfg.toilim = cfg.artfctdef.crittoilim;
+%         cfg =[];
+%         cfg.method = 'summary';
+%         cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
+%         cfg.eog = Deci.Art.eog.channel;
+%         
+%         data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data_musc));
+%         
+
+%         
+%         cfg.trials = data_rej.saminfo;
         
-        cfg.artfctdef.eog = Deci.Art.eog;
-        cfg.continuous = 'no';
-        [cfg, cfg.artfctdef.eog.artifact] = ft_artifact_eog(cfg, data);
-        
-        cfg.artfctdef.crittoilim = [[abs(condinfo{1}(:,1))/1000]+Deci.Art.crittoilim(1) [abs(condinfo{1}(:,end))/1000]+Deci.Art.crittoilim(2)];
-        data_musc = ft_rejectartifact(cfg, data);
-        
-        tcfg.toilim = cfg.artfctdef.crittoilim;
-        cfg =[];
-        cfg.method = 'summary';
-        cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
-        cfg.eog = Deci.Art.eog.channel;
-        
-        data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data_musc));
-        
+%         data_musc = rmfield(data_musc,'cfg');
+
+        cfg.bpfilter = 'yes';
+        cfg.bpfreq = [1 30];
+        data_bp = ft_preprocessing(cfg,data);
+
+        cfg = [];
         cfg.method  = 'runica';
         cfg.numcomponent= 20;
         cfg.feedback = feedback;
-        
-        cfg.trials = data_rej.saminfo;
-        
-        data_musc = rmfield(data_musc,'cfg');
-        data_musc = ft_componentanalysis(cfg, data_musc);
+        data_musc = ft_componentanalysis(cfg, data_bp);
         
         cfg           = [];
         cfg.numcomponent= 20;
@@ -161,35 +168,32 @@ for subject_list = 1:length(Deci.SubjectList)
             data = ft_preprocessing(Deci.Art.postArtpreprocessing,data);
         end
         
-        cfg = [];
-        cfg.layout    = Deci.Layout.eye;
-        cfg.viewmode = 'butterfly';
-        
-        
-        [B,I] = sort(cellfun(@(c) max(max(abs(c),[],1),[],2),data.trial),'descend');
-        
-        tempdata = [];
-        tempdata.trial = data.trial(I);
-        %tempdata.sampleinfo = data.sampleinfo(I,:);
-        tempdata.time = data.time(I);
-        tempdata.trialinfo = data.trialinfo(I);
-        tempdata.label = data.label;
-        tempdata.fsample = 1000;
-        
-        tempdata = ft_redefinetrial(tcfg,tempdata);
-        cfg = ft_databrowser(cfg,tempdata);
-        tempdata = ft_rejectartifact(cfg,tempdata);
-        
-        tempdata.saminfo = tempdata.saminfo(I);
-        cfg = [];
-        cfg.trials = logical(tempdata.saminfo);
-        data = ft_selectdata(cfg,data);
-        
-        condinfo{1} = condinfo{1}(logical(tempdata.saminfo),:);
-        condinfo{2} = condinfo{2}(logical(tempdata.saminfo),:);
-        if length(condinfo) > 2
-            condinfo{3} = condinfo{3}(logical(tempdata.saminfo));
-        end
+%         cfg = [];
+%         cfg.layout    = Deci.Layout.eye;
+%         cfg.viewmode = 'butterfly';
+%         
+%         
+%         [B,I] = sort(cellfun(@(c) max(max(abs(c),[],1),[],2),data.trial),'descend');
+%         
+%         cfg.trials = I;
+%         tempdata = ft_selectdata_unsorted(cfg,data);
+%         
+%         tempcond = cellfun(@(c) c(I,:),condinfo,'un',0);
+%         %%tcfg.toilim = [[abs(tempcond{1}(:,1))/1000]+Deci.Art.crittoilim(1) [abs(tempcond{1}(:,end))/1000]+Deci.Art.crittoilim(2)];
+%         %tempdata = ft_redefinetrial(tcfg,tempdata);
+%         cfg = ft_databrowser(tcfg,tempdata);
+%         tempdata = ft_rejectartifact(cfg,tempdata);
+%         
+%         tempdata.saminfo = tempdata.saminfo(I);
+%         cfg = [];
+%         cfg.trials = logical(tempdata.saminfo);
+%         data = ft_selectdata(cfg,data);
+%         
+%         condinfo{1} = condinfo{1}(logical(tempdata.saminfo),:);
+%         condinfo{2} = condinfo{2}(logical(tempdata.saminfo),:);
+%         if length(condinfo) > 2
+%             condinfo{3} = condinfo{3}(logical(tempdata.saminfo));
+%         end
         
         data.condinfo = condinfo;
         data.preart = preart;
