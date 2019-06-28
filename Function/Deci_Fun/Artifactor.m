@@ -180,6 +180,7 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg = ft_databrowser(cfg,tempdata);
         tempdata = ft_rejectartifact(cfg,tempdata);
         
+        tempdata.saminfo = tempdata.saminfo(I);
         cfg = [];
         cfg.trials = logical(tempdata.saminfo);
         data = ft_selectdata(cfg,data);
