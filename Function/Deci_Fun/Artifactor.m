@@ -161,6 +161,35 @@ for subject_list = 1:length(Deci.SubjectList)
             data = ft_preprocessing(Deci.Art.postArtpreprocessing,data);
         end
         
+        cfg = [];
+        cfg.layout    = Deci.Layout.eye;
+        cfg.viewmode = 'butterfly';
+        
+        
+        [B,I] = sort(cellfun(@(c) max(max(abs(c),[],1),[],2),data.trial),'descend');
+        
+        tempdata = [];
+        tempdata.trial = data.trial(I);
+        %tempdata.sampleinfo = data.sampleinfo(I,:);
+        tempdata.time = data.time(I);
+        tempdata.trialinfo = data.trialinfo(I);
+        tempdata.label = data.label;
+        tempdata.fsample = 1000;
+        
+        tempdata = ft_redefinetrial(tcfg,tempdata);
+        cfg = ft_databrowser(cfg,tempdata);
+        tempdata = ft_rejectartifact(cfg,tempdata);
+        
+        cfg = [];
+        cfg.trials = logical(tempdata.saminfo);
+        data = ft_selectdata(cfg,data);
+        
+        condinfo{1} = condinfo{1}(logical(tempdata.saminfo),:);
+        condinfo{2} = condinfo{2}(logical(tempdata.saminfo),:);
+        if length(condinfo) > 2
+            condinfo{3} = condinfo{3}(logical(tempdata.saminfo));
+        end
+        
         data.condinfo = condinfo;
         data.preart = preart;
         

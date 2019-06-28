@@ -353,7 +353,7 @@ for cond = 1:length(Deci.Plot.Draw)
 %             %mask(mask == 0) = .2;
 %             wirestat{cond}.mask = mask;
             wirestat{cond}.mask = double(wirestat{cond}.mask);
-            wirestat{cond}.mask(wirestat{cond}.mask == 0) = .2;
+            %wirestat{cond}.mask(wirestat{cond}.mask == 0) = .2;
             
             if Deci.Plot.Stat.FPlots
                 wiret(cond)  = figure;
@@ -622,7 +622,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 
                 if ~isempty(Deci.Folder.Plot)
                     mkdir([Deci.Folder.Plot filesep Deci.Plot.Title{cond}]);
-                    saveas(topo(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_topo'],Deci.Plot.Save.Format);
+                    %saveas(topo(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_topo'],Deci.Plot.Save.Format);
                 end
                 
             end
@@ -654,7 +654,7 @@ for cond = 1:length(Deci.Plot.Draw)
             
             if ~isempty(Deci.Folder.Plot)
                 mkdir([Deci.Folder.Plot filesep Deci.Plot.Title{cond}]);
-                saveas(square(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_square'],Deci.Plot.Save.Format);
+                %saveas(square(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_square'],Deci.Plot.Save.Format);
             end
             
         end
