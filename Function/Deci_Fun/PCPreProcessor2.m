@@ -227,7 +227,7 @@ disp('----------------------');
                 corr(eye,comp) = compcorr(1,2);
             end
             
-            cfg.component(eye) = find(max(corr(eye,:)) == corr(eye,:));
+            cfg.component(eye) = find(max(abs(corr(eye,:))) == abs(corr(eye,:)));
         end
         
         
@@ -238,6 +238,25 @@ disp('----------------------');
 %         
         cfg.demean = 'yes';
         data = ft_rejectcomponent(cfg, data_muscfree);
+       
+
+        cfg.artfctdef.muscle = Deci.Art.muscle;
+        cfg.continuous = 'no';
+        [cfg, cfg.artfctdef.muscle.artifact] = ft_artifact_muscle(cfg, data);
+        
+        cfg.artfctdef.eog = Deci.Art.eog;
+        [cfg, cfg.artfctdef.eog.artifact] = ft_artifact_eog(cfg, data);
+        
+        cfg.artfctdef.crittoilim = [[abs(condinfo{1}(:,1))/1000]+Deci.Art.crittoilim(1) [abs(condinfo{1}(:,end))/1000]+Deci.Art.crittoilim(2)];
+        data = ft_rejectartifact(cfg, data);
+        
+        condinfo{1} = condinfo{1}(logical(data.saminfo),:);
+        condinfo{2} = condinfo{2}(logical(data.saminfo),:);
+        
+        if length(condinfo) > 2
+            condinfo{3} = condinfo{3}(logical(data.saminfo));
+        end
+        
         
         data.condinfo = condinfo;
         data.preart = preart;
