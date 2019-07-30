@@ -36,6 +36,12 @@ Deci.Analysis = Exist(Deci.Analysis,'DownSample',[]);
 data = [];
 load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data');
 
+if ~strcmpi(Deci.Analysis.Channels,'all')
+    cfg = [];
+    cfg.channel = Deci.Analysis.Channels;
+    
+    data = ft_selectdata(cfg,data);
+end
     condinfo = data.condinfo;
 
 if isfield(data,'preart')
