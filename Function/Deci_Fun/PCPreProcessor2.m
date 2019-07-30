@@ -262,9 +262,9 @@ disp('----------------------');
         
         data = rmfield(data,'cfg');
         
-        mkdir([Deci.Folder.PreProc])
-        save([Deci.Folder.PreProc filesep Deci.SubjectList{subject_list}],'data','-v7.3')
+        mkdir([Deci.Folder.Preproc])
+        save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data','-v7.3')
         data = rmfield(data,'trial');
-        save([Deci.Folder.PreProc filesep Deci.SubjectList{subject_list} '_info'],'data','corr','-v7.3');
+        save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '_info'],'data','corr','-v7.3');
 
 end
