@@ -257,15 +257,14 @@ disp('----------------------');
             condinfo{3} = condinfo{3}(logical(data.saminfo));
         end
         
-        
         data.condinfo = condinfo;
         data.preart = preart;
         
         data = rmfield(data,'cfg');
         
-        mkdir([Deci.Folder.Artifact])
-        save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
+        mkdir([Deci.Folder.PreProc])
+        save([Deci.Folder.PreProc filesep Deci.SubjectList{subject_list}],'data','-v7.3')
         data = rmfield(data,'trial');
-        save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','corr','-v7.3');
+        save([Deci.Folder.PreProc filesep Deci.SubjectList{subject_list} '_info'],'data','corr','-v7.3');
 
 end
