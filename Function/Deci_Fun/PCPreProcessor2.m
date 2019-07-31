@@ -239,6 +239,7 @@ disp('----------------------');
         cfg.demean = 'yes';
         data = ft_rejectcomponent(cfg, data_muscfree);
        
+        
 
         cfg.artfctdef.muscle = Deci.Art.muscle;
         cfg.continuous = 'no';
