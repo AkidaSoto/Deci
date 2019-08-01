@@ -225,10 +225,10 @@ disp('----------------------');
             for comp = 1:size(comps,1)
                 [compcorr, p] = corrcoef(eyechan(eye,:),comps(comp,:));
                 corr(eye,comp,1) = compcorr(1,2);
-                corr(eye,comp,2) = p(1,2);
+                corr(eye,comp,1) = ;
             end
             
-            cfg.component(eye) = find(abs(corr(eye,:,1)) >= .6);
+            cfg.component(eye) = find(abs(corr(eye,:)) >= .6);
         end
         
         
