@@ -98,6 +98,10 @@ cfg.freqlow    = ft_getopt(cfg, 'freqlow',  'all');
 cfg.freqhigh   = ft_getopt(cfg, 'freqhigh', 'all');
 cfg.keeptrials = ft_getopt(cfg, 'keeptrials','no');
 
+if isempty(freqhigh)
+   
+    freqhigh = freqlow;
+end
 
 % make selection of frequencies and channels
 tmpcfg = [];
@@ -269,6 +273,8 @@ switch cfg.method
       if strcmp(cfg.keeptrials, 'no')
           dimord = 'chan_chan_time' ;
           crsspctrm =  permute(mean(crsspctrm,1),[2 3 4 1]);
+          
+          cfcdata = permute(mean(cfcdata,1),[2:length(size(cfcdata)) 1]);
       end
 
 end % switch method for actual computation
@@ -277,6 +283,7 @@ end % switch method for actual computation
 crossfreq.labellow      = freqlow.label;
 crossfreq.labelhigh      = freqhigh.label;
 crossfreq.crsspctrm  = crsspctrm;
+crossfreq.cfcdata = cfcdata;
 crossfreq.dimord     = dimord;
 crossfreq.freqlow    = mean(LF);
 crossfreq.freqhigh   = mean(HF);

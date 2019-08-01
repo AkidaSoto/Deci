@@ -1,87 +1,18 @@
 function Plottor_CFC(Deci)
 
-%% Deci Checks
-
-if isfield(Deci.Plot.CFC,'freqhigh')
-    if ischar(Deci.Plot.CFC.freqhigh)
-        switch Deci.Plot.CFC.freqhigh
-            case 'theta'
-                Deci.Plot.CFC.freqhigh = [4 8];
-            case 'beta'
-                Deci.Plot.CFC.freqhigh = [12.5 30];
-            case 'alpha'
-                Deci.Plot.CFC.freqhigh = [8 12.5];
-            case 'gamma'
-                Deci.Plot.CFC.freqhigh = [30 50];
-        end
-    elseif isnumeric(Deci.Plot.CFC.freqhigh)
-    else
-        error(['cannot interrept freqhigh']);
-    end
-else
-    error(['cannot interrept freqhigh']);
-end
-
-if isfield(Deci.Plot.CFC,'freqlow')
-    if ischar(Deci.Plot.CFC.freqlow)
-        switch Deci.Plot.CFC.freqlow
-            case 'theta'
-                Deci.Plot.CFC.freqlow = [4 8];
-            case 'beta'
-                Deci.Plot.CFC.freqlow = [12.5 30];
-            case 'alpha'
-                Deci.Plot.CFC.freqlow = [8 12.5];
-            case 'gamma'
-                Deci.Plot.CFC.freqlow = [30 50];
-        end
-    elseif isnumeric(Deci.Plot.CFC.freqlow)
-    else
-        error(['cannot interrept freqlow']);
-    end
-else
-    error(['cannot interrept freqlow']);
-end
-
-
-if isequal(Deci.Plot.CFC.chanlow,'Reinhart-All')
-    Deci.Plot.CFC.chanlow = [{'AF3'  } {'AF4'  } {'AF7'  } ...
-        {'AF8'  } {'AFz'  } {'C1'   } {'C2'   } {'C3'   } {'C4'   } {'C5'   } ...
-        {'C6'   } {'CP1'  } {'CP2'  } {'CP3'  } {'CP4'  } {'CP5'  } {'CP6'  } ...
-        {'CPz'  } {'Cz'   } {'F1'   } {'F2'   } {'F3'   } {'F4'   } {'F5'   } ...
-        {'F6'   } {'F7'   } {'F8'   } {'FC1'  } {'FC2'  } {'FC3'  } {'FC4'  } ...
-        {'FC5'  } {'FC6'  } {'FCz'  } {'FT7'  } {'FT8'  } {'Fz'   } {'O1'   } ...
-        {'O2'   } {'Oz'   } {'P1'   } {'P2'   } {'P3'   } {'P4'   } {'P5'   } ...
-        {'P6'   } {'P7'   } {'P8'   } {'PO3'  } {'PO4'  } {'PO7'  } {'PO8'  } ...
-        {'POz'  } {'Pz'   } {'T7'   } {'T8'   } {'TP10' } {'TP7'  } {'TP8'  } ...
-        {'TP9'  } ] ;
-end
-
-if isequal(Deci.Plot.CFC.chanhigh,'Reinhart-All')
-    Deci.Plot.CFC.chanhigh = [{'AF3'  } {'AF4'  } {'AF7'  } ...
-        {'AF8'  } {'AFz'  } {'C1'   } {'C2'   } {'C3'   } {'C4'   } {'C5'   } ...
-        {'C6'   } {'CP1'  } {'CP2'  } {'CP3'  } {'CP4'  } {'CP5'  } {'CP6'  } ...
-        {'CPz'  } {'Cz'   } {'F1'   } {'F2'   } {'F3'   } {'F4'   } {'F5'   } ...
-        {'F6'   } {'F7'   } {'F8'   } {'FC1'  } {'FC2'  } {'FC3'  } {'FC4'  } ...
-        {'FC5'  } {'FC6'  } {'FCz'  } {'FT7'  } {'FT8'  } {'Fz'   } {'O1'   } ...
-        {'O2'   } {'Oz'   } {'P1'   } {'P2'   } {'P3'   } {'P4'   } {'P5'   } ...
-        {'P6'   } {'P7'   } {'P8'   } {'PO3'  } {'PO4'  } {'PO7'  } {'PO8'  } ...
-        {'POz'  } {'Pz'   } {'T7'   } {'T8'   } {'TP10' } {'TP7'  } {'TP8'  } ...
-        {'TP9'  } ] ;
-end
-
 %% Load
 
 for  subject_list = 1:length(Deci.SubjectList)
     tic;
-    for Channel = 1:length(Deci.Plot.CFC.chanhigh)
+    for Channel = 1:length(Deci.Analysis.CFC.chanhigh)
         
-        display(['High Channel ' Deci.Plot.CFC.chanhigh{Channel} ' of ' num2str(length(Deci.Plot.CFC.chanhigh))])
+        display(['High Channel ' Deci.Analysis.CFC.chanhigh{Channel} ' of ' num2str(length(Deci.Analysis.CFC.chanhigh))])
         
         freq = [];
-        load([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep Deci.SubjectList{subject_list} filesep Deci.Plot.Lock filesep Deci.Plot.CFC.chanhigh{Channel}],'freq');
+        load([Deci.Folder.Analysis filesep 'CFC' filesep Deci.Analysis.CFC.method filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}],'cfc');
         
-        foi = freq.freq >= round(Deci.Plot.CFC.freqhigh(1),4) & freq.freq <= round(Deci.Plot.CFC.freqhigh(2),4);
-        toi = round(freq.time,4) >= Deci.Plot.CFC.latencyhigh(1) & round(freq.time,4) <= Deci.Plot.CFC.latencyhigh(2);
+        foi = freq.freq >= round(Deci.Analysis.CFC.freqhigh(1),4) & freq.freq <= round(Deci.Analysis.CFC.freqhigh(2),4);
+        toi = round(freq.time,4) >= Deci.Analysis.CFC.latencyhigh(1) & round(freq.time,4) <= Deci.Analysis.CFC.latencyhigh(2);
         
         HighChans{Channel} = freq;
         HighChans{Channel}.freq =  HighChans{Channel}.freq(foi);
