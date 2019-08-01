@@ -216,8 +216,8 @@ disp('----------------------');
         cfg.channel = 'all';
         
         comps = [data_musc.trial{:}];
-        eyes = [data_eeg.trial{:}];
-        eyechan = eyes(ismember(data_eeg.label,allOcu),:);
+        eyes = [data.trial{:}];
+        eyechan = eyes(ismember(data.label,allOcu),:);
         
         
         cfg.component = [];
