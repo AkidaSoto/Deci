@@ -70,7 +70,6 @@ for j = 1:length(startstopseg)
     
     trl(end + 1,1:4+length(cfg.DT.Locks)) = nan;
     trl(end ,1:4) = [begsample endsample 0 j];
-    
     trl(end,logical([0 0 0 0 ismember(cfg.DT.Locks,value)])) = offsets;
     
     
