@@ -1,3 +1,4 @@
+
 function DefineTrialor(Deci)
 
 disp('----------------------');

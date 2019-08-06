@@ -223,6 +223,12 @@ disp('----------------------');
         
         if Deci.PP.Manual
             
+            cfg.component = [1:20];
+            cfg.viewmode = 'component';
+            
+            cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
+            
+            
             cfg.channel = 'all';
             
             fakeUI = figure;
@@ -238,7 +244,7 @@ disp('----------------------');
                 cfg.component = find(ismember(data_musc.label,fakeUI.UserData));
             end
             close(fakeUI)
-            
+            corr = [];
         else
             
             for eye = 1:size(eyechan,1)

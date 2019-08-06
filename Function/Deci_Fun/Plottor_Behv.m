@@ -100,7 +100,9 @@ for subject_list = 1:length(Deci.SubjectList)
                     
                     if strcmpi(Deci.Plot.Behv.Acc.Collapse.Uneven,'positional:nans')
 
-                        mint =  [[sum(ismember(data.full{1},[draws{:}]),2) + sum(isnan(data.event),2)] == maxt] &  any(ismember(data.full{1},[iblk*Deci.Plot.Behv.Acc.Block(blk)]),2);
+                        %+ sum(isnan(data.event),2)
+                        
+                        mint =  [[sum(ismember(data.full{1},[draws{:}]),2) ] == maxt] &  any(ismember(data.full{1},[iblk*Deci.Plot.Behv.Acc.Block(blk)]),2);
                         mintrl = data.full{2}(mint);
                         
                         Acc{fig}{subject_list,draw,blk} = nan([length(find(mintrl)) 1]);
