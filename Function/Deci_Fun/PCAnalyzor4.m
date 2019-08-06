@@ -347,8 +347,8 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 end
                 
                 cfc = ft_singlecfc(Deci.Analysis.CFC,Fourier);
-                cfc.freqlow = Deci.Analysis.CFC.freqlow;
-                cfc.freqhigh = Deci.Analysis.CFC.freqhigh;
+                cfc.freqlow = Fourier.freq(Fourier.freq >= Deci.Analysis.CFC.freqlow(1) & Fourier.freq <= Deci.Analysis.CFC.freqlow(2));
+                cfc.freqhigh = Fourier.freq(Fourier.freq >= Deci.Analysis.CFC.freqhigh(1) & Fourier.freq <= Deci.Analysis.CFC.freqhigh(2));
                 cfc.chanlow = Deci.Analysis.CFC.chanlow;
                 cfc.chanhigh = Deci.Analysis.CFC.chanhigh;
                 cfc.method = Deci.Analysis.CFC.method;

@@ -13,7 +13,7 @@ end
 
 hold on
 
-if ~isempty(varargin{1})
+if ~isempty(varargin)
     ngroups = size(data, 1);
     nbars = size(data, 2);
     % Calculating the width for each bar group

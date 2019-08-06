@@ -134,6 +134,8 @@ timehigh = length(freqhigh.time(1:end-1))/timebin;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % prepare the data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%TODO: make all instances of cfcdata the same dimensionality
+
 switch cfg.method
   
   case 'coh'

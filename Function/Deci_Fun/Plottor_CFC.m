@@ -2,103 +2,96 @@ function Plottor_CFC(Deci)
 
 %% Load
 
+if isfield(Deci.Plot.CFC,'freqhigh')
+    if ischar(Deci.Plot.CFC.freqhigh)
+        switch Deci.Plot.CFC.freqhigh
+            case 'theta'
+                Deci.Plot.CFC.freqhigh = [4 8];
+            case 'beta'
+                Deci.Plot.CFC.freqhigh = [12.5 30];
+            case 'alpha'
+                Deci.Plot.CFC.freqhigh = [8 12.5];
+            case 'lowgamma'
+                Deci.Plot.CFC.freqhigh = [30 55];
+            case 'highgamma'
+                Deci.Plot.CFC.freqhigh = [55 80];
+        end
+    elseif isnumeric(Deci.Plot.CFC.freqhigh)
+    else
+        error(['cannot interrept freqhigh']);
+    end
+else
+    error(['cannot interrept freqhigh']);
+end
+
+if isfield(Deci.Plot.CFC,'freqlow')
+    if ischar(Deci.Plot.CFC.freqlow)
+        switch Deci.Plot.CFC.freqlow
+            case 'theta'
+                Deci.Plot.CFC.freqlow = [4 8];
+            case 'beta'
+                Deci.Plot.CFC.freqlow = [12.5 30];
+            case 'alpha'
+                Deci.Plot.CFC.freqlow = [8 12.5];
+            case 'lowgamma'
+                Deci.Plot.CFC.freqlow = [30 55];
+            case 'highgamma'
+                Deci.Plot.CFC.freqlow = [55 80];
+        end
+    elseif isnumeric(Deci.Plot.CFC.freqlow)
+    else
+        error(['cannot interrept freqlow']);
+    end
+else
+    error(['cannot interrept freqlow']);
+end
+
+
 for  subject_list = 1:length(Deci.SubjectList)
     tic;
-    for Channel = 1:length(Deci.Analysis.CFC.chanhigh)
+    for Conditions = 1:length(Deci.Plot.IndexTitle)
+        cfc = [];
         
-        display(['High Channel ' Deci.Analysis.CFC.chanhigh{Channel} ' of ' num2str(length(Deci.Analysis.CFC.chanhigh))])
         
-        freq = [];
-        load([Deci.Folder.Analysis filesep 'CFC' filesep Deci.Analysis.CFC.method filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}],'cfc');
-        
-        foi = freq.freq >= round(Deci.Analysis.CFC.freqhigh(1),4) & freq.freq <= round(Deci.Analysis.CFC.freqhigh(2),4);
-        toi = round(freq.time,4) >= Deci.Analysis.CFC.latencyhigh(1) & round(freq.time,4) <= Deci.Analysis.CFC.latencyhigh(2);
-        
-        HighChans{Channel} = freq;
-        HighChans{Channel}.freq =  HighChans{Channel}.freq(foi);
-        HighChans{Channel}.time =  HighChans{Channel}.time(toi);
-        HighChans{Channel}.fourierspctrm  = HighChans{Channel}.fourierspctrm(:,:,foi,toi);
-    end
-    toc;
-    
-    acfg.parameter = 'fourierspctrm';
-    acfg.appenddim = 'chan';
-    HighChans = rmfield(ft_appendfreq(acfg,HighChans{:}),'cfg');
-    
-    tic;
-    for Channel = 1:length(Deci.Plot.CFC.chanlow)
-        
-        display(['Low Channel ' Deci.Plot.CFC.chanlow{Channel} ' of ' num2str(length(Deci.Plot.CFC.chanlow))])
-        
-        freq = [];
-        load([Deci.Folder.Analysis filesep 'Four_TotalPower' filesep Deci.SubjectList{subject_list} filesep Deci.Plot.Lock filesep Deci.Plot.CFC.chanlow{Channel}],'freq');
-        
-        foi = freq.freq >= round(Deci.Plot.CFC.freqlow(1),4) & freq.freq <= round(Deci.Plot.CFC.freqlow(2),4);
-        toi = round(freq.time,4) >= Deci.Plot.CFC.latencylow(1) & round(freq.time,4) <= Deci.Plot.CFC.latencylow(2);
-        
-        LowChans{Channel} = freq;
-        LowChans{Channel}.freq =  LowChans{Channel}.freq(foi);
-        LowChans{Channel}.time =  LowChans{Channel}.time(toi);
-        LowChans{Channel}.fourierspctrm  = LowChans{Channel}.fourierspctrm(:,:,foi,toi);
-        
-    end
-    toc;
-    
-    acfg.parameter = 'fourierspctrm';
-    acfg.appenddim = 'chan';
-    LowChans = rmfield(ft_appendfreq(acfg,LowChans{:}),'cfg');
-    
-    for m = 1:length(Deci.Plot.CFC.methods)
-        for Conditions = 1:length(Deci.Plot.Conditions)
-            maxt = max(sum(ismember(freq.condinfo{2},Deci.Plot.Conditions{Conditions}),2));
-            trl = sum(ismember(freq.condinfo{2},Deci.Plot.Conditions{Conditions}),2) == maxt;
+        for m = 1:length(Deci.Plot.CFC.methods)
+            load([Deci.Folder.Analysis filesep 'CFC' filesep Deci.Plot.CFC.methods{m} filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.IndexTitle{Conditions}],'cfc');
             
-            TrialCount{subject_list,Conditions} = length(find(trl));
+            highfoi = cfc.freqhigh >= round(Deci.Plot.CFC.freqhigh(1),4) & cfc.freqhigh <= round(Deci.Plot.CFC.freqhigh(2),4);
             
-            High = HighChans;
-            High.fourierspctrm = HighChans.fourierspctrm(trl,:,:,:);
-            Low = LowChans;
-            Low.fourierspctrm = LowChans.fourierspctrm(trl,:,:,:);
+            cfc.freqhigh = cfc.freqhigh(highfoi);
+            cfc.cfcdata  = cfc.cfcdata(:,:,:,highfoi,:);
+            
+            lowfoi = cfc.freqlow >= round(Deci.Plot.CFC.freqlow(1),4) & cfc.freqlow <= round(Deci.Plot.CFC.freqlow(2),4);
+            
+            cfc.freqlow = cfc.freqlow(lowfoi);
+            cfc.cfcdata  = cfc.cfcdata(:,:,lowfoi,:,:);
             
             
-            Deci.Plot.CFC.method = Deci.Plot.CFC.methods{m};
-            Subjects{subject_list,Conditions,m} =  ft_singlecfc(Deci.Plot.CFC,Low,High);
-            
+            Subjects{subject_list,Conditions,m} = cfc;
         end
         
     end
-    clear HighChans
-    clear LowChans
+    
 end
 
 
 if ~isempty(Deci.Plot.Math)
     
     for m = 1:length(Deci.Plot.CFC.methods)
-        for cond = 1:length(Deci.Plot.Math.Form)
-            
-            
+        for cond = 1:length(Deci.Plot.Math)
             for subj = 1:size(Subjects,1)
-                
-                
-                operation = str2fun(['@(x)' regexprep(Deci.Plot.Math.Form{cond},'x(\d*)','x{$1}')]);
-
+                operation = str2fun(['@(x)' regexprep(Deci.Plot.Math{cond},'x(\d*)','x{$1}')]);
                 MathData{subj} = Subjects{subj,1,m};
-                MathData{subj}.crsspctrm = [feval(operation, cellfun(@(c) c.crsspctrm,Subjects(subj,1:length(Deci.Plot.Conditions)+cond-1,m),'UniformOutput',false))];
-                
-                
+                MathData{subj}.crsspctrm = [feval(operation, cellfun(@(c) c.crsspctrm,Subjects(subj,1:length(Deci.Plot.IndexTitle)+cond-1,m),'UniformOutput',false))];
             end
-            Subjects(:,length(Deci.Plot.Conditions)+cond,m) = MathData;
-            TotalCount(:,length(Deci.Plot.Conditions)+cond) = num2cell(nan(size(Subjects,1),1));
+            Subjects(:,length(Deci.Plot.IndexTitle)+cond,m) = MathData;
+            TotalCount(:,length(Deci.Plot.IndexTitle)+cond) = num2cell(nan(size(Subjects,1),1));
         end
-        
-        
     end
-    
     
 end
 
-if Deci.Plot.GA
+if Deci.Plot.GrandAverage
     
     for conds = 1:size(Subjects,2)
         for m = 1:length(Deci.Plot.CFC.methods)
@@ -107,25 +100,25 @@ if Deci.Plot.GA
             CFCData{1,conds,m} = Subjects{1,conds,m};
             CFCData{1,conds,m}.crsspctrm =  mean([cell2mat(cellfun(@(c) c.crsspctrm,Subjects(:,conds,m),'UniformOutput',false))],1);
             
-             %TotalCount{1,conds} = mean([TrialCount{:,conds}]);
-             
-             if Deci.Plot.CFC.errorbars
-                 facfg.type = 'std';
-                 CFCStd{1,conds,m} = Subjects{1,conds,m};
-                 CFCStd{1,conds,m}.crsspsctrm = std([cell2mat(cellfun(@(c) c.crsspctrm,Subjects(:,conds,m),'UniformOutput',false))],1);
-             end
-             
-           
+            %TotalCount{1,conds} = mean([TrialCount{:,conds}]);
+            
+            if Deci.Plot.CFC.errorbars
+                facfg.type = 'std';
+                CFCStd{1,conds,m} = Subjects{1,conds,m};
+                CFCStd{1,conds,m}.crsspsctrm = std([cell2mat(cellfun(@(c) c.crsspctrm,Subjects(:,conds,m),'UniformOutput',false))],1);
+            end
+            
+            
         end
     end
     
-     Deci.SubjectList = {'Group 1'};
+    Deci.SubjectList = {'Group 1'};
 else
     CFCData = Subjects;
     TotalCount = TrialCount;
     
-   
-
+    
+    
     
 end
 clear Subjects;
@@ -137,23 +130,43 @@ for cond = 1:length(Deci.Plot.Draw)
     for met = 1:size(CFCData,3)
         for subj = 1:size(CFCData,1)
             
+            % Chan x Chan plot, Time has a dial
             if Deci.Plot.CFC.Square
                 CFCsquare(subj,met) = figure;
             end
             
+            % Topo plot with lines for connections, Time has a Dial
             if Deci.Plot.CFC.Topo
                 CFCtopo(subj,met)  = figure;
             end
             
+            % Each Bar is a ChanxChan value, Y axis represent indpedent
+            % unit. Bars are in group by timebins.
             if Deci.Plot.CFC.Hist
                 CFChist(subj,met)  = figure;
             end
             
+            % Same as Bar but represent as line plot instead of bar plots
             if Deci.Plot.CFC.Wire
                 CFCwire(subj,met)  = figure;
             end
             
+            % Phase of low freq vs power of high freq
+            if Deci.Plot.CFC.Phase
+                for chanh = 1:length(CFCData{subj,cond,met}.labelhigh)
+                    CFCphase(subj,met,chanh)  = figure;
+                end
+            end
+            
+            % Same as previous plot but broken down by frequency
+            
             for subcond = 1:length(Deci.Plot.Draw{cond})
+                
+                if Deci.Plot.CFC.Spectrum
+                    for chanh = 1:length(CFCData{subj,subcond,met}.labelhigh)
+                        CFCspectrum(subj,met,subcond,chanh)  = figure;
+                    end
+                end
                 
                 if Deci.Plot.CFC.Topo
                     set(0, 'CurrentFigure', CFCtopo(subj,met) )
@@ -164,11 +177,11 @@ for cond = 1:length(Deci.Plot.Draw)
                     
                     Cross.labelcmb = CombVec(CFCData{subj,subcond,1}.labellow',CFCData{subj,subcond,1}.labelhigh')';
                     Cross.freq = CFCData{subj,subcond,1}.freqlow;
-                    Cross.cohspctrm = CFCData{subj,subcond,met}.crsspctrm(:,:,2);
+                    Cross.cohspctrm = CFCData{subj,subcond,met}.crsspctrm;
                     Cross.dimord = CFCData{subj,subcond,1}.dimord;
                     
                     Crosscfg =[];
-                    Crosscfg.foi = [min([Deci.Plot.CFC.freqhigh Deci.Plot.CFC.freqlow]) max([Deci.Plot.CFC.freqhigh Deci.Plot.CFC.freqlow])];
+                    Crosscfg.foi = [min([cfc.freqhigh cfc.freqlow]) max([cfc.freqhigh cfc.freqlow])];
                     Crosscfg.layout = Deci.Layout.Noeye;
                     title([Deci.SubjectList{subj} ' ' Deci.Plot.CFC.methods{met} ' Cond '  num2str(cond)],'Interpreter', 'none');
                     ft_topoplotCC(Crosscfg,Cross);
@@ -217,7 +230,7 @@ for cond = 1:length(Deci.Plot.Draw)
                         for chanl = 1:length(CFCData{subj,subcond,met}.labellow)
                             
                             cwire(subj,chanl,met)    =  subplot(length(CFCData{subj,subcond,met}.labellow),1,chanl);
-                        
+                            
                             
                             if ~Deci.Plot.CFC.errorbars
                                 plot(CFCData{subj,subcond,met}.timelow,squeeze(CFCData{subj,subcond,met}.crsspctrm(chanl,chanh,:)))
@@ -241,7 +254,70 @@ for cond = 1:length(Deci.Plot.Draw)
                     end
                 end
                 
+                if Deci.Plot.CFC.Phase
+                    
+                    
+                    
+                    for chanh = 1:length(CFCData{subj,subcond,met}.labelhigh)
+                        set(0, 'CurrentFigure', CFCphase(subj,met,chanh) )
+                        CFCphase(subj,met,chanh).Visible = 'on';
+                        for chanl = 1:length(CFCData{subj,subcond,met}.labellow)
+                            
+                            cphase(subj,chanl,met)    =  subplot(length(CFCData{subj,subcond,met}.labellow),1,chanl);
+                            
+                            if ~Deci.Plot.CFC.errorbars
+                                plot(linspace(-pi,pi,size(CFCData{subj,subcond,met}.cfcdata,5)),squeeze(mean(CFCData{subj,subcond,met}.cfcdata(chanl,chanh,:,:,:),[1 2 3 4])))
+                                
+                            else
+                                top = squeeze(squeeze(mean(normalize(CFCData{subj,subcond,met}.cfcdata(chanl,chanh,:,:,:),5),[1 2 3 4])) + squeeze(std(normalize(CFCData{subj,subcond,met}.cfcdata(chanl,chanh,:,:,:),5),0,[1 2 3 4])));
+                                bot = squeeze(squeeze(mean(normalize(CFCData{subj,subcond,met}.cfcdata(chanl,chanh,:,:,:),5),[1 2 3 4])) - squeeze(std(normalize(CFCData{subj,subcond,met}.cfcdata(chanl,chanh,:,:,:),5),0,[1 2 3 4])));
+                                
+                                pgon = polyshape([linspace(-pi,pi,size(CFCData{subj,subcond,met}.cfcdata,5)) fliplr(linspace(-pi,pi,size(CFCData{subj,subcond,met}.cfcdata,5)))],[top' fliplr(bot')],'Simplify', false);
+                                b = plot(pgon,'HandleVisibility','off');
+                                hold on
+                                b.EdgeAlpha = 0;
+                                b.FaceAlpha = .15;
+                                h =  plot(linspace(-pi,pi,size(CFCData{subj,subcond,met}.cfcdata,5)),squeeze(mean(normalize(CFCData{subj,subcond,met}.cfcdata(chanl,chanh,:,:,:),5),[1 2 3 4])));
+                                h.Color = b.FaceColor;
+                                h.LineWidth = 1;
+                                
+                            end
+                            hold on
+                            xlabel('Phase (radians)');
+                            ylabel('Amplitude (modulation index)');
+                            legend([Deci.Plot.Subtitle{cond}]);
+                            title([CFCData{subj,subcond,met}.labellow(chanl), CFCData{subj,subcond,met}.labelhigh(chanh)])
+                            
+                        end
+                    end
+                end
+                
+                
+                if Deci.Plot.CFC.Spectrum
+                    cols = length(CFCData{subj,subcond,met}.labellow);
+                    rows = size(CFCData{subj,subcond,met}.cfcdata,3);
+                    
+                    for chanh = 1:length(CFCData{subj,subcond,met}.labelhigh)
+                        set(0, 'CurrentFigure', CFCspectrum(subj,met,subcond,chanh) )
+                        CFCspectrum(subj,met,subcond,chanh).Visible = 'on';
+                        iterator = 0;
+                        for chanl = 1:length(CFCData{subj,subcond,met}.labellow)
+                            for row = 1:size(CFCData{subj,subcond,met}.cfcdata,3)
+                                iterator = iterator + 1;
+                                cspectrum(subj,chanl,met)    =  subplot(rows,cols,iterator);
+                                imagesc(linspace(-pi,pi,size(CFCData{subj,subcond,met}.cfcdata,5)),CFCData{subj,subcond,met}.freqhigh,normalize(squeeze(CFCData{subj,subcond,met}.cfcdata(chanl, chanh, row, :,:)),2))
+                                xlabel('Phase (radians)');
+                                ylabel('High frequency');
+                                title([CFCData{subj,subcond,met}.freqlow(row), CFCData{subj,subcond,met}.labellow(chanl), CFCData{subj,subcond,met}.labelhigh(chanh) Deci.Plot.Subtitle{cond}{subcond}]);
+                            end
+                            hold on
+                        end
+                    end
+                end
+                
             end
+            
+            
             
             if Deci.Plot.CFC.Hist
                 set(0, 'CurrentFigure', CFChist(subj,met));
@@ -263,13 +339,20 @@ for cond = 1:length(Deci.Plot.Draw)
             end
             
             if Deci.Plot.CFC.Wire
-                 for WireLim = 1:length(cwire(subj,:,met))
-                   Vect = CombVec(CFCData{subj,subcond,met}.labellow',CFCData{subj,subcond,met}.labelhigh')';
-                   legend(cwire(subj,WireLim,met),arrayfun(@(c) [Vect{c,1} Vect{c,2}],1:size(Vect,1),'un',0));
-                   cwire(subj,WireLim,met).YLim = minmax([cwire(subj,:,met).YLim]);
-                 end
+                for WireLim = 1:length(cwire(subj,:,met))
+                    Vect = CombVec(CFCData{subj,subcond,met}.labellow',CFCData{subj,subcond,met}.labelhigh')';
+                    legend(cwire(subj,WireLim,met),arrayfun(@(c) [Vect{c,1} Vect{c,2}],1:size(Vect,1),'un',0));
+                    cwire(subj,WireLim,met).YLim = [min([cwire(subj,:,met).YLim]) max([cwire(subj,:,met).YLim])];
+                end
             end
             
+            %             if Deci.Plot.CFC.Phase
+            %                 for PhaseLim = 1:length(cphase(subj,:,met))
+            %                     Vect = CombVec(CFCData{subj,subcond,met}.labellow',CFCData{subj,subcond,met}.labelhigh')';
+            %                     legend(cphase(subj,PhaseLim,met),arrayfun(@(c) [Vect{c,1} Vect{c,2}],1:size(Vect,1),'un',0));
+            %                     cphase(subj,PhaseLim,met).YLim = [min([cphase(subj,:,met).YLim]) max([cphase(subj,:,met).YLim])];
+            %                 end
+            %             end
             
             if Deci.Plot.CFC.Topo
                 
@@ -365,7 +448,7 @@ end
             NewCross = Axes(Axe).UserData{1};
             NewCross.cohspctrm =  Axes(Axe).UserData{3}(:,:,popup.Value);
             NewCrossCfg = Axes(Axe).UserData{2};
-            NewCrossCfg.CLim = minmax(CLim(:)');
+            NewCrossCfg.CLim = [min(CLim(:)') max(CLim(:)')];
             ft_topoplotCC(NewCrossCfg ,NewCross);
             
         end
