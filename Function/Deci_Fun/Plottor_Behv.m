@@ -138,9 +138,11 @@ if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
 end
 
 %% sort
-    clear fAcc
-    clear fRT
+
 for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
+    
+    clear fAcc
+
     
     if ~isempty(Deci.Plot.Behv.Acc) && ~isempty(find(Deci.Plot.Behv.Acc.Figure))
         if ismember(Deci.Plot.Behv.Acc.Collapse.Uneven,{'maxlength:nans','positional:nans'})
@@ -178,6 +180,7 @@ for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
 end
 
 for fig = 1:length(find(Deci.Plot.Behv.RT.Figure)) 
+        clear fRT
     if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
         if ismember(Deci.Plot.Behv.RT.Collapse.Uneven,{'maxlength:nans','positional:nans'})
             
@@ -187,7 +190,7 @@ for fig = 1:length(find(Deci.Plot.Behv.RT.Figure))
                 end
             end
             RT{fig} = fRT;
-            RTsem = [];
+            RTsem{fig} = [];
         end
         
         if Deci.Plot.Behv.RT.Collapse.Trial
@@ -268,7 +271,7 @@ for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
                     if draw == 1
                         CleanBars(Acc{fig}(subj,:,:,:),Accsem{fig}(subj,:,:,:))
                         title(['Acc Total for ' Sub.Acc{subj} ': ' Deci.Plot.Behv.Acc.Title{fig} ' '],'Interpreter','none')
-                        legend([Deci.Plot.Behv.Acc.Subtitle{draw}])
+                        legend([Deci.Plot.Behv.Acc.Subtitle{fig}])
                         xticklabels(Sub.Acc{subj})
                         ylabel('Accuracy (Percent)')
                         %disp(num2str(squeeze(Acc(subj,draw,:,:))*100))
@@ -347,7 +350,7 @@ for fig = 1:length(find(Deci.Plot.Behv.RT.Figure))
                     if draw == 1
                         CleanBars(RT{fig}(subj,:,:,:),RTsem{fig}(subj,:,:,:))
                         title(['Acc Total for ' Sub.Acc{subj} ': ' Deci.Plot.Behv.RT.Title{fig} ' '],'Interpreter','none')
-                        legend([Deci.Plot.Behv.RT.Subtitle{draw}])
+                        legend([Deci.Plot.Behv.RT.Subtitle{fig}])
                         xticklabels(Sub.RT{subj})
                         ylabel('Reaction Time (ms)')
                     end

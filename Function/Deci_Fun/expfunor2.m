@@ -60,9 +60,6 @@ for j = 1:length(startstopseg)
     value = cellfun(@str2num,value);
     sample = {event(startstopseg(1,j):startstopseg(2,j)).sample};
     
-    
-    
-    
     begsample = sample{1} + sstime(1)*hdr.Fs;
     endsample = sample{end} + sstime(2)*hdr.Fs;
     
@@ -101,6 +98,29 @@ for j = 1:length(startstopseg)
         
     end
 
+    
+end
+
+
+if isfield(cfg.DT,'Displace')
+    if cfg.DT.Displace ~= 0
+        
+        blk = sort(unique(trialinfo(:,end)),'descend');
+        
+        
+        for dis = 1:length(blk)
+            
+            block{dis} = trialinfo(find(trialinfo(:,end) == blk(dis)),:);
+            block{dis} = block{dis}(1:end-cfg.DT.Displace,:);
+            
+            shift{dis} = trl(find(trialinfo(:,end) == blk(dis)),:);
+            shift{dis} = shift{dis}(1+cfg.DT.Displace:end,:);
+            
+        end
+        
+        trialinfo = cat(1,block{:});
+        trl = cat(1,shift{:});
+    end
     
 end
 
