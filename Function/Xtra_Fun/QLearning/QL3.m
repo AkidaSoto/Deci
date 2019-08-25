@@ -38,12 +38,12 @@ end
 
 for init = 1:10
         
-        Fit1.LB = [-20 -20 0 1e-6];
-        Fit1.UB = [20 20 1 30];
+        Fit1.LB = [min([params.Value{:}]) min([params.Value{:}]) 0 1e-6];
+        Fit1.UB = [max([params.Value{:}]) max([params.Value{:}]) 1 30];
         Fit1.init =rand(1,length(Fit1.LB)).*(Fit1.UB-Fit1.LB)+Fit1.LB;
         
-        Fit2.LB = [-20 -20 0 0 1e-6];
-        Fit2.UB = [20 20 1 1 30];
+        Fit2.LB = [min([params.Value{:}]) min([params.Value{:}]) 0 0 1e-6];
+        Fit2.UB = [max([params.Value{:}]) max([params.Value{:}]) 1 1 30];
         Fit2.init =rand(1,length(Fit2.LB)).*(Fit2.UB-Fit2.LB)+Fit2.LB;
 
         [Value{1,init}] = ...

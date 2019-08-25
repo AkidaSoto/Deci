@@ -101,16 +101,16 @@ Deci.Analysis.CondTitle = {'Correct' 'Incorrect'}';
                 info.subject_list = subject_list;
                 info.Cond = Cond;
                 
-                QL2(Deci,info,info,Deci.Analysis.Extra.QL);
+                QL3(Deci,info,info,Deci.Analysis.Extra.QL);
                 
             end
         end
 %% Model Analysis Across Subjects
         
 QL = [];
-mdl = repmat({[]},[1 3]);
+mdl = repmat({[]},[1 2]);
 PseudoR = [];
-PR = repmat({[]},[1 3]);
+PR = repmat({[]},[1 2]);
 for subj = 1:length(Deci.SubjectList)
     for Lock = 1:length(Deci.Analysis.LocksTitle)
         for Cond = 1:length(Deci.Analysis.CondTitle)
@@ -154,6 +154,13 @@ for PRs = 1:length(PR)
         
         [PRstat(PRs,:),tbl,stats,terms] = anovan(tt(:),{sub(:),cond(:)},'varnames',{'Subject','Condition'},'display','off');
 end
+
+PRstat
+mean(PR{PRs},1)
+std(PR{PRs},[],1)
+diff(mean(PR{PRs},1))
+
+
 % Model x Dimension [Subjects, Conditions]
 
  %% Plot

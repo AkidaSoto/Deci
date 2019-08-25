@@ -64,14 +64,14 @@ for j = 1:length(startstopseg)
     value = cellfun(@str2num,value);
     sample = {event(startstopseg(1,j):startstopseg(2,j)).sample};
     
-    if ~ismember(399,value)
+    if ~ismember(399,value) && ~isempty(value) && sum(isnan(value))~=0
         value = [value(1:find(ismember(value,211:218))) 399 value(find(ismember(value,211:218))+1:end)];
         sample = [sample(1:find(ismember(value,211:218))) sample(find(ismember(value,211:218))) sample(find(ismember(value,211:218))+1:end)];
     end
     
-    if ~ismember(499,value)
+    if ~ismember(499,value) && ~isempty(value) && sum(isnan(value))~=0 %empty and NAN trial segs.  
         value = [value 499];
-        sample = [sample sample(end)];
+        sample = [sample sample{length(sample)}]
     end
     
     if all(ismember(cfg.DT.Locks,value))
@@ -97,7 +97,8 @@ for j = 1:length(startstopseg)
         %% Marker Make 2.0
         %Currently only works with markers that differ by exactly 8 between
         %their minimum and maximum code. More or less will result in
-        %incorrect orientation. 
+        %incorrect orientation. TODO - Change subratrction pattern to length to
+        %allow variable comparisons
         mkval1 = [211,221;211,151;141,151;141,211;141,221];
         code=[450,550,650,700,750];
         for gw = 1:size(mkval1,1) 
