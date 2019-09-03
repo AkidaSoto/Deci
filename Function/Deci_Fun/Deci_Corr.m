@@ -2,18 +2,17 @@ function out =  Deci_Corr(Deci,info,freq,params)
 
 All_Trials = info.alltrials & info.allnonnans;
 
-[toi] = downsample(freq.time,round(1/diff([freq.time(1),freq.time(2)]))/Deci.Analysis.Extra.Corr.Downsample);
-toi = ismember(freq.time,toi);
-freq.fourierspctrm = freq.fourierspctrm(:,:,:,toi);
-freq.time = freq.time(toi);
-
 Magnitude = abs(freq.fourierspctrm.^2);
 toi = round(freq.time,4) >= Deci.Analysis.Extra.Corr.Bsl(1) & round(freq.time,4) <= Deci.Analysis.Extra.Corr.Bsl(2);
 Magnitude = 10*log10( Magnitude ./ mean(Magnitude(:,:,:,toi),4));
 
 Magnitude = zscore(Magnitude);
 
-Phase = circ_rad2ang(angle(freq.fourierspctrm));
+Phase = angle(freq.fourierspctrm);
+
+
+latency = reshape([freq.time [nan(-rem(length(freq.time),Deci.Analysis.Extra.Corr.timebin)+Deci.Analysis.Extra.Corr.timebin,1)]],[ceil([length(freq.time)]/Deci.Analysis.Extra.Corr.timebin) Deci.Analysis.Extra.Corr.timebin]);
+latency = [min(latency,[],1);max(latency,[],1)];
 
 
 for Var = 1:length(params.Variable)
@@ -62,41 +61,53 @@ for Var = 1:length(params.Variable)
             P = [];
             Beta = [];
             
-            for foi = 1:length(freq.freq)
+            for fois = 1:length(Deci.Analysis.Extra.Corr.freqbin)
                 
-                for toi = 1:length(freq.time)
+                foi = freq.freq >= Deci.Analysis.Extra.Corr.freqbin{fois}(1) & freq.freq <= Deci.Analysis.Extra.Corr.freqbin{fois}(2);
+                
+                for tois = 1:Deci.Analysis.Extra.Corr.timebin
+                    
+
+                    toi = freq.time >= latency(1,tois) & freq.time <= latency(2,tois);
                     
                     switch params.Freq{param}
                         
                         case 'Magnitude'
-                            [r,p] = corrcoef(squeeze(Magnitude(:,:,foi,toi)),parameter);
                             
-                            R(num,1,foi,toi) = r(1,2);
-                            P(num,1,foi,toi) = p(1,2);
+                            [r,p] = corrcoef(squeeze(nanmean(nanmean(Magnitude(:,:,foi,toi),3),4))',parameter);
+                            
+                            R(ismember(corrs,num),1,fois,tois) = r(1,2);
+                            P(ismember(corrs,num),1,fois,tois) = p(1,2);
                             
                             
                             if Deci.Analysis.Extra.Corr.Regression
-                                LM = fitlm(parameter,squeeze(Magnitude(:,:,foi,toi)));
-                                Beta(num,1,foi,toi) = LM.Coefficients.Estimate(2);
+                                LM = fitlm(parameter,squeeze(nanmean(nanmean(Magnitude(:,:,foi,toi),3),4))');
+                                Beta(ismember(corrs,num),1,fois,tois) = LM.Coefficients.Estimate(2);
                             end
                             
                         case 'Phase'
                             
-                            [R(num,1,foi,toi),P(num,1,foi,toi)] =  circ_corrcl(squeeze(Phase(:,:,foi,toi)), parameter);
+                            [R(ismember(corrs,num),1,fois,tois),P(ismember(corrs,num),1,fois,tois)] =  circ_corrcl(squeeze(circ_mean(circ_mean(Phase(:,:,foi,toi),[],3),[],4)), parameter);
                             
                             if Deci.Analysis.Extra.Corr.Regression
-                                LM = CircularRegression(parameter,angle(freq.fourierspctrm(:,:,foi,toi)));
-                                Beta(num,1,foi,toi) = LM(2);
+                                LM = CircularRegression(parameter,squeeze(circ_mean(circ_mean(Phase(:,:,foi,toi),[],3),[],4)));
+                                Beta(ismember(corrs,num),1,fois,tois) = LM(2);
                             end
+                            
+                            
+                            
                     end
                     
+                    if R(ismember(corrs,num),1,fois,tois) > 1
+                        k = 0;
+                    end
                     
                 end
             end
             
             extracorr.label = freq.label;
-            extracorr.freq = freq.freq;
-            extracorr.time = freq.time;
+            extracorr.freq = mean(cat(1,Deci.Analysis.Extra.Corr.freqbin{:}),2)';
+            extracorr.time = mean(latency,1);
             extracorr.trialinfo = [corrs];
             extracorr.dimord =  freq.dimord;
             

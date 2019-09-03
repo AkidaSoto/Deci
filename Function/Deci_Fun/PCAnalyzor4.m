@@ -24,12 +24,12 @@ if ~Deci.Analysis.ERP.do && ~Deci.Analysis.Freq.do
     error('Must do either ERP or Freq')
 end
 
+
 if ~isempty(Deci.Analysis.Version)
     
     Deci.Folder.Analysis = [Deci.Analysis.Version filesep 'Analysis'];
     mkdir(Deci.Folder.Analysis);
 end
-
 
 Deci.Analysis = Exist(Deci.Analysis,'DownSample',[]);
 
@@ -235,63 +235,18 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             %copied from PCAnalyzor2
             if Deci.Analysis.CFC.do
                 
-                if isfield(Deci.Analysis.CFC,'freqhigh')
-                    if ischar(Deci.Analysis.CFC.freqhigh)
-                        switch Deci.Analysis.CFC.freqhigh
-                            case 'theta'
-                                Deci.Analysis.CFC.freqhigh = [4 8];
-                            case 'beta'
-                                Deci.Analysis.CFC.freqhigh = [12.5 30];
-                            case 'alpha'
-                                Deci.Analysis.CFC.freqhigh = [8 12.5];
-                            case 'lowgamma'
-                                Deci.Analysis.CFC.freqhigh = [30 55];
-                            case 'highgamma'
-                                Deci.Analysis.CFC.freqhigh = [55 80];
-                        end
-                    elseif isnumeric(Deci.Analysis.CFC.freqhigh)
-                    else
-                        error(['cannot interrept freqhigh']);
-                    end
-                else
-                    error(['cannot interrept freqhigh']);
-                end
                 
-                if isfield(Deci.Analysis.CFC ,'freqlow')
-                    if ischar(Deci.Analysis.CFC.freqlow)
-                        switch Deci.Analysis.CFC.freqlow
-                            case 'theta'
-                                Deci.Analysis.CFC.freqlow = [4 8];
-                            case 'beta'
-                                Deci.Analysis.CFC.freqlow = [12.5 30];
-                            case 'alpha'
-                                Deci.Analysis.CFC.freqlow = [8 12.5];
-                            case 'lowgamma'
-                                Deci.Analysis.CFC.freqhigh = [30 55];
-                            case 'highgamma'
-                                Deci.Analysis.CFC.freqhigh = [55 80];
-                        end
-                    elseif isnumeric(Deci.Analysis.CFC.freqlow)
-                    else
-                        error(['cannot interrept freqlow']);
-                    end
-                else
-                    error(['cannot interrept freqlow']);
-                end
                 
-                cfc = ft_singlecfc(Deci.Analysis.CFC,Fourier);
-                cfc.freqlow = Fourier.freq(Fourier.freq >= Deci.Analysis.CFC.freqlow(1) & Fourier.freq <= Deci.Analysis.CFC.freqlow(2));
-                cfc.freqhigh = Fourier.freq(Fourier.freq >= Deci.Analysis.CFC.freqhigh(1) & Fourier.freq <= Deci.Analysis.CFC.freqhigh(2));
-                cfc.chanlow = Deci.Analysis.CFC.chanlow;
-                cfc.chanhigh = Deci.Analysis.CFC.chanhigh;
-                cfc.method = Deci.Analysis.CFC.method;
-                cfc.keeptrials = Deci.Analysis.CFC.keeptrials;
-                cfc.timebin = Deci.Analysis.CFC.timebin;
-
-                if ~exist([Deci.Folder.Analysis filesep 'CFC' filesep Deci.Analysis.CFC.method filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock}], 'dir')
+                
+                for method = 1:length(Deci.Analysis.CFC.methods)
+                    
+                    Deci.Analysis.CFC.method = Deci.Analysis.CFC.methods{method};
+                    cfc = ft_singlecfc(Deci.Analysis.CFC,Fourier);
+                    cfc.method = Deci.Analysis.CFC.method;
                     mkdir([Deci.Folder.Analysis filesep 'CFC' filesep Deci.Analysis.CFC.method filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock}])
+                    save([Deci.Folder.Analysis filesep 'CFC' filesep Deci.Analysis.CFC.method filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}],'cfc','-v7.3');
                 end
-                save([Deci.Folder.Analysis filesep 'CFC' filesep Deci.Analysis.CFC.method filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}],'cfc','-v7.3');
+                
             end
             
             

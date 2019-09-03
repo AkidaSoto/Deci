@@ -1,3 +1,4 @@
+
 function Plottor_Behv(Deci)
 
 for subject_list = 1:length(Deci.SubjectList)
@@ -175,7 +176,7 @@ for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
             
             Sub.Acc = {'SubjAvg'};
         end
-        save([Deci.Folder.Version filesep 'Plot' filesep 'AccSem'],'Accsem');
+        save([Deci.Folder.Version filesep 'Plot' filesep 'SimAcc'],'Acc');
     end
 end
 
@@ -209,7 +210,7 @@ for fig = 1:length(find(Deci.Plot.Behv.RT.Figure))
             RT{fig} =  nanmean(RT{fig},1);
             Sub.RT = {'SubjAvg'};
         end
-        save([Deci.Folder.Version filesep 'Plot' filesep 'RTSem'],'RTsem');
+        save([Deci.Folder.Version filesep 'Plot' filesep 'SimRT'],'RT');
     end
     
 end
@@ -263,7 +264,7 @@ for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
                     h.Parent.CLim = [0 100];
                     h.Parent.YLabel.String = 'Block #';
                     h.Parent.XLabel.String = 'Trial #';
-                    title(h.Parent,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Subtitle{draw}],'Interpreter','none');
+                    title(h.Parent,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Subtitle{fig}{draw}],'Interpreter','none');
                     
                 else
                     disp(['Acc Total for ' Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{fig} ' ' num2str(squeeze(Acc{fig}(subj,draw,:,:))*100) '%' ' +- ' num2str(squeeze(Accsem{fig}(subj,draw,:,:))*100)]);
@@ -342,7 +343,7 @@ for fig = 1:length(find(Deci.Plot.Behv.RT.Figure))
                     h = imagesc(squeeze(RT{fig}(subj,draw,:,:)));
                     h.Parent.YLabel.String = 'Block #';
                     h.Parent.XLabel.String = 'Trial #';
-                    title(h.Parent,[Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Subtitle{draw}],'Interpreter','none');
+                    title(h.Parent,[Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Subtitle{fig}{draw}],'Interpreter','none');
                     
                 else
                     disp(['RT Total for ' Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Subtitle{fig}{draw} ' ' num2str(squeeze(RT{fig}(subj,draw,:,:))) ' +- ' num2str(squeeze(RTsem{fig}(subj,draw,:,:)))])

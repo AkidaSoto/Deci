@@ -75,9 +75,9 @@ if Deci.Run.Behavior && ~isempty(Deci.Plot.Behv)
 end
 
 if Deci.Run.Extra && ~isempty(Deci.Plot.Extra)
-    for fun = find(Deci.Plot.Extra.List)
+    for funs = find(Deci.Plot.Extra.List)
         
-        Deci.Plot.Extra.Functions{fun}(Deci.Plot.Extra.Params{fun})
+        feval(Deci.Plot.Extra.Functions{funs},Deci,Deci.Plot.Extra.Params{funs}{:});
     end
 end
 

@@ -60,7 +60,7 @@ for init = 1:10
         
         [LLE(2,init),qs{2,init},P{2,init},PE{2,init}] = FeedbackQ([Value{2,init}(1) Value{2,init}(2)],Actions,Rewards, Value{2,init}(3),Value{2,init}(4),Value{2,init}(5));
          
-        LLE2(:,init) = aicbic(-LLE(:,init),[2 3]);
+        LLE2(:,init) = aicbic(-LLE(:,init),[4 5]);
     
 end
 [Best,I] = min(LLE,[],2);

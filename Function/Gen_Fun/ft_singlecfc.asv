@@ -186,7 +186,7 @@ switch cfg.method
                             chandataLF = freqlow.fourierspctrm(:,i,lfreq,ltime);
                             chandataHF = freqhigh.fourierspctrm(:,k,hfreq,htime);
                             for j = 1:ntrial
-                                plvdatas(j,i,k,fl,fh,t) = data2plv(permute(chandataLF(j,:,:,:),[4 2 3 1]),permute(chandataHF(j,:,:,:),[4 2 3 1]));
+                                plvdatas(j,i,k,:,:,t) = data2plv(permute(chandataLF(j,:,:,:),[4 2 3 1]),permute(chandataHF(j,:,:,:),[4 2 3 1]));
                             end
                         end
                     end
