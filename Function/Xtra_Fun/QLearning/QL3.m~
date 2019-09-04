@@ -49,7 +49,7 @@ for init = 1:10
         Fit3.LB = [0 1e-6];
         Fit3.UB = [1 3];
         Fit3.init =rand(1,length(Fit3.LB)).*(Fit3.UB-Fit3.LB)+Fit3.LB;
-        q(init,:) = params.Start;
+    
 
         [Value{1,init}] = ...
             fmincon(@(x) SimpleQ([x(1) x(2)],Actions,Rewards,x(3),x(4)),...
@@ -65,17 +65,16 @@ for init = 1:10
         
         [LLE(2,init),qs{2,init},P{2,init},PE{2,init}] = FeedbackQ([Value{2,init}(1) Value{2,init}(2)],Actions,Rewards, Value{2,init}(3),Value{2,init}(4),Value{2,init}(5));
          
-
-        [Value{3,init}] = ...
-            fmincon(@(x) SimpleQ(q(init,:),Actions,Rewards,x(1),x(2)),...
-            [Fit3.init],[],[],[],[],[Fit3.LB],[Fit3.UB],[],...
-            optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
+        LLE2(:,init) = aicbic(-LLE(:,init),[4 5]);
         
-        [LLE(3,init),qs{3,init},P{3,init},PE{3,init}] = SimpleQ(q(init,:),Actions,Rewards, Value{3,init}(1),Value{3,init}(2));
-        
-        LLE2(:,init) = aicbic(-LLE(:,init),[4 5 2]);
-        
-        
+                    [Value{1,init}] = ...
+                fmincon(@(x) SimpleQ(q(init,:),Actions,Rewards,x(1),x(2)),...
+                [Fit1.init],[],[],[],[],[Fit1.LB],[Fit1.UB],[],...
+                optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
+            
+            [LLE(1,init),qs{1,init},P{1,init},PE{1,init}] = SimpleQ(q(init,:),Actions,Rewards, Value{1,init}(1),Value{1,init}(2));
+            
+    
 end
 [Best,I] = min(LLE,[],2);
 [Best2,I2] = min(LLE2,[],2);

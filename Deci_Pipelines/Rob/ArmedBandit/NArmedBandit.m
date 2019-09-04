@@ -1,13 +1,17 @@
-%% General Info
+%% 1.) General Info,
+%You run this once before you run any other step
+
 Deci = [];
-Deci.Folder.Raw         = ['C:\Users\User\Desktop\John\AB2\Behav'];              % Raw Data Folder Directory
-Deci.SubjectList        = 'all';                                                  % Cell Array of strings, 'all' or 'gui'                                           % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
-Deci.Folder.Version     = ['C:\Users\User\Desktop\John\AB2\ProcessedData'];        % Output Folder Directory
+Deci.Folder.Raw         = ['/Users/RobReinhart/Documents/Data/Behavioral'];              % Raw Data Folder Directory
+Deci.SubjectList        = 'gui';                                                  % Cell Array of strings, 'all' or 'gui'( for subject selection)                                          % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
+Deci.Folder.Version     = ['/Users/RobReinhart/Documents/Data/Processed'];        % Output Folder Directory
 Deci.Folder.Definition   = [Deci.Folder.Version filesep 'Definition'];
 Deci.Folder.Plot         = [Deci.Folder.Version filesep 'Plot'];
 Deci.Folder.Analysis     = [Deci.Folder.Version filesep 'Analysis'];
 
 
+
+% Finds all Files in the Behavioral Folder
 if strcmp(Deci.SubjectList,'all')
     Deci.SubjectList = cellfun(@(c) strsplit(c,'.'),CleanDir(Deci.Folder.Raw),'un',0);
     Deci.SubjectList = unique(cellfun(@(c) c{1},Deci.SubjectList,'un',0));
@@ -24,6 +28,8 @@ elseif strcmp(Deci.SubjectList,'gui')
     close(fakeUI);
 end
 
+
+% Check to make sure all subject has a mat fle
 for subject_list = 1:length(Deci.SubjectList)
 files_ending = {'.mat'};
 for file_ending = 1:length(files_ending)
@@ -33,6 +39,8 @@ for file_ending = 1:length(files_ending)
 end
 end
 
+
+% Trial definition infomaton
 Deci.DT.Type = 'Manual';                                                                        % Change if need alternative file, otherwise 'Manual' (expfunor2)
 Deci.DT.Starts     = {9};                                                                       % Cell Array of Markers for Start codes.
 Deci.DT.Ends       = {10};                                                                      % Cell Array of Markers for End codes.
@@ -43,13 +51,16 @@ Deci.DT.Block.Start   = {11};                                                   
 Deci.DT.Block.End     = {12};                                                                       % Cell Array of Markers for Block Starts
 Deci.DT.Block.Markers = [];      
 
+% Just for saving plot info
 Deci.Analysis.Conditions    = {[21] [23]};
 Deci.Analysis.LocksTitle = {'None'};
 info.Lock = 1;
 Deci.Analysis.CondTitle = {'Correct' 'Incorrect'}';
 
 
-%% Trial Definition
+%% 2.) Run Trial Definition
+
+% Run through matfiles and find the trials
 
 for subject_list = 1:length(Deci.SubjectList)
     
@@ -78,7 +89,8 @@ end
     
     
 
-%%
+%% 3.) Run Models
+% Only need to run this once
         for subject_list = 1:length(Deci.SubjectList)
             
             load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}],'cfg')
@@ -91,7 +103,7 @@ end
             Deci.Analysis.Extra.QL.Actions = [31 32];
             Deci.Analysis.Extra.QL.Reward  = [51 52];
             Deci.Analysis.Extra.QL.Value  = {[10 0] [0 -10]};
-            Deci.Analysis.Extra.QL.Start = 0;
+            Deci.Analysis.Extra.QL.Start = [0 0];
             
             for Cond = 1:length(Deci.Analysis.Conditions)
                 maxt = max(sum(ismember(info.condinfo{2},Deci.Analysis.Conditions{Cond}),2));
@@ -106,7 +118,7 @@ end
                 
             end
         end
-%% Model Analysis Across Subjects
+%% 4.) Model Analysis 
         
 QL = [];
 mdl = repmat({[]},[1 2]);
@@ -149,7 +161,7 @@ end
 
 disp('---------')
 disp('QL model Stats')
-disp('Model x Parameters (2,3,5) x Dimension [Subjects, Conditions]');
+disp('Model (row) x Parameters (col)(4,5,2) x Stat Dimension [Subjects (N), Conditions(2)]');
 stat
 
 % 
@@ -165,7 +177,7 @@ end
 
 disp('---------')
 disp('PseudoR Stat')
-disp('Model x Dimension [Subjects, Conditions]')
+disp('Model (row) x Dimension (col) [Subjects, Conditions]')
 PRstat
 
 disp('---------')
@@ -174,7 +186,7 @@ disp(['Mean difference is ' num2str(diff(mean(PR{PRs},1)))])
 
 % 
 
- %% Plot
+ %% 5.) Behavioral Plots
  
 Deci.Analysis.Conditions    = {[21 31 51] [23 31 51] [21 31 52] [23 31 52] ...
                                [21 32 51] [23 32 51] [21 32 52] [23 32 52]};
@@ -188,37 +200,50 @@ Deci.Plot.Behv.Source = 'Definition';
 
 Deci.Plot.Behv.Acc.Figure = [true true];
 Deci.Plot.Behv.Acc.Total = {{[1 3 5 7] [2 4 6 8]} {[1 3 5 7] [2 4 6 8]}};
-Deci.Plot.Behv.Acc.Subtotal = {{[1 3] [6 8]} {[1 5] [2 6]}};
-Deci.Plot.Behv.Acc.Title = {'All Trials Percent' 'All Trials Correctness'};
-Deci.Plot.Behv.Acc.Subtitle = {{'G Percent' 'N Percent'} {'G Correct' 'N Correct'}};
+Deci.Plot.Behv.Acc.Subtotal = {{[1 3] [2 4]} {[1 5] [2 6]}};
+% Change [2 4] to [6 8] to flip punishment
+% have to be [2 4] when you run the behavioral stat section (6)
+
+Deci.Plot.Behv.Acc.Title = {'Percent of Optimal Choice' 'Percent of Cummulative Feedback Correct'};
+Deci.Plot.Behv.Acc.Subtitle = {{'Rew Percent' 'Pun Percent'} {'Rew Correct' 'Pun Correct'}};
 
 Deci.Plot.Behv.Acc.Block = [1:3];
 Deci.Plot.Behv.Acc.Collapse.Trial =false;
+% Turn this to true false to turn from wire and bar by collapsing trials
+
 Deci.Plot.Behv.Acc.Collapse.Block = true;
 Deci.Plot.Behv.Acc.Collapse.Subject = true;             % turn to false if you want to plot individual subjects
 Deci.Plot.Behv.Acc.Collapse.Uneven = 'positional:nans';
 Deci.Plot.Behv.Acc.Collapse.Movmean =  false;
+% Change this to true to activate cummulative scores for Feedback correct
+% Change this to false to turn off cummulative for Optimal Choice
+
+Deci.Plot.Behv.Acc.Collapse.MovWindow = 10;
+% Change the sliding scale window range. If -1, get complete cummulative
 
 Deci.Plot.Behv.RT.Figure = [true];
-Deci.Plot.Behv.RT.Draw = {{[1:4] [5:8]}};
+Deci.Plot.Behv.RT.Draw = {{[1 3] [5 7] [2 4] [6 8]}};
 Deci.Plot.Behv.RT.Title = {'All Trials RT'};
-Deci.Plot.Behv.RT.Subtitle = {{'Opt' 'Worst'}};
+Deci.Plot.Behv.RT.Subtitle = {{'Rew-Opt' 'Rew-Wor' 'Pun-Opt' 'Pun-Worst'}};
 Deci.Plot.Behv.RT.Locks = [1 2];
 
 Deci.Plot.Behv.RT.Block = [1:3];
 Deci.Plot.Behv.RT.Collapse.Trial =true;
-Deci.Plot.Behv.RT.Collapse.Block = false;
+Deci.Plot.Behv.RT.Collapse.Block =  false;
+% Change here for wires to bar, but across Blocks
 Deci.Plot.Behv.RT.Collapse.Subject = true;
 Deci.Plot.Behv.RT.Collapse.Uneven = 'maxlength:nans';
 
 Plottor_Behv(Deci);
 
-%% Behv Stats
+%% (6) Behv Stats
+% have to be [2 4] when you run the behavioral stat 
 
 load([Deci.Folder.Version filesep 'Plot' filesep 'Acc'],'Acc');
 
 Acc = Acc{1};
 cond = [];
+
 
 for Conds = 1:size(Acc,2)
     cond{Conds} = cat(1,Acc{:,Conds});

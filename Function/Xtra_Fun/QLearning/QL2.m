@@ -54,7 +54,7 @@ for init = 1:10
     
     %q = ones([1 length(unique(params.Actions))]) * params.Start;
     %q = zeros([1 length(unique(Actions{blk}))]);
-    q(init,:) = params.Start(1);
+    q(init,:) = params.Start;
     
     % run through each model with the randomized starting values
             [Value{1,init}] = ...

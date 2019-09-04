@@ -115,7 +115,20 @@ for subject_list = 1:length(Deci.SubjectList)
                     
                     
                     if Deci.Plot.Behv.Acc.Collapse.Movmean
-                        Acc{fig}{subject_list,draw,blk} = movmean(Acc{fig}{subject_list,draw,blk},[length( Acc{fig}{subject_list,draw,blk}) 0],'omitnan');
+                        
+                        if isfield(Deci.Plot.Behv.Acc.Collapse,'MovWindow')
+                           
+                            MovWindow = Deci.Plot.Behv.Acc.Collapse.MovWindow;
+                            
+                            if MovWindow == -1
+                                MovWindow = length( Acc{fig}{subject_list,draw,blk});
+                            end
+                            
+                        else
+                            MovWindow = length( Acc{fig}{subject_list,draw,blk});
+                        end
+                        
+                        Acc{fig}{subject_list,draw,blk} = movmean(Acc{fig}{subject_list,draw,blk},[MovWindow 0],'omitnan');
                     end
                     
                 end
