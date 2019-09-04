@@ -43,6 +43,11 @@ Deci.DT.Block.Start   = {11};                                                   
 Deci.DT.Block.End     = {12};                                                                       % Cell Array of Markers for Block Starts
 Deci.DT.Block.Markers = [];      
 
+Deci.Analysis.Conditions    = {[21] [23]};
+Deci.Analysis.LocksTitle = {'None'};
+info.Lock = 1;
+Deci.Analysis.CondTitle = {'Correct' 'Incorrect'}';
+
 
 %% Trial Definition
 
@@ -72,12 +77,6 @@ for subject_list = 1:length(Deci.SubjectList)
 end
     
     
-    %% QL Learning
-
-Deci.Analysis.Conditions    = {[21] [23]};
-Deci.Analysis.LocksTitle = {'None'};
-info.Lock = 1;
-Deci.Analysis.CondTitle = {'Correct' 'Incorrect'}';
 
 %%
         for subject_list = 1:length(Deci.SubjectList)
@@ -98,7 +97,7 @@ Deci.Analysis.CondTitle = {'Correct' 'Incorrect'}';
                 maxt = max(sum(ismember(info.condinfo{2},Deci.Analysis.Conditions{Cond}),2));
                 info.alltrials = sum(ismember(info.condinfo{2},Deci.Analysis.Conditions{Cond}),2) == maxt;
                 info.allnonnans = ~isnan(mean(info.condinfo{1},2));
-                ccfg.trials = -58-*884-48948*9 info.alltrials & info.allnonnans;
+                ccfg.trials = info.alltrials & info.allnonnans;
                 
                 info.subject_list = subject_list;
                 info.Cond = Cond;
@@ -187,16 +186,16 @@ Deci.Analysis.CondTitle     = {'Opt AB Corr' 'Opt CD Corr' ...
 Deci.Plot.Behv = [];
 Deci.Plot.Behv.Source = 'Definition';
 
-Deci.Plot.Behv.Acc.Figure = [true];
-Deci.Plot.Behv.Acc.Total = {{[1 3 5 7] [2 4 6 8] [1 3 5 7] [2 4 6 8]}};
-Deci.Plot.Behv.Acc.Subtotal = {{[1 3] [2 4] [1 5] []}};
-Deci.Plot.Behv.Acc.Title = {'All Trials Percent'};
-Deci.Plot.Behv.Acc.Subtitle = {{'G Percent' 'N Percent'}};
+Deci.Plot.Behv.Acc.Figure = [true true];
+Deci.Plot.Behv.Acc.Total = {{[1 3 5 7] [2 4 6 8]} {[1 3 5 7] [2 4 6 8]}};
+Deci.Plot.Behv.Acc.Subtotal = {{[1 3] [6 8]} {[1 5] [2 6]}};
+Deci.Plot.Behv.Acc.Title = {'All Trials Percent' 'All Trials Correctness'};
+Deci.Plot.Behv.Acc.Subtitle = {{'G Percent' 'N Percent'} {'G Correct' 'N Correct'}};
 
 Deci.Plot.Behv.Acc.Block = [1:3];
 Deci.Plot.Behv.Acc.Collapse.Trial =false;
 Deci.Plot.Behv.Acc.Collapse.Block = true;
-Deci.Plot.Behv.Acc.Collapse.Subject = true;
+Deci.Plot.Behv.Acc.Collapse.Subject = true;             % turn to false if you want to plot individual subjects
 Deci.Plot.Behv.Acc.Collapse.Uneven = 'positional:nans';
 Deci.Plot.Behv.Acc.Collapse.Movmean =  false;
 
@@ -235,9 +234,20 @@ for Subjs = 1:size(Acc,1)
 end
 disp('-----------')
 disp('Behavioral Data')
-disp(['p value : ' num2str(Accstat)])
 disp(['Choice Accuracy: Reward ' num2str(mean(meanAcc(:,1),1)*100) '(+-' num2str(std(meanAcc(:,1),[],1)*100) ')' ', Punishment ' num2str(mean(meanAcc(:,2),1)*100) '(+-' num2str(std(meanAcc(:,2),[],1)*100) ')']);
-%disp(['Number Correct: Reward ' num2str(mean(numelAcc(:,1),1)) '(+-' num2str(std(numelAcc(:,1),[],1)) ')' ', Punishment ' num2str(mean(numelAcc(:,2),1)) '(+-' num2str(std(numelAcc(:,2),[],1)) ')']);
+disp(['p value : ' num2str(Accstat)])
+
+load([Deci.Folder.Version filesep 'Plot' filesep 'Acc'],'Acc');
+
+Acc = Acc{2};
+
+for Subjs = 1:size(Acc,1)
+   for Conds = 1:size(Acc,2)
+        meanAcc(Subjs,Conds) = mean(Acc{Subjs,Conds});
+        %numelAcc(Subjs,Conds) = length(find(Acc{Subjs,Conds}));
+   end
+end
+disp(['Number Correct: Reward ' num2str(mean(meanAcc(:,1),1)*100) '(+-' num2str(std(meanAcc(:,1),[],1)*100) ')' ', Punishment ' num2str(mean(meanAcc(:,2),1)*100) '(+-' num2str(std(meanAcc(:,2),[],1)*100) ')']);
 
 % load([Deci.Folder.Version filesep 'Plot' filesep 'RT'],'RT');
 % 
