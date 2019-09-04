@@ -496,11 +496,15 @@ for cond = 1:length(Deci.Plot.Draw)
                 top = squeeze(nanmean(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1),2),3)) + squeeze(nanstd(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,2),3),1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
                 bot = squeeze(nanmean(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1),2),3)) - squeeze(nanstd(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,2),3),1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
                 
-                pgon = polyshape([wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time fliplr(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time)],[top' fliplr(bot')],'Simplify', false);
+                if length(Deci.SubjectList) ~= 1
+                pgon = polyshape([wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time(1) fliplr(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time(end))],[top' fliplr(bot')],'Simplify', false);
                 b(subcond) = plot(pgon,'HandleVisibility','off');
                 hold on
                 b(subcond).EdgeAlpha = 0;
                 b(subcond).FaceAlpha = .15;
+                end
+                
+
                 
                 if Deci.Plot.Stat.do
                 wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(wirestat{cond}.mask,[length(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
