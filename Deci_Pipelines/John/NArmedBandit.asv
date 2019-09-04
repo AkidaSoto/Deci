@@ -1,8 +1,7 @@
 %% General Info
 Deci = [];
 Deci.Folder.Raw         = ['C:\Users\User\Desktop\John\AB2\Behav'];              % Raw Data Folder Directory
-Deci.SubjectList        = 'all';                                                  % Cell Array of strings, 'all' or 'gui'
-Deci.Step               = 5;                                              % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
+Deci.SubjectList        = 'all';                                                  % Cell Array of strings, 'all' or 'gui'                                           % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
 Deci.Folder.Version     = ['C:\Users\User\Desktop\John\AB2\ProcessedData'];        % Output Folder Directory
 Deci.Folder.Definition   = [Deci.Folder.Version filesep 'Definition'];
 Deci.Folder.Plot         = [Deci.Folder.Version filesep 'Plot'];
@@ -189,8 +188,8 @@ Deci.Plot.Behv = [];
 Deci.Plot.Behv.Source = 'Definition';
 
 Deci.Plot.Behv.Acc.Figure = [true];
-Deci.Plot.Behv.Acc.Total = {{[1 3 5 7] [2 4 6 8]}};
-Deci.Plot.Behv.Acc.Subtotal = {{ [1 3] [2 4]}};
+Deci.Plot.Behv.Acc.Total = {{[1 3 5 7] [2 4 6 8] [1 3 5 7] [2 4 6 8]}};
+Deci.Plot.Behv.Acc.Subtotal = {{[1 3] [2 4] [1 5] []}};
 Deci.Plot.Behv.Acc.Title = {'All Trials Percent'};
 Deci.Plot.Behv.Acc.Subtitle = {{'G Percent' 'N Percent'}};
 

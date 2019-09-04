@@ -66,7 +66,7 @@ for k = 1:length(exp_files)
              new_event(end+1) = event2(i);
         end
         
-        new_event = new_event(1:end);
+        new_event = new_event(2:end);
         [tmp,ind]=sortrows({new_event.sample}');
         event2=new_event(ind);
     end

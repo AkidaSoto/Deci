@@ -6,7 +6,7 @@ function events = StandardizeEventMarkers(events)
 cell_value = {events.value};
 
 if any(cellfun(@isempty,cell_value))
-    events = events(~cellfun(@isempty,cell_value));
+    events(cellfun(@isempty,cell_value)) = arrayfun(@(c) setfield(c,'value','S  0'), events(cellfun(@isempty,cell_value)));
 end
 
 cell_value = {events.value};
