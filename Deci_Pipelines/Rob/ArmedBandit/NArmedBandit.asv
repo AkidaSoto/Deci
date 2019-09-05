@@ -171,7 +171,7 @@ for mdls = 1:length(mdl)
         sub = repmat(1:size(tt,1),[1 size(tt,2)])';
         cond = repmat(1:size(tt,2),[size(tt,1) 1]);
         
-%         [stat(mdls,param,:),tbl,stats,terms] = anovan(tt(:),{sub(:),cond(:)},'varnames',{'Subject','Condition'},'display','off');
+        [stat(mdls,param,:),tbl,stats,terms] = anovan(tt(:),{sub(:),cond(:)},'varnames',{'Subject','Condition'},'display','off');
         
         
         excelparam(:,param) = tt(:);
@@ -188,10 +188,10 @@ excelmdldata = table(excelmdldata{:},'VariableNames',{'m1_Q01' 'm1_Q02' 'm1_a' '
 
 writetable(excelmdldata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Parameters')
 
-% disp('---------')
-% disp('QL model Stats')
-% disp('Model (row) x Parameters (col)(4,5,2) x Stat Dimension [Subjects (N), Conditions(2)]');
-% stat
+disp('---------')
+disp('QL model Stats')
+disp('Model (row) x Parameters (col)(4,5,2) x Stat Dimension [Subjects (N), Conditions(2)]');
+stat
 
 % 
 
@@ -204,8 +204,8 @@ for PRs = 1:length(PR)
         sub = repmat(1:size(tt,1),[1 size(tt,2)])';
         cond = repmat(1:size(tt,2),[size(tt,1) 1]);
         
-%         [PRstat(PRs,:),tbl,stats,terms] = anovan(tt(:),{sub(:),cond(:)},'varnames',{'Subject','Condition'},'display','off');
-          exceldata = cat(2,exceldata,tt(:));
+        [PRstat(PRs,:),tbl,stats,terms] = anovan(tt(:),{sub(:),cond(:)},'varnames',{'Subject','Condition'},'display','off');
+         exceldata = cat(2,exceldata,tt(:));
 end
 
 
@@ -215,17 +215,20 @@ excelPRdata = table(excelPRdata{:},'VariableNames',{'m1_PseudoR' 'm2_PseudoR' 'm
 
 writetable(excelPRdata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Fitness')
 
-% 
-% disp('---------')
-% disp('PseudoR Stat')
-% disp('Model (row) x Dimension (col) [Subjects, Conditions]')
-% PRstat
-% 
-% disp('---------')
-% disp(['Reward Psuedo-R is ' num2str(mean(PR{PRs}(:,:,1),1)) ' (+-' num2str(std(PR{PRs}(:,:,1),[],1)) ') , Punishment Psuedo-R is ' num2str(mean(PR{PRs}(:,:,2),1)) ' (+-' num2str(std(PR{PRs}(:,:,2),[],1)) ')'])
-% disp(['Mean difference is ' num2str(diff(mean(PR{PRs},1)))])
+
+disp('---------')
+disp('PseudoR Stat')
+disp('Model (row) x Dimension (col) [Subjects, Conditions]')
+PRstat
+
+disp('---------')
+disp(['Reward Psuedo-R is ' num2str(mean(PR{PRs}(:,:,1),1)) ' (+-' num2str(std(PR{PRs}(:,:,1),[],1)) ') , Punishment Psuedo-R is ' num2str(mean(PR{PRs}(:,:,2),1)) ' (+-' num2str(std(PR{PRs}(:,:,2),[],1)) ')'])
+disp(['Mean difference is ' num2str(diff(mean(PR{PRs},1)))])
 
 % 
+
+
+
 
  %% 5.) Behavioral Plots
  
@@ -275,7 +278,7 @@ Deci.Plot.Behv.RT.Collapse.Block =  true;
 Deci.Plot.Behv.RT.Collapse.Subject = true;
 Deci.Plot.Behv.RT.Collapse.Uneven = 'maxlength:nans';
 
-Plottor_Behv(Deci); 
+Plottor_Behv(Deci);
 
 %% (6) Behv Stats
 % have to be [2 4] when you run the behavioral stat 

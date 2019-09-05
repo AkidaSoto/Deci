@@ -103,7 +103,7 @@ for subject_list = 1:length(Deci.SubjectList)
 
                         %+ sum(isnan(data.event),2)
                         
-                        mint =  [[sum(ismember(data.full{1},[draws{:}]),2) ] == maxt] &  any(ismember(data.full{1},[iblk*Deci.Plot.Behv.Acc.Block(blk)]),2);
+                        mint =  [[sum(ismember(data.full{1},[draws{:}]),2) + sum(isnan(data.full{1}),2) ] == maxt] &  any(ismember(data.full{1},[iblk*Deci.Plot.Behv.Acc.Block(blk)]),2);
                         mintrl = data.full{2}(mint);
                         
                         Acc{fig}{subject_list,draw,blk} = nan([length(find(mintrl)) 1]);
@@ -169,6 +169,7 @@ for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
             Acc{fig} = fAcc;
             Accsem{fig} = [];
         end
+        fullAcc{fig} = Acc{fig};
         
         if Deci.Plot.Behv.Acc.Collapse.Trial
             Accsem{fig} = nanstd(Acc{fig},4)/sqrt(size(Acc{fig},4));
@@ -189,7 +190,7 @@ for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
             
             Sub.Acc = {'SubjAvg'};
         end
-        save([Deci.Folder.Version filesep 'Plot' filesep 'SimAcc'],'Acc');
+        save([Deci.Folder.Version filesep 'Plot' filesep 'SimAcc'],'Acc','fullAcc');
     end
 end
 
@@ -207,6 +208,8 @@ for fig = 1:length(find(Deci.Plot.Behv.RT.Figure))
             RTsem{fig} = [];
         end
         
+        fullRT{fig} = RT{fig};
+        
         if Deci.Plot.Behv.RT.Collapse.Trial
             RTsem{fig} = nanstd(RT{fig},4)/sqrt(size(RT{fig},4));
             RT{fig} = nanmean(RT{fig},4);
@@ -223,7 +226,7 @@ for fig = 1:length(find(Deci.Plot.Behv.RT.Figure))
             RT{fig} =  nanmean(RT{fig},1);
             Sub.RT = {'SubjAvg'};
         end
-        save([Deci.Folder.Version filesep 'Plot' filesep 'SimRT'],'RT');
+        save([Deci.Folder.Version filesep 'Plot' filesep 'SimRT'],'RT','fullRT');
     end
     
 end
