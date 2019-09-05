@@ -32,6 +32,6 @@ for j = 1:length(commons)
     
 end
 
-movefile(notcommons,[Dir  '_new'])
+movefile(c(~ismember(c,d2)),[Dir  '_new'])
 
 end
