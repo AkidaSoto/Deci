@@ -2,12 +2,12 @@
 %You run this once before you run any other step
 
 Deci = [];
-%Deci.Folder.Raw         = ['/Users/RobReinhart/Documents/Data/Behavioral'];              % Raw Data Folder Directory
-Deci.Folder.Raw         = ['C:\Users\User\Desktop\John\AB2\Behav'];
+Deci.Folder.Raw         = ['/Users/RobReinhart/Documents/Data/Behavioral'];              % Raw Data Folder Directory
+%Deci.Folder.Raw         = ['C:\Users\User\Desktop\John\AB2\Behav'];
 
 Deci.SubjectList        = 'gui';                                                  % Cell Array of strings, 'all' or 'gui'( for subject selection)                                          % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
-%Deci.Folder.Version     = ['/Users/RobReinhart/Documents/Data/Processed'];        % Output Folder Directory
-Deci.Folder.Version     = ['C:\Users\User\Desktop\John\AB2\ProcessedData'];
+Deci.Folder.Version     = ['/Users/RobReinhart/Documents/Data/Processed'];        % Output Folder Directory
+%Deci.Folder.Version     = ['C:\Users\User\Desktop\John\AB2\ProcessedData'];
 
 Deci.Folder.Definition   = [Deci.Folder.Version filesep 'Definition'];
 Deci.Folder.Plot         = [Deci.Folder.Version filesep 'Plot'];
@@ -182,9 +182,9 @@ for mdls = 1:length(mdl)
     
 end
 
-excelmdldata = mat2cell([exceldata sub(:) cond(:)],[26],[ones([1 13])]);
+excelmdldata = mat2cell([exceldata sub(:) cond(:)],[length(sub(:))],[ones([1 size(exceldata,2)+2])]);
 
-excelmdldata = table(excelmdldata{:},'VariableNames',{'m1_Q01' 'm1_Q02' 'm1_a' 'm1_b' 'm2_Q01' 'm2_Q02' 'm2_aN' 'm2_aP' 'm2_b' 'm3_a' 'm3_b' 'Sub' 'Cond'});
+excelmdldata = table(excelmdldata{:},'VariableNames',{'m1_Q0Opt' 'm1_Q02Wor' 'm1_a' 'm1_b' 'm2_Q0Opt' 'm2_Q0Wor' 'm2_aR' 'm2_aP' 'm2_b' 'm3_a' 'm3_b' 'Sub' 'Cond'});
 
 writetable(excelmdldata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Parameters')
 
@@ -209,7 +209,7 @@ for PRs = 1:length(PR)
 end
 
 
-excelPRdata = mat2cell([exceldata sub(:) cond(:)],[26],[ones([1 5])]);
+excelPRdata =mat2cell([exceldata sub(:) cond(:)],[length(sub(:))],[ones([1 size(exceldata,2)+2])]);
 
 excelPRdata = table(excelPRdata{:},'VariableNames',{'m1_PseudoR' 'm2_PseudoR' 'm3_PseudoR' 'Sub' 'Cond'});
 
@@ -245,7 +245,7 @@ Deci.Plot.Behv.Acc.Subtotal = {{[1 3] [2 4]} {[1 5] [2 6]}};
 % Change [2 4] to [6 8] to flip punishment
 % have to be [2 4] when you run the behavioral stat section (6)
 
-Deci.Plot.Behv.Acc.Title = {'Percent of Optimal Choice' 'Percent of Cummulative Feedback Correct'};
+
 Deci.Plot.Behv.Acc.Subtitle = {{'Rew Percent' 'Pun Percent'} {'Rew Correct' 'Pun Correct'}};
 
 Deci.Plot.Behv.Acc.Block = [1:3];
@@ -255,11 +255,12 @@ Deci.Plot.Behv.Acc.Collapse.Trial =false;
 Deci.Plot.Behv.Acc.Collapse.Block = true;
 Deci.Plot.Behv.Acc.Collapse.Subject = true;             % turn to false if you want to plot individual subjects
 Deci.Plot.Behv.Acc.Collapse.Uneven = 'positional:nans';
-Deci.Plot.Behv.Acc.Collapse.Movmean =  false;
+Deci.Plot.Behv.Acc.Collapse.Movmean =  [false true];
 % Change this to true to activate cummulative scores for Feedback correct
 % Change this to false to turn off cummulative for Optimal Choice
 
 Deci.Plot.Behv.Acc.Collapse.MovWindow = 10;
+Deci.Plot.Behv.Acc.Title = {'Percent of Optimal Choice' ['Percent of Feedback Correct with sliding window ' num2str(Deci.Plot.Behv.Acc.Collapse.MovWindow)]};
 % Change the sliding scale window range. If -1, get complete cummulative
 
 Deci.Plot.Behv.RT.Figure = [true true];
@@ -268,7 +269,7 @@ Deci.Plot.Behv.RT.Title = {'All Trials RT by CondxChoice' 'All Trials RT by Cond
 Deci.Plot.Behv.RT.Subtitle = {{'Rew-Opt' 'Rew-Wor' 'Pun-Opt' 'Pun-Worst'} {'Rew Percent' 'Pun Percent'}};
 Deci.Plot.Behv.RT.Locks = [1 2];
 
-Deci.Plot.Behv.RT.Block = [1:3];
+Deci.Plot.Behv.RT.Block = [3];
 Deci.Plot.Behv.RT.Collapse.Trial =false;
 Deci.Plot.Behv.RT.Collapse.Block =  true;
 % Change here for wires to bar, but across Blocks
@@ -297,6 +298,11 @@ for sub = 1:size(Acc,1)
                 blks(end+1) = blk;
                 trls(end+1) = trl;
             end
+            
+%             sumsub 
+%             sumconds
+%             sumblks
+%             sumtrls
         end
     end
 end

@@ -114,7 +114,7 @@ for subject_list = 1:length(Deci.SubjectList)
                     end
                     
                     
-                    if Deci.Plot.Behv.Acc.Collapse.Movmean
+                    if Deci.Plot.Behv.Acc.Collapse.Movmean(fig)
                         
                         if isfield(Deci.Plot.Behv.Acc.Collapse,'MovWindow')
                            
