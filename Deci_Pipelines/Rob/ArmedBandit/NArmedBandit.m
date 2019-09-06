@@ -2,12 +2,12 @@
 %You run this once before you run any other step
 
 Deci = [];
-Deci.Folder.Raw         = ['/Users/RobReinhart/Documents/Data/Behavioral'];              % Raw Data Folder Directory
-%Deci.Folder.Raw         = ['C:\Users\User\Desktop\John\AB2\Behav'];
+%Deci.Folder.Raw         = ['/Users/RobReinhart/Documents/Data/Behavioral'];              % Raw Data Folder Directory
+Deci.Folder.Raw         = ['C:\Users\User\Desktop\John\AB2\Behav'];
 
 Deci.SubjectList        = 'gui';                                                  % Cell Array of strings, 'all' or 'gui'( for subject selection)                                          % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
-Deci.Folder.Version     = ['/Users/RobReinhart/Documents/Data/Processed'];        % Output Folder Directory
-%Deci.Folder.Version     = ['C:\Users\User\Desktop\John\AB2\ProcessedData'];
+%Deci.Folder.Version     = ['/Users/RobReinhart/Documents/Data/Processed'];        % Output Folder Directory
+Deci.Folder.Version     = ['C:\Users\User\Desktop\John\AB2\ProcessedData'];
 
 Deci.Folder.Definition   = [Deci.Folder.Version filesep 'Definition'];
 Deci.Folder.Plot         = [Deci.Folder.Version filesep 'Plot'];
@@ -263,7 +263,7 @@ Deci.Plot.Behv.Acc.Collapse.MovWindow = 10;
 Deci.Plot.Behv.Acc.Title = {'Percent of Optimal Choice' ['Percent of Feedback Correct with sliding window ' num2str(Deci.Plot.Behv.Acc.Collapse.MovWindow)]};
 % Change the sliding scale window range. If -1, get complete cummulative
 
-Deci.Plot.Behv.RT.Figure = [true true];
+Deci.Plot.Behv.RT.Figure = [false true];
 Deci.Plot.Behv.RT.Draw = {{[1 3] [5 7] [2 4] [6 8]} {[1 3 5 7] [2 4 6 8]}};
 Deci.Plot.Behv.RT.Title = {'All Trials RT by CondxChoice' 'All Trials RT by Cond'};
 Deci.Plot.Behv.RT.Subtitle = {{'Rew-Opt' 'Rew-Wor' 'Pun-Opt' 'Pun-Worst'} {'Rew Percent' 'Pun Percent'}};
@@ -289,6 +289,12 @@ Acc = fullAcc{1};
                 conds = [];
                 blks = []; 
                 trls = [];
+                
+             sumsubs = [];
+             sumconds= [];
+             sumblks= [];
+             sumacc = [];
+                
 for sub = 1:size(Acc,1)
     for cond = 1:size(Acc,2)
         for blk = 1:size(Acc,3)
@@ -299,17 +305,19 @@ for sub = 1:size(Acc,1)
                 trls(end+1) = trl;
             end
             
-%             sumsub 
-%             sumconds
-%             sumblks
-%             sumtrls
+             sumsubs(end+1) =  sub;
+             sumconds(end+1)= cond;
+             sumblks(end+1)= blk;
+             sumacc(sub,cond,blk) = squeeze(nanmean(Acc(sub,cond,blk,:),4));
         end
     end
 end
 
 excelAccdata = table(subs',conds',blks',trls',Acc(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','Optimal_Choice'});
-
 writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','Accuracy');
+
+excelAccdata = table(sumsubs',sumconds',sumblks',sumacc(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Optimal_Choice'});
+writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','Accuracy_Summary');
 
 % cond = [];
 % for Conds = 1:size(Acc,2)
@@ -336,6 +344,12 @@ Acc = fullAcc{2};
                 conds = [];
                 blks = []; 
                 trls = [];
+                
+                sumsubs = [];
+                sumconds= [];
+                sumblks= [];
+                sumacc =[];
+                
 for sub = 1:size(Acc,1)
     for cond = 1:size(Acc,2)
         for blk = 1:size(Acc,3)
@@ -345,13 +359,21 @@ for sub = 1:size(Acc,1)
                 blks(end+1) = blk;
                 trls(end+1) = trl;
             end
+            
+            sumsubs(end+1) =  sub;
+            sumconds(end+1)= cond;
+            sumblks(end+1)= blk;
+            sumacc(sub,cond,blk) = squeeze(nanmean(Acc(sub,cond,blk,:),4));
         end
     end
 end
 
 excelAccdata = table(subs',conds',blks',trls',Acc(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','Correct_Feedback'});
 
-writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','Correct')
+writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','Correct_Cummulative')
+
+excelAccdata = table(sumsubs',sumconds',sumblks',sumacc(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Optimal_Choice'});
+writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','Correct_Cummulative_Summary');
 
 
 % for Subjs = 1:size(Acc,1)
@@ -371,5 +393,43 @@ writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType
 % [RTstat,tbl,stats,terms] = anovan(cat(1,cond{:}),{cat(1,condtitle{:})},'varnames',{'Condition'},'display','off');
 % 
 % 
+
+load([Deci.Folder.Version filesep 'Plot' filesep 'SimRT'],'fullRT');
+RT = fullRT{2};
+
+                subs= [];
+                conds = [];
+                blks = []; 
+                trls = [];
+                
+                sumsubs = [];
+                sumconds= [];
+                sumblks= [];
+                sumRT =[];
+                
+for sub = 1:size(RT,1)
+    for cond = 1:size(RT,2)
+        for blk = 1:size(RT,3)
+            for trl = 1:size(RT,4)
+                subs(end+1) =  sub;
+                conds(end+1) = cond;
+                blks(end+1) = blk;
+                trls(end+1) = trl;
+            end
+            
+            sumsubs(end+1) =  sub;
+            sumconds(end+1)= cond;
+            sumblks(end+1)= blk;
+            sumRT(sub,cond,blk) = squeeze(nanmean(RT(sub,cond,blk,:),4));
+        end
+    end
+end
+
+excelAccdata = table(subs',conds',blks',trls',RT(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','RT'});
+
+writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','RT')
+
+excelAccdata = table(sumsubs',sumconds',sumblks',sumRT(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Optimal_Choice'});
+writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','RT_Summary');
 
    

@@ -24,7 +24,7 @@ for subject_list = 1:length(Deci.SubjectList)
     end
     
     
-    for fig = 1:length(find(Deci.Plot.Behv.RT.Figure))
+    for fig = 1:find(Deci.Plot.Behv.RT.Figure)
         if ~isempty(Deci.Plot.Behv.RT)
             
             if length(Deci.DT.Locks) <2 || length(Deci.Plot.Behv.RT.Locks) ~= 2
@@ -69,7 +69,7 @@ for subject_list = 1:length(Deci.SubjectList)
         end
     end
     
-    for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
+    for fig = find(Deci.Plot.Behv.Acc.Figure)
         
         if ~isempty(Deci.Plot.Behv.Acc)
             Exist(Deci.Plot.Behv.Acc,'Total');
@@ -153,7 +153,7 @@ end
 
 %% sort
 
-for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
+for fig = find(Deci.Plot.Behv.Acc.Figure)
     
     clear fAcc
 
@@ -194,7 +194,7 @@ for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
     end
 end
 
-for fig = 1:length(find(Deci.Plot.Behv.RT.Figure)) 
+for fig = find(Deci.Plot.Behv.RT.Figure)
         clear fRT
     if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
         if ismember(Deci.Plot.Behv.RT.Collapse.Uneven,{'maxlength:nans','positional:nans'})
@@ -233,7 +233,7 @@ end
 %% plot
 
 
-for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
+for fig = find(Deci.Plot.Behv.Acc.Figure)
     
     
     if ~isempty(Deci.Plot.Behv.Acc)
@@ -309,7 +309,7 @@ for fig = 1:length(find(Deci.Plot.Behv.Acc.Figure))
 end
 
 
-for fig = 1:length(find(Deci.Plot.Behv.RT.Figure))
+for fig = find(Deci.Plot.Behv.RT.Figure)
     
     if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
         for subj = 1:size(RT{fig},1)
