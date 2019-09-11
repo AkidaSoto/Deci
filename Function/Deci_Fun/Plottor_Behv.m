@@ -91,13 +91,13 @@ for subject_list = 1:length(Deci.SubjectList)
                     
                     draws = Deci.Analysis.Conditions(Deci.Plot.Behv.Acc.Total{fig}{draw});
                     maxt = max(sum(ismember(data.event,[draws{:}]),2));
-                    trl = [sum(ismember(data.event,[draws{:}]),2) == maxt] & any(ismember(data.event,iblk*Deci.Plot.Behv.Acc.Block(blk)),2);
+                    trl = [sum(ismember(data.event,[draws{:}]),2) == maxt + sum(isnan(data.event),2)] & any(ismember(data.event,iblk*Deci.Plot.Behv.Acc.Block(blk)),2);
                     
                     Total = data.event(trl,:);
                     
                     subdraws = Deci.Analysis.Conditions(Deci.Plot.Behv.Acc.Subtotal{fig}{draw});
                     maxt2 = max(sum(ismember(data.event,[subdraws{:}]),2));
-                    subtrl = [sum(ismember(Total,[subdraws{:}]),2) == maxt2] & any(ismember(Total,iblk*Deci.Plot.Behv.Acc.Block(blk)),2);
+                    subtrl = [[sum(ismember(Total,[subdraws{:}]),2) + sum(isnan(Total),2) ] == maxt2] & any(ismember(Total,iblk*Deci.Plot.Behv.Acc.Block(blk)),2);
                     
                     if strcmpi(Deci.Plot.Behv.Acc.Collapse.Uneven,'positional:nans')
 

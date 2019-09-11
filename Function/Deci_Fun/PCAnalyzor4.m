@@ -69,7 +69,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     
     maxt = max(sum(ismember(condinfo{2},Deci.Analysis.Conditions{Cond}),2));
     info.alltrials = sum(ismember(condinfo{2},Deci.Analysis.Conditions{Cond}),2) == maxt;
-    info.allnonnans = ~isnan(mean(condinfo{1},2));
+    info.allnonnans = ~isnan(mean(condinfo{1},2)) & ~isnan(mean(info.condinfo{2},2));
     ccfg.trials =  info.alltrials & info.allnonnans;
     
     
@@ -102,14 +102,28 @@ for Cond = 1:length(Deci.Analysis.Conditions)
         end
     end
     
+    if Deci.Analysis.Extra.do
+        
+        info.subject_list = subject_list;
+        info.Cond = Cond;
+        
+        dat.condinfo = condinfo;
+        
+        for funs = find(Deci.Analysis.Extra.Once)
+            
+            if Deci.Analysis.Extra.list(funs)
+                feval(Deci.Analysis.Extra.Functions{funs},Deci,info,dat,Deci.Analysis.Extra.Params{funs}{:});
+            end
+        end
+        
+    end
+            
     if Deci.Analysis.Freq.do
         
         dataplaceholder =dat;
         
         TimerLock = clock;
         for Lock = 1:length(Deci.Analysis.Locks)
-            
-            
             
             cfg.offset = condinfo{1}(ccfg.trials,Deci.Analysis.Locks(Lock));
             cfg.toilim = Deci.Analysis.Freq.Toilim;
@@ -166,23 +180,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             Chan = Fourier.label;
             
             TimerChan = clock;
-            
-            if Deci.Analysis.Extra.do
-                
-                    info.subject_list = subject_list;
-                    info.Lock = Lock;
-                    info.Cond = Cond;
-                    
-                    for funs = find(Deci.Analysis.Extra.Once)
-                        
-                        if Deci.Analysis.Extra.list(funs)
-                            feval(Deci.Analysis.Extra.Functions{funs},Deci,info,Fourier,Deci.Analysis.Extra.Params{funs}{:});
-                        end
-                    end
-              
-            end
-            
-            
+
             for i = 1:length(Chan)
                 
                 

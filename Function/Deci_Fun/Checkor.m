@@ -43,12 +43,6 @@ if any(ismember(steps1,[Deci.Step]))
     
     
 end
-
-if Deci.Debug
-    dbstop if error
-else
-    dbclear if error
-end
 % 
 % copyfile(which(Deci.File),[Deci.Folder.Version 'Parameter.text'])
 

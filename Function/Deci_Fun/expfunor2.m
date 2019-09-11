@@ -97,33 +97,57 @@ for j = 1:length(startstopseg)
         end
         
     end
-
+    
     
 end
 
 
 if isfield(cfg.DT,'Displace')
-    if cfg.DT.Displace ~= 0
+    
+    Exist(cfg.DT.Displace,'Num');
+    
+    
+    if cfg.DT.Displace.Num ~= 0
         
         blk = sort(unique(trialinfo(:,end)),'descend');
         
+        blkpos = find(mean(trialinfo < 0));
         
         for dis = 1:length(blk)
             
-            block{dis} = trialinfo(find(trialinfo(:,end) == blk(dis)),:);
-            block{dis} = block{dis}(1:end-cfg.DT.Displace,:);
+            block{dis} = trialinfo(find(trialinfo(:,blkpos) == blk(dis)),:);
             
-            shift{dis} = trl(find(trialinfo(:,end) == blk(dis)),:);
-            shift{dis} = shift{dis}(1+cfg.DT.Displace:end,:);
+            bpos = [1:length(block{dis})]+cfg.DT.Displace.Num;
+            
+            block{dis} = block{dis}(find(bpos > 0 & bpos <= length(block{dis})),:);
+
+            shift{dis} = trl(find(trialinfo(:,blkpos) == blk(dis)),:);
+            
+            bpos = [1:length( shift{dis})]-cfg.DT.Displace.Num;
+            
+            shift{dis} = shift{dis}(find(bpos > 0 & bpos <= length( shift{dis})),:);
+            
+            
+            if ~isempty(cfg.DT.Displace.Markers)
+                
+                for dmrk = 1:length(cfg.DT.Displace.Markers)
+                    
+                    dmrks{dis} = trialinfo(find(trialinfo(:,blkpos) == blk(dis)));
+                    dmrks{dis} = dmrks{dis}(:,find(mean(ismember(dmrks{dis},cfg.DT.Displace.Markers{dmrk}))))+1000*cfg.DT.Displace.Num;
+                    dmrks{dis} = dmrks{dis}(find(bpos > 0 & bpos <= length(dmrks{dis})));
+                    block{dis} = [block{dis} dmrks{dis}];
+                    
+                end
+            end
+            
             
         end
         
         trialinfo = cat(1,block{:});
         trl = cat(1,shift{:});
+        
     end
     
-end
-
 end
 
 
