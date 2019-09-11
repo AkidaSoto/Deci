@@ -123,7 +123,7 @@ if isfield(cfg.DT,'Displace')
 
             shift{dis} = trl(find(trialinfo(:,blkpos) == blk(dis)),:);
             
-            bpos = [1:length( shift{dis})]-cfg.DT.Displace.Num;
+            bpos = [1:length( shift{dis})]+cfg.DT.Displace.Num;
             
             shift{dis} = shift{dis}(find(bpos > 0 & bpos <= length( shift{dis})),:);
             

@@ -238,7 +238,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
     conds = [];
     blks = [];
     trls = [];
-
+  
     
     for sub = 1:size(fullAcc{fig},1)
         for cond = 1:size(fullAcc{fig},2)
@@ -253,29 +253,16 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
             end
         end
     end
+    
+    
+    
+    
+    
     excelAccdata = table(subs',conds',blks',trls',fullAcc{fig}(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','Optimal_Choice'});
-    writetable(excelAccdata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Full');
+    writetable(excelAccdata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} '_Behavioraloutputs' ],'FileType','spreadsheet','Sheet','Accuracy');
     
-    subs= [];
-    conds = [];
-    blks = [];
-    trls = [];
-
-    for sub = 1:size(Acc{fig},1)
-        for cond = 1:size(Acc{fig},2)
-            for blk = 1:size(Acc{fig},3)
-                for trl = 1:size(Acc{fig},4)
-                    subs(end+1) =  sub;
-                    conds(end+1) = cond;
-                    blks(end+1) = blk;
-                    trls(end+1) = trl;
-                end
-            end
-        end
-    end
-    
-    excelAccdata = table(subs',conds',blks',trls',Acc{fig}(:),'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'Optimal_Choice'});
-    writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Summary');
+    excelAccdata = table(sumsubs',sumconds',sumblks',sumacc(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Optimal_Choice'});
+    writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.Acc.Title{fig} 'Behavioraloutputs' ],'FileType','spreadsheet','Sheet','Accuracy_Summary');
     
 end
 
@@ -286,6 +273,10 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     blks = [];
     trls = [];
     
+    sumsubs = [];
+    sumconds= [];
+    sumblks= [];
+    sumrt = [];
     
     for sub = 1:size(fullRT{fig},1)
         for cond = 1:size(fullRT{fig},2)
@@ -296,35 +287,20 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
                     blks(end+1) = blk;
                     trls(end+1) = trl;
                 end
+                
+                sumsubs(end+1) =  sub;
+                sumconds(end+1)= cond;
+                sumblks(end+1)= blk;
+                sumrt(sub,cond,blk) = squeeze(nanmean(fullRT{fig}(sub,cond,blk,:),4));
             end
         end
     end
     
     excelAccdata = table(subs',conds',blks',trls',fullRT{fig}(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','Optimal_Choice'});
-    writetable(excelAccdata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Full');
+    writetable(excelAccdata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy');
     
-    subs= [];
-    conds = [];
-    blks = [];
-    trls = [];
-    
-    
-    for sub = 1:size(RT{fig},1)
-        for cond = 1:size(RT{fig},2)
-            for blk = 1:size(RT{fig},3)
-                for trl = 1:size(RT{fig},4)
-                    subs(end+1) =  sub;
-                    conds(end+1) = cond;
-                    blks(end+1) = blk;
-                    trls(end+1) = trl;
-                end
-            end
-        end
-    end
-    
-    
-    excelAccdata = table(subs',conds',blks',trls',RT{fig}(:),'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'Optimal_Choice'});
-    writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Summary');
+    excelAccdata = table(sumsubs',sumconds',sumblks',sumrt(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Optimal_Choice'});
+    writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.Acc.Title{fig} 'Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Summary');
     
 end
 
