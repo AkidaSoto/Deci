@@ -1,6 +1,11 @@
 function AppendEEGs(Dir,datatype)
 
 b = CleanDir(Dir);
+
+if exist(strcat(Dir,'_new'),'dir')
+ b = b(~ismember(b,CleanDir(strcat(Dir,'_new'))));
+end
+
 b = unique(cellfun(@(d) d(1),cellfun(@(c) strsplit(c,'.'),b,'un',0)));
 
 a = cellfun(@(c) isequal('2',c{end}(1)),cellfun(@(c) strsplit(c,'_'),b,'UniformOutput',false));
@@ -12,7 +17,7 @@ d2 = cellfun(@(e) e([1:end-2]),d,'UniformOutput',false);
 
 [commons,notcommons] = intersect(d2,c);
 
-mkdir([Dir  '_new']);
+mkdir(strcat(Dir,'_new'));
 
 
 for j = 1:length(commons)
@@ -32,6 +37,8 @@ for j = 1:length(commons)
     
 end
 
-movefile(c(~ismember(c,d2)),[Dir  '_new'])
+if ~isempty(c(~ismember(c,d2)))
+    movefile(c(~ismember(c,d2)),[Dir  '_new'])
+end
 
 end
