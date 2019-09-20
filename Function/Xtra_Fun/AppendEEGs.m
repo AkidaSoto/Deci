@@ -37,7 +37,7 @@ for j = 1:length(commons)
     
 end
 
-if ~isempty(c(~ismember(c,d2)))
+if ~isempty(notcommons)
     movefile(c(~ismember(c,d2)),[Dir  '_new'])
 end
 
