@@ -107,44 +107,69 @@ if isfield(cfg.DT,'Displace')
     cfg.DT.Displace = Exist(cfg.DT.Displace,'Num',0);
     
     
+    
+    
     if cfg.DT.Displace.Num ~= 0
         
         blk = sort(unique(trialinfo(:,end)),'descend');
         
         blkpos = find(mean(trialinfo < 0));
         
-        for dis = 1:length(blk)
+        
+       Displace = cfg.DT.Displace.Num;
+        
+        for dura = 1:cfg.DT.Displace.Duration
             
-            block{dis} = trialinfo(find(trialinfo(:,blkpos) == blk(dis)),:);
-            
-            bpos = [1:length(block{dis})]+cfg.DT.Displace.Num;
-            
-            block{dis} = block{dis}(find(bpos > 0 & bpos <= length(block{dis})),:);
-
-            shift{dis} = trl(find(trialinfo(:,blkpos) == blk(dis)),:);
-            
-            bpos = [1:length( shift{dis})]-cfg.DT.Displace.Num;
-            
-            shift{dis} = shift{dis}(find(bpos > 0 & bpos <= length( shift{dis})),:);
-            
-            
-            if ~isempty(cfg.DT.Displace.Markers)
+            for stat = 1:length(cfg.DT.Displace.Static)
                 
-                for dmrk = 1:length(cfg.DT.Displace.Markers)
+                statictrialinfo = trialinfo(logical(sum(ismember(trialinfo,cfg.DT.Displace.Static(stat)),2)),:);
+                statictrl = trl(logical(sum(ismember(trialinfo,cfg.DT.Displace.Static(stat)),2)),:);
+                
+                
+                for dis = 1:length(blk)
                     
-                    dmrks{dis} = trialinfo(find(trialinfo(:,blkpos) == blk(dis)),:);
-                    dmrks{dis} = dmrks{dis}(:,find(mean(ismember(dmrks{dis},cfg.DT.Displace.Markers{dmrk}))))+1000*cfg.DT.Displace.Num;
-                    dmrks{dis} = dmrks{dis}(find(bpos > 0 & bpos <= length(dmrks{dis})));
-                    block{dis} = [block{dis} dmrks{dis}];
+                    block{stat,dis,dura}  = statictrialinfo(find(statictrialinfo(:,blkpos) == blk(dis)),:);
+                    
+                    shift{stat,dis,dura} = statictrl(find(statictrialinfo(:,blkpos) == blk(dis)),:);
+                    
+                    if ~isempty(cfg.DT.Displace.Markers)
+                        
+                        for dmrk = 1:length(cfg.DT.Displace.Markers)
+                            
+                            dmrks{stat,dis,dura} = statictrialinfo(find(statictrialinfo(:,blkpos) == blk(dis)),:);
+                                                        
+                            dmrks{stat,dis,dura} = dmrks{stat,dis,dura}(:,find(mean(ismember(dmrks{stat,dis,dura},cfg.DT.Displace.Markers{dmrk}))))+1000*dura;
+                            
+                            if cfg.DT.Displace.Num > 0
+                                dmrks{stat,dis,dura} = [dmrks{stat,dis,dura}(1+[cfg.DT.Displace.Num+dura-1]:end);nan([cfg.DT.Displace.Num+dura-1 size(dmrks{stat,dis,dura},2)])];
+                            else
+                                dmrks{stat,dis,dura} = [nan([cfg.DT.Displace.Num+dura-1 size(dmrks{stat,dis,dura},2)]); dmrks{stat,dis,dura}(1:end-[cfg.DT.Displace.Num+dura-1])];
+                            end
+
+                            block{stat,dis,dura} = [block{stat,dis,dura} dmrks{stat,dis,dura}];
+                            
+                        end
+                    end
+                    
                     
                 end
+                
             end
             
+            Displace = Displace + 1;
+            
+            trl = cat(1,shift{:,:,dura});
+            
+            [strl,I] = sort(trl(:,1));
+            
+            trl = trl(I,:);
+            
+            trialinfo = cat(1,block{:,:,dura});
+            trialinfo = trialinfo(I,:);
             
         end
         
-        trialinfo = cat(1,block{:});
-        trl = cat(1,shift{:});
+        
         
     end
     

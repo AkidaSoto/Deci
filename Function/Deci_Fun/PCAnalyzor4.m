@@ -19,10 +19,10 @@ if ~isfield(Deci.Analysis.Freq,'Toi')
     Deci.Analysis.Toi = [-inf inf];
     warning('Parameter for Toi not found, presuming [-inf inf]')
 end
-
-if ~Deci.Analysis.ERP.do && ~Deci.Analysis.Freq.do
-    error('Must do either ERP or Freq')
-end
+% 
+% if ~Deci.Analysis.ERP.do && ~Deci.Analysis.Freq.do
+%     error('Must do either ERP or Freq')
+% end
 
 
 if ~isempty(Deci.Analysis.Version)
@@ -34,7 +34,18 @@ end
 Deci.Analysis = Exist(Deci.Analysis,'DownSample',[]);
 
 data = [];
+
+if ~any([Deci.Analysis.Freq.do Deci.Analysis.ERP.do]) && Deci.Analysis.Extra.do
+load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list} '.mat'],'cfg');    
+
+data =cfg;
+data.condinfo{1} = data.trl(:,end-length(Deci.DT.Locks)+1:end);
+data.condinfo{2} = data.event;
+data.condinfo{3} = data.trialnum;
+else
 load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data');
+end
+condinfo = data.condinfo;
 
 if ~strcmpi(Deci.Analysis.Channels,'all')
     cfg = [];
@@ -42,7 +53,7 @@ if ~strcmpi(Deci.Analysis.Channels,'all')
     
     data = ft_selectdata(cfg,data);
 end
-condinfo = data.condinfo;
+
 
 if isfield(data,'preart')
     pa = 1;
@@ -69,7 +80,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     
     maxt = max(sum(ismember(condinfo{2},Deci.Analysis.Conditions{Cond}),2));
     info.alltrials = sum(ismember(condinfo{2},Deci.Analysis.Conditions{Cond}),2) == maxt;
-    info.allnonnans = ~isnan(mean(condinfo{1},2)) & ~isnan(mean(info.condinfo{2},2));
+    info.allnonnans = ~isnan(mean(condinfo{1},2)) & ~isnan(mean(condinfo{2},2));
     ccfg.trials =  info.alltrials & info.allnonnans;
     
     

@@ -1,51 +1,5 @@
 
-
-Deci.Analysis.Conditions    = {[21] [23]};
-Deci.Analysis.LocksTitle = {'None'};
-info.Lock = 1;
-Deci.Analysis.CondTitle = {'Correct' 'Incorrect'}';
-
-Deci.Analysis.Extra.QL.States = [21 23];
-Deci.Analysis.Extra.QL.Actions = [31 32];
-Deci.Analysis.Extra.QL.Reward  = [51 52];
-Deci.Analysis.Extra.QL.Value  = {[10 0] [0 -10]};
-Deci.Analysis.Extra.QL.Start = [0 0];
-
-
-Deci.Analysis.Extra.do = true;
-Deci.Analysis.Extra.list = [true];
-Deci.Analysis.Extra.Once = [true];
-Deci.Analysis.Extra.Functions = {'QL3'};
-Deci.Analysis.Extra.Params = {{Deci.Analysis.Extra.QL}};
-
-
-for subject_list = 1:length(Deci.SubjectList)
-    
-    load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}],'cfg')
-    
-    info.condinfo = {cfg.trl cfg.event cfg.trialnum};
-    
-    Deci.Analysis.Extra.QL.States = [21 23];
-    Deci.Analysis.Extra.QL.Actions = [31 32];
-    Deci.Analysis.Extra.QL.Reward  = [51 52];
-    Deci.Analysis.Extra.QL.Value  = {[10 0] [0 -10]};
-    Deci.Analysis.Extra.QL.Start = [0 0];
-    
-    for Cond = 1:length(Deci.Analysis.Conditions)
-        maxt = max(sum(ismember(info.condinfo{2},Deci.Analysis.Conditions{Cond}),2));
-        info.alltrials = sum(ismember(info.condinfo{2},Deci.Analysis.Conditions{Cond}),2) == maxt;
-        info.allnonnans = ~isnan(mean(info.condinfo{1},2)) & ~isnan(mean(info.condinfo{2},2));
-        ccfg.trials = info.alltrials & info.allnonnans;
-        
-        info.subject_list = subject_list;
-        info.Cond = Cond;
-        
-        QL3(Deci,info,info,Deci.Analysis.Extra.QL);
-        
-    end
-end
-disp('Finished Modelling')
-
+function RLModelPlot(Deci,params)
 
 disp('Starting Model Stat')
 QL = [];
@@ -120,4 +74,8 @@ excelPRdata =mat2cell([exceldata sub(:) cond(:)],[length(sub(:))],[ones([1 size(
 excelPRdata = table(excelPRdata{:},'VariableNames',{'m1_PseudoR' 'm2_PseudoR' 'm3_PseudoR' 'Sub' 'Cond'});
 
 writetable(excelPRdata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Fitness')
+
+disp('Finished Model Stat')
+
+end
 

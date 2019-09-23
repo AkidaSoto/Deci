@@ -25,24 +25,24 @@ elseif strcmp(Deci.SubjectList,'gui')
     close(fakeUI);
 end
 
-steps2 = {'Definition','PreProc','Artifact'};
-steps1 = [2 3 4];
-
-if Deci.Step == 1
-   mkdir(Deci.Folder.Version) 
-end
-
-if any(ismember(steps1,[Deci.Step]))
-    
-    for subject_list = 1:length(Deci.SubjectList)
-
-        if exist([Deci.Folder.Version filesep steps2{ismember(steps1,[Deci.Step])} filesep Deci.SubjectList{subject_list} '.mat']) ~= 2
-            error([steps2{ismember(steps1,[Deci.Step])} ' step not found for ' Deci.SubjectList{subject_list}]);
-        end
-    end
-    
-    
-end
+% steps2 = {'Definition','PreProc','Artifact'};
+% steps1 = [2 3 4];
+% 
+% if Deci.Step == 1
+%    mkdir(Deci.Folder.Version) 
+% end
+% 
+% if any(ismember(steps1,[Deci.Step]))
+%     
+%     for subject_list = 1:length(Deci.SubjectList)
+% 
+%         if exist([Deci.Folder.Version filesep steps2{ismember(steps1,[Deci.Step])} filesep Deci.SubjectList{subject_list} '.mat']) ~= 2
+%             error([steps2{ismember(steps1,[Deci.Step])} ' step not found for ' Deci.SubjectList{subject_list}]);
+%         end
+%     end
+%     
+%     
+% end
 % 
 % copyfile(which(Deci.File),[Deci.Folder.Version 'Parameter.text'])
 
