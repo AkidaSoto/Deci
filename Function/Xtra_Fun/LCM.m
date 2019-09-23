@@ -64,14 +64,14 @@ for j = 1:length(startstopseg)
     value = cellfun(@str2num,value);
     sample = {event(startstopseg(1,j):startstopseg(2,j)).sample};
     
-    if ~ismember(399,value) && ~isempty(value) && sum(isnan(value))~=0
+    if ~ismember(399,value) && ~isempty(value) %&& sum(isnan(value))~=0
         value = [value(1:find(ismember(value,211:218))) 399 value(find(ismember(value,211:218))+1:end)];
         sample = [sample(1:find(ismember(value,211:218))) sample(find(ismember(value,211:218))) sample(find(ismember(value,211:218))+1:end)];
     end
     
-    if ~ismember(499,value) && ~isempty(value) && sum(isnan(value))~=0 %empty and NAN trial segs.  
+    if ~ismember(499,value) && ~isempty(value) %&& sum(isnan(value))~=0 %empty and NAN trial segs.  
         value = [value 499];
-        sample = [sample sample{length(sample)}]
+        sample = [sample sample{length(sample)}];
     end
     
     if all(ismember(cfg.DT.Locks,value))
