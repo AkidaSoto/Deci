@@ -83,10 +83,10 @@ end
 RTsz = length(size(RT));
 
 MeanRT = permute(nanmean(RT,1),[2:RTsz 1]);
-SemRT = permute(nanstd(RT,1),[2:RTsz 1])/sqrt(size(RT,1));
+SemRT = permute(nanstd(RT,[],1),[2:RTsz 1])/sqrt(size(RT,1));
 
 MeanRTcount = permute(nanmean(RTcount,1),[2:RTsz 1]);
-StdRTcount = permute(nanstd(RTcount,1),[2:RTsz 1])/sqrt(size(RTcount,1));
+StdRTcount = permute(nanstd(RTcount,[],1),[2:RTsz 1]);
 
 
 % One Color for each Subcondition.
@@ -142,18 +142,20 @@ for blk = 1:size(MeanRT,1)
     sMeanRT = squeeze(nanmean(diff(RT(:,blk,:,:,:),[],5),1));
     sSemRT = squeeze(nanstd(diff(RT(:,blk,:,:,:),[],5),1))/sqrt(size(RT(:,blk,:,:,:),1));
     
+    % Dimension is Cond_SubCond_DuraDiff
+    
     for stat = 1:size(sMeanRT,1)
         
         
         f(blk,stat) = figure;
         f(blk,stat).Visible = 'on';
-        CleanBars(squeeze(sMeanRT(stat,:,:)),squeeze(sSemRT(stat,:,:)));
+        CleanBars(permute(sMeanRT(stat,:,:),[3 2 1]),permute(sSemRT(stat,:,:),[3 2 1]));
         title([Params.StaticTitle{stat} ' Difference' ' blk ' blktitle{blk}]);
         
         xticks([1:size(sMeanRT,3)])
-        legend(arrayfun(@(c) ['[n+' num2str(c) ' - n+'  num2str(c-1) ']'],1:size(MeanRT,4)-1,'UniformOutput',false));
+        xticklabels(arrayfun(@(c) ['[n+' num2str(c) ' - n+'  num2str(c-1) ']'],1:size(MeanRT,4)-1,'UniformOutput',false));
         
-        xticklabels(combntitles);
+        legend(combntitles);
         ylabel('delta time (ms)');
         
     end
@@ -169,7 +171,7 @@ for lim = 1:numel(f)
 end
 
 for lim = 1:numel(h)
-   h(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],h,'UniformOutput',false))); 
+   g(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],g,'UniformOutput',false))); 
 end
 
 end
