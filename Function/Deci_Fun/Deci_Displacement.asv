@@ -142,18 +142,20 @@ for blk = 1:size(MeanRT,1)
     sMeanRT = squeeze(nanmean(diff(RT(:,blk,:,:,:),[],5),1));
     sSemRT = squeeze(nanstd(diff(RT(:,blk,:,:,:),[],5),1))/sqrt(size(RT(:,blk,:,:,:),1));
     
+    % Dimension is Cond_SubCond_DuraDiff
+    
     for stat = 1:size(sMeanRT,1)
         
         
         f(blk,stat) = figure;
         f(blk,stat).Visible = 'on';
-        CleanBars(squeeze(sMeanRT(stat,:,:)),squeeze(sSemRT(stat,:,:)));
+        CleanBars(permute(sMeanRT(stat,:,:),[2 3 1])',squeeze(sSemRT(stat,:,:))');
         title([Params.StaticTitle{stat} ' Difference' ' blk ' blktitle{blk}]);
         
         xticks([1:size(sMeanRT,3)])
-        legend(arrayfun(@(c) ['[n+' num2str(c) ' - n+'  num2str(c-1) ']'],1:size(MeanRT,4)-1,'UniformOutput',false));
+        xticklabels(arrayfun(@(c) ['[n+' num2str(c) ' - n+'  num2str(c-1) ']'],1:size(MeanRT,4)-1,'UniformOutput',false));
         
-        xticklabels(combntitles);
+        legend(combntitles);
         ylabel('delta time (ms)');
         
     end
@@ -169,7 +171,7 @@ for lim = 1:numel(f)
 end
 
 for lim = 1:numel(h)
-   h(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],h,'UniformOutput',false))); 
+   g(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],g,'UniformOutput',false))); 
 end
 
 end
