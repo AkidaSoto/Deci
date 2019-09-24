@@ -184,20 +184,20 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
         fullAcc{fig} = Acc{fig};
         
         if Deci.Plot.Behv.Acc.Collapse.Trial
-            Accsem{fig} = nanstd(Acc{fig},4)/sqrt(size(Acc{fig},4));
+            Accsem{fig} = nanstd(Acc{fig},[],4)/sqrt(size(Acc{fig},4));
             Acc{fig} = nanmean(Acc{fig},4);
             
         end
         
         if Deci.Plot.Behv.Acc.Collapse.Block
-            Accsem{fig} = nanstd(Acc{fig},3)/sqrt(size(Acc{fig},3));
+            Accsem{fig} = nanstd(Acc{fig},[],3)/sqrt(size(Acc{fig},3));
             Acc{fig} = nanmean(Acc{fig},3);
             
         end
         
         Sub.Acc = Deci.SubjectList;
         if Deci.Plot.Behv.Acc.Collapse.Subject
-            Accsem{fig} =  nanstd(Acc{fig},1)/sqrt(size(Acc{fig},1));
+            Accsem{fig} =  nanstd(Acc{fig},[],1)/sqrt(size(Acc{fig},1));
             Acc{fig} =  nanmean(Acc{fig},1);
             
             Sub.Acc = {'SubjAvg'};
@@ -213,18 +213,18 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
         fullRT{fig} = RT{fig};
         
         if Deci.Plot.Behv.RT.Collapse.Trial
-            RTsem{fig} = nanstd(RT{fig},4)/sqrt(size(RT{fig},4));
+            RTsem{fig} = nanstd(RT{fig},[],4)/sqrt(size(RT{fig},4));
             RT{fig} = nanmean(RT{fig},4);
         end
         
         if Deci.Plot.Behv.RT.Collapse.Block
-            RTsem{fig} = nanstd(RT{fig},3)/sqrt(size(RT{fig},3));
+            RTsem{fig} = nanstd(RT{fig},[],3)/sqrt(size(RT{fig},3));
             RT{fig} = nanmean(RT{fig},3);
         end
         
         Sub.RT = Deci.SubjectList;
         if Deci.Plot.Behv.RT.Collapse.Subject
-            RTsem{fig} = nanstd(RT{fig},1)/sqrt(size(RT{fig},1));
+            RTsem{fig} = nanstd(RT{fig},[],1)/sqrt(size(RT{fig},1));
             RT{fig} =  nanmean(RT{fig},1);
             Sub.RT = {'SubjAvg'};
         end
