@@ -56,7 +56,12 @@ for subject_list = 1:length(Deci.SubjectList)
 %     if ~all(ismember([1:length(unique(cfg.DT.Locks))],unique(floor(cfg.trl(:,4)))))
 %         error(['No trials were defined for condition(s) ' num2str(find(~ismember([1:length(unique(cfg.DT.Locks))],unique(floor(cfg.trl(:,4))))))]);
 %     end
-
+%% Kyle's part 
+if isfield(Deci,'sort')
+    if ~isempty(Deci.sort)
+        for i = 1:
+    end
+end
 
 %%
     mkdir([Deci.Folder.Definition]);
