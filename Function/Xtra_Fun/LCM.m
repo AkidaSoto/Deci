@@ -32,6 +32,16 @@ if rem(length(find(ismember({event.value},startstop)')),2) ~= 0
     error('invalid number of start and end pairings, check data!');
 end
 
+%Culling mini trials
+% start = [event(ismember({event.value},{'10' '11'})).sample];
+% stop = [event(ismember({event.value},{'200' '201' '202'})).sample];
+% 
+% sindex = zeros(size(start));
+% 
+% for ss = 1:length(stop)
+%    ind( start < stop(ss),1,'last')
+% end
+
 startstopseg = reshape(find(ismember({event.value},startstop)'),[2 length(find(ismember({event.value},startstop)'))/2]);
 
 if ~isempty(cfg.DT.Block)
@@ -71,10 +81,20 @@ for j = 1:length(startstopseg)
     
     if ~ismember(499,value) && ~isempty(value) %&& sum(isnan(value))~=0 %empty and NAN trial segs.  
         value = [value 499];
+        
+        try
         sample = [sample sample{length(sample)}];
+        
+        catch
+           k = 0; 
+        end
     end
     
     if all(ismember(cfg.DT.Locks,value))
+        
+        if isempty(sample)
+            k = 0;
+        end
         
         begsample = sample{1} + sstime(1)*hdr.Fs;
         endsample = sample{end} + sstime(2)*hdr.Fs;

@@ -25,6 +25,12 @@ for subject_list = 1:length(Deci.SubjectList)
     
     
     for fig = find(Deci.Plot.Behv.RT.Figure)
+        
+        if exist('RT') == 0
+           RT{fig} = []; 
+        end
+        
+        
         if ~isempty(Deci.Plot.Behv.RT)
             
             if length(Deci.DT.Locks) <2 || length(Deci.Plot.Behv.RT.Locks) ~= 2
@@ -68,8 +74,21 @@ for subject_list = 1:length(Deci.SubjectList)
                     
                     eveTotal(trl) =  [-data.trialinfo(trl,Deci.Plot.Behv.RT.Locks(2)) - -data.trialinfo(trl,Deci.Plot.Behv.RT.Locks(1))];
                     
+                    if size(eveTotal,2) ~= size(RT{fig},4) && size(RT{fig},1) ~= 0
+                        
+                        if size(eveTotal,2) > size(RT{fig},4)
+                            RT{fig} = cat(4, RT{fig}, nan(size(RT{fig},1),size(RT{fig},2),size(RT{fig},3),size(eveTotal,2)-size(RT{fig},4)));   
+                            RT{fig}(subject_list,draw,blk,:) = eveTotal;
+                        else
+                            eveTotal = [eveTotal nan([1 size(RT{fig},4)-size(eveTotal,2)])];
+                            RT{fig}(subject_list,draw,blk,:) = eveTotal;
+                        end
+                        
+                    else
+                        RT{fig}(subject_list,draw,blk,:) = eveTotal;
+                    end
+                        
                     
-                    RT{fig}(subject_list,draw,blk,:) = eveTotal;
                     
                     
                 end
@@ -81,6 +100,9 @@ for subject_list = 1:length(Deci.SubjectList)
     end
     
     for fig = find(Deci.Plot.Behv.Acc.Figure)
+        
+        
+        Acc{fig} = [];
         
         if ~isempty(Deci.Plot.Behv.Acc)
             Exist(Deci.Plot.Behv.Acc,'Total');
