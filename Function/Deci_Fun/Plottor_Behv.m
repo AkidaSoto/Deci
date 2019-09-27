@@ -102,8 +102,10 @@ for subject_list = 1:length(Deci.SubjectList)
     for fig = find(Deci.Plot.Behv.Acc.Figure)
         
         
-        Acc{fig} = [];
-        
+        if exist('Acc') == 0
+            RT{fig} = [];
+        end
+
         if ~isempty(Deci.Plot.Behv.Acc)
             Exist(Deci.Plot.Behv.Acc,'Total');
             Exist(Deci.Plot.Behv.Acc,'Subtotal');
@@ -151,8 +153,6 @@ for subject_list = 1:length(Deci.SubjectList)
                     eveTotal(subtrl) = 1;
                     
                     Acc{fig}(subject_list,draw,blk,:) = eveTotal;
-
-                    
                     
                     Deci.Plot.Behv.Acc.Collapse = Exist(Deci.Plot.Behv.Acc.Collapse,'Movmean',[]);
                     
