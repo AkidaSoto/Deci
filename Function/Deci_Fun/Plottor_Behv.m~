@@ -47,19 +47,30 @@ for subject_list = 1:length(Deci.SubjectList)
                     end
                     
                     draws = Deci.Analysis.Conditions(Deci.Plot.Behv.RT.Draw{fig}{draw});
-                    maxt = max(sum(ismember(data.event,[draws{:}]),2));
-                    trl = [sum(ismember(data.event,[draws{:}]),2) == maxt] & any(ismember(data.event,iblk*Deci.Plot.Behv.RT.Block(blk)),2);
-                    
-                    if strcmpi(Deci.Plot.Behv.RT.Collapse.Uneven,'positional:nans')
-                        
-                        mint =  [[sum(ismember(data.full{1},[draws{:}]),2) + sum(isnan(data.event),2)] == maxt] & any(ismember(data.full{1},iblk*Deci.Plot.Behv.RT.Block(blk)),2);
-                        mintrl = data.full{2}(mint);
-                        
-                        RT{fig}{subject_list,draw,blk} = nan([length(find(mintrl)) 1]);
-                        RT{fig}{subject_list,draw,blk}(ismember(mintrl,find(trl))) =  [-data.trialinfo(trl,Deci.Plot.Behv.RT.Locks(2)) - -data.trialinfo(trl,Deci.Plot.Behv.RT.Locks(1))];
+                                        
+                    if isfield(Deci.Plot.Behv,'Static')
+                       
+                        if sum(ismember(Deci.Plot.Behv.Static,[draws{:}])) == 1
+                            
+                           eve = data.event(logical(sum(ismember(data.event,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
+                           eve = eve(find(any(ismember(eve,iblk*Deci.Plot.Behv.RT.Block(blk)),2)),:);
+                        else
+                           eve = data.event;
+                        end
                     else
-                        RT{fig}{subject_list,draw,blk} =  [-data.trialinfo(trl,Deci.Plot.Behv.RT.Locks(2)) - -data.trialinfo(trl,Deci.Plot.Behv.RT.Locks(1))];
+                        eve = data.event;
                     end
+                    
+                    eveTotal = nan([1 length(find(any(ismember(eve,iblk*Deci.Plot.Behv.RT.Block(blk)),2)))]);
+                    
+                    maxt = max(sum(ismember(eve,[draws{:}]),2));
+                    trl = [sum(ismember(eve,[draws{:}]),2) == maxt];
+                    
+                    eveTotal(trl) =  [-data.trialinfo(trl,Deci.Plot.Behv.RT.Locks(2)) - -data.trialinfo(trl,Deci.Plot.Behv.RT.Locks(1))];
+                    
+                    
+                    RT{fig}(subject_list,draw,blk,:) = eveTotal;
+                    
                     
                 end
             end
@@ -90,46 +101,59 @@ for subject_list = 1:length(Deci.SubjectList)
                     end
                     
                     draws = Deci.Analysis.Conditions(Deci.Plot.Behv.Acc.Total{fig}{draw});
-                    maxt = max(sum(ismember(data.event,[draws{:}]),2));
-                    trl = [[sum(ismember(data.event,[draws{:}]),2) + sum(isnan(data.event),2)] == maxt] & any(ismember(data.event,iblk*Deci.Plot.Behv.Acc.Block(blk)),2);
                     
-                    
-                    Total = data.event(trl,:);
-                    
-                    Acc{fig}{subject_list,draw,blk} = zeros([size(Total,1) 1]);
-
-                    subdraws = Deci.Analysis.Conditions(Deci.Plot.Behv.Acc.Subtotal{fig}{draw});
-                    maxt2 = max(sum(ismember(Total,[subdraws{:}]),2));
-                    subtrl = [[sum(ismember(Total,[subdraws{:}]),2) ] == maxt2];
-                    
-                    Acc{fig}{subject_list,draw,blk}(subtrl) = 1;
-                    
-                    subtrl = logical(sum(isnan(Total),2));
-                    
-                    Acc{fig}{subject_list,draw,blk}(subtrl) = nan;
-                    
-%                     if strcmpi(Deci.Plot.Behv.Acc.Collapse.Uneven,'positional:nans')
-%                          Acc{fig}{subject_list,draw,blk}(logical(sum(isnan(Total),2))) = nan;
-%                     end
-                    
-                    
-                    if Deci.Plot.Behv.Acc.Collapse.Movmean(fig)
-                        
-                        if isfield(Deci.Plot.Behv.Acc.Collapse,'MovWindow')
-                           
-                            MovWindow = Deci.Plot.Behv.Acc.Collapse.MovWindow;
+                    if isfield(Deci.Plot.Behv,'Static')
+                       
+                        if sum(ismember(Deci.Plot.Behv.Static,[draws{:}])) == 1
                             
-                            if MovWindow == -1
-                                MovWindow = length( Acc{fig}{subject_list,draw,blk});
-                            end
-                            
+                           eve = data.event(logical(sum(ismember(data.event,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
+                           eve = eve(find(any(ismember(eve,iblk*Deci.Plot.Behv.Acc.Block(blk)),2)),:);
                         else
-                            MovWindow = length( Acc{fig}{subject_list,draw,blk});
+                           eve = data.event;
                         end
-                        
-                        Acc{fig}{subject_list,draw,blk} = movmean(Acc{fig}{subject_list,draw,blk},[MovWindow 0],'omitnan');
+                    else
+                        eve = data.event;
                     end
                     
+                    eveTotal = nan([1 length(find(any(ismember(eve,iblk*Deci.Plot.Behv.Acc.Block(blk)),2)))]);
+                    
+                    maxt = max(sum(ismember(eve,[draws{:}]),2));
+                    trl = find([[sum(ismember(eve,[draws{:}]),2)] == maxt]);
+                    
+                    eveTotal(trl) = 0;
+                    
+                    subdraws = Deci.Analysis.Conditions(Deci.Plot.Behv.Acc.Subtotal{fig}{draw});
+                    maxt2 = max(sum(ismember(eve,[subdraws{:}]),2));
+                    subtrl = [[sum(ismember(eve,[subdraws{:}]),2) ] == maxt2];
+                    
+                    eveTotal(subtrl) = 1;
+                    
+                    Acc{fig}(subject_list,draw,blk,:) = eveTotal;
+
+                    
+                    
+                    Deci.Plot.Behv.Acc.Collapse = Exist(Deci.Plot.Behv.Acc.Collapse,'Movmean',[]);
+                    
+                    
+                    if ~isempty(Deci.Plot.Behv.Acc.Collapse.Movmean)
+                        
+                        if Deci.Plot.Behv.Acc.Collapse.Movmean(fig)
+                            
+                            if isfield(Deci.Plot.Behv.Acc.Collapse,'MovWindow')
+                                
+                                MovWindow = Deci.Plot.Behv.Acc.Collapse.MovWindow;
+                                
+                                if MovWindow == -1
+                                    MovWindow = length( Acc{fig}(subject_list,draw,blk,:));
+                                end
+                                
+                            else
+                                MovWindow = length( Acc{fig}(subject_list,draw,blk,:));
+                            end
+                            
+                            Acc{fig}(subject_list,draw,blk,:) = movmean(Acc{fig}(subject_list,draw,blk,:),[MovWindow 0],'omitnan');
+                        end
+                    end
                 end
             end
             
@@ -156,35 +180,24 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
     
     clear fAcc
 
-    
     if ~isempty(Deci.Plot.Behv.Acc) && ~isempty(find(Deci.Plot.Behv.Acc.Figure))
-        if ismember(Deci.Plot.Behv.Acc.Collapse.Uneven,{'maxlength:nans','positional:nans'})
-            
-            for subject_list = 1:length(Deci.SubjectList)
-                for draw = 1:size(Acc{fig},2)
-                    fAcc(subject_list,draw,:,:) =  squeeze(cell2mat(cellfun(@(c) [c;nan(max(cellfun(@length,Acc{fig}(:)))-length(c),1)],Acc{fig}(subject_list,draw,:),'un',0)))';
-                end
-            end
-            Acc{fig} = fAcc;
-            Accsem{fig} = [];
-        end
         fullAcc{fig} = Acc{fig};
         
         if Deci.Plot.Behv.Acc.Collapse.Trial
-            Accsem{fig} = nanstd(Acc{fig},4)/sqrt(size(Acc{fig},4));
+            Accsem{fig} = nanstd(Acc{fig},[],4)/sqrt(size(Acc{fig},4));
             Acc{fig} = nanmean(Acc{fig},4);
             
         end
         
         if Deci.Plot.Behv.Acc.Collapse.Block
-            Accsem{fig} = nanstd(Acc{fig},3)/sqrt(size(Acc{fig},3));
+            Accsem{fig} = nanstd(Acc{fig},[],3)/sqrt(size(Acc{fig},3));
             Acc{fig} = nanmean(Acc{fig},3);
             
         end
         
         Sub.Acc = Deci.SubjectList;
         if Deci.Plot.Behv.Acc.Collapse.Subject
-            Accsem{fig} =  nanstd(Acc{fig},1)/sqrt(size(Acc{fig},1));
+            Accsem{fig} =  nanstd(Acc{fig},[],1)/sqrt(size(Acc{fig},1));
             Acc{fig} =  nanmean(Acc{fig},1);
             
             Sub.Acc = {'SubjAvg'};
@@ -196,32 +209,22 @@ end
 for fig = find(Deci.Plot.Behv.RT.Figure)
         clear fRT
     if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
-        if ismember(Deci.Plot.Behv.RT.Collapse.Uneven,{'maxlength:nans','positional:nans'})
-            
-            for subject_list = 1:length(Deci.SubjectList)
-                for draw = 1:size(RT{fig},2)
-                    fRT(subject_list,draw,:,:) =  squeeze(cell2mat(cellfun(@(c) [c;nan(max(cellfun(@length,RT{fig}(:)))-length(c),1)],RT{fig}(subject_list,draw,:),'un',0)))';
-                end
-            end
-            RT{fig} = fRT;
-            RTsem{fig} = [];
-        end
-        
+
         fullRT{fig} = RT{fig};
         
         if Deci.Plot.Behv.RT.Collapse.Trial
-            RTsem{fig} = nanstd(RT{fig},4)/sqrt(size(RT{fig},4));
+            RTsem{fig} = nanstd(RT{fig},[],4)/sqrt(size(RT{fig},4));
             RT{fig} = nanmean(RT{fig},4);
         end
         
         if Deci.Plot.Behv.RT.Collapse.Block
-            RTsem{fig} = nanstd(RT{fig},3)/sqrt(size(RT{fig},3));
+            RTsem{fig} = nanstd(RT{fig},[],3)/sqrt(size(RT{fig},3));
             RT{fig} = nanmean(RT{fig},3);
         end
         
         Sub.RT = Deci.SubjectList;
         if Deci.Plot.Behv.RT.Collapse.Subject
-            RTsem{fig} = nanstd(RT{fig},1)/sqrt(size(RT{fig},1));
+            RTsem{fig} = nanstd(RT{fig},[],1)/sqrt(size(RT{fig},1));
             RT{fig} =  nanmean(RT{fig},1);
             Sub.RT = {'SubjAvg'};
         end
@@ -231,6 +234,11 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
 end
 
 %% Table outputs for SPSS
+
+
+Deci.Plot.Behv = Exist(Deci.Plot.Behv,'WriteExcel',false);
+
+if Deci.Plot.Behv.WriteExcel
 
 for fig = find(Deci.Plot.Behv.Acc.Figure)
     
@@ -274,6 +282,8 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
         end
     end
     
+    Acc{fig} = Acc{fig}';
+    
     excelAccdata = table(subs',conds',blks',trls',Acc{fig}(:),Accsem{fig}(:),'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'Accuracy' 'SEM'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Summary');
     
@@ -300,7 +310,7 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
         end
     end
     
-    excelAccdata = table(subs',conds',blks',trls',fullRT{fig}(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','Reacton Time'});
+    excelAccdata = table(subs',conds',blks',trls',fullRT{fig}(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','ReactonTime'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Full');
     
     subs= [];
@@ -323,9 +333,10 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     end
     
     
-    excelAccdata = table(subs',conds',blks',trls',RT{fig}(:),RTsem{fig}(:),'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'Reaction Time','SEM'});
+    excelAccdata = table(subs',conds',blks',trls',RT{fig}(:),RTsem{fig}(:),'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Summary');
     
+end
 end
 
 %% plot
@@ -349,7 +360,10 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
                     top = squeeze(Acc{fig}(subj,draw,:,:))*100 + squeeze(Accsem{fig}(subj,draw,:,:))*100;
                     bot = squeeze(Acc{fig}(subj,draw,:,:))*100 - squeeze(Accsem{fig}(subj,draw,:,:))*100;
                     
-                    pgon = polyshape([1:length(Acc{fig}(subj,draw,:,:)) length(Acc{fig}(subj,draw,:,:)):-1:1],[top' fliplr(bot')],'Simplify', false);
+                    shapes = [1:length(Acc{fig}(subj,draw,:,:)) length(Acc{fig}(subj,draw,:,:)):-1:1];
+                    shapes(isnan([top' fliplr(bot')])) = nan;
+                    
+                    pgon = polyshape(shapes,[top' fliplr(bot')],'Simplify', false);
                     b = plot(pgon,'HandleVisibility','off');
                     hold on
                     b.EdgeAlpha = 0;
@@ -385,6 +399,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
                     
                     if draw == 1
                         CleanBars(Acc{fig}(subj,:,:,:),Accsem{fig}(subj,:,:,:))
+                        ylim([0 1]);
                         title(['Acc Total for ' Sub.Acc{subj} ': ' Deci.Plot.Behv.Acc.Title{fig} ' '],'Interpreter','none')
                         legend([Deci.Plot.Behv.Acc.Subtitle{fig}])
                         xticklabels(Sub.Acc{subj})
@@ -464,7 +479,7 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
                     
                     if draw == 1
                         CleanBars(RT{fig}(subj,:,:,:),RTsem{fig}(subj,:,:,:))
-                        title(['Acc Total for ' Sub.Acc{subj} ': ' Deci.Plot.Behv.RT.Title{fig} ' '],'Interpreter','none')
+                        title(['RT Total for ' Sub.Acc{subj} ': ' Deci.Plot.Behv.RT.Title{fig} ' '],'Interpreter','none')
                         legend([Deci.Plot.Behv.RT.Subtitle{fig}])
                         xticklabels(Sub.RT{subj})
                         ylabel('Reaction Time (ms)')
