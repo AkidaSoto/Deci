@@ -119,8 +119,8 @@ for j = 1:length(startstopseg)
         %their minimum and maximum code. More or less will result in
         %incorrect orientation. TODO - Change subratrction pattern to length to
         %allow variable comparisons
-        mkval1 = [211,221;211,151;141,151;141,211;141,221];
-        code=[450,550,650,700,750];
+        mkval1 = [211,221;146,221;211,151;141,151;141,211;141,221];
+        code=[450,500,550,650,700,750];
         for gw = 1:size(mkval1,1) 
             id1 = findelement(max(mkval1(gw,:)),cfg.DT.Markers);
             id2 = findelement(min(mkval1(gw,:)),cfg.DT.Markers);
