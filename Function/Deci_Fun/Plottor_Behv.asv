@@ -342,11 +342,8 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
             end
         end
     end
-
-    sRT = size(fullRT{fig});
-    fRT = reshape(fullRT{fig},prod([sRT]));
     
-    excelAccdata = table(subs',conds',blks',trls',fRT,'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','ReactonTime'});
+    excelAccdata = table(subs',conds',blks',trls',fullRT{fig}(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','ReactonTime'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Full');
     
     subs= [];
@@ -373,7 +370,7 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     fRT = reshape(RT{fig},prod([sRT]));
     fRTsem = reshape(RTsem{fig},prod([sRT]));
     
-    excelAccdata = table(Deci.SubjectList(subs)',conds',blks',trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
+    excelAccdata = table(Deci.SubjectList(subs)',conds',blks',trls',fRT(:),fRTsem(:),'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Summary');
     
 end
