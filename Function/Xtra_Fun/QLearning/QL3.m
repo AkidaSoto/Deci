@@ -94,20 +94,20 @@ out = {QL Q Pe PseudoR AIC};
 
 
 warning('off', 'MATLAB:MKDIR:DirectoryExists');
-mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'QL' filesep Deci.SubjectList{info.subject_list}  filesep filesep Deci.Analysis.LocksTitle{info.Lock}])
-save([Deci.Folder.Analysis filesep 'Extra' filesep 'QL' filesep Deci.SubjectList{info.subject_list}  filesep filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}],'QL');
+mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'QL' filesep Deci.SubjectList{info.subject_list} ])
+save([Deci.Folder.Analysis filesep 'Extra' filesep 'QL' filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.CondTitle{info.Cond}],'QL');
 
-mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Q' filesep Deci.SubjectList{info.subject_list}  filesep filesep Deci.Analysis.LocksTitle{info.Lock}])
-save([Deci.Folder.Analysis filesep 'Extra' filesep 'Q' filesep Deci.SubjectList{info.subject_list}  filesep filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}],'Q');
+mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Q' filesep Deci.SubjectList{info.subject_list}])
+save([Deci.Folder.Analysis filesep 'Extra' filesep 'Q' filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.CondTitle{info.Cond}],'Q');
 
-mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Pe' filesep Deci.SubjectList{info.subject_list}  filesep filesep Deci.Analysis.LocksTitle{info.Lock}])
-save([Deci.Folder.Analysis filesep 'Extra' filesep 'Pe' filesep Deci.SubjectList{info.subject_list}  filesep filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}],'Pe');
+mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Pe' filesep Deci.SubjectList{info.subject_list}  filesep  ])
+save([Deci.Folder.Analysis filesep 'Extra' filesep 'Pe' filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.CondTitle{info.Cond}],'Pe');
 
-mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'PseudoR' filesep Deci.SubjectList{info.subject_list}  filesep filesep Deci.Analysis.LocksTitle{info.Lock}])
-save([Deci.Folder.Analysis filesep 'Extra' filesep 'PseudoR' filesep Deci.SubjectList{info.subject_list}  filesep filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}],'PseudoR');
+mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'PseudoR' filesep Deci.SubjectList{info.subject_list} ])
+save([Deci.Folder.Analysis filesep 'Extra' filesep 'PseudoR' filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.CondTitle{info.Cond}],'PseudoR');
 
-mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectList{info.subject_list}  filesep filesep Deci.Analysis.LocksTitle{info.Lock}])
-save([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectList{info.subject_list}  filesep filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}],'AIC');
+mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectList{info.subject_list} ])
+save([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.CondTitle{info.Cond}],'AIC');
 
 % 
 % for blk = 1:size(Best,3)
@@ -147,7 +147,7 @@ save([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectLis
         
         for block = 1:length(a)
             
-            actions = sort(unique(a{block}));
+            actions = params.Actions;
             
             for Act = 1:length(a{block})
                 
@@ -176,7 +176,7 @@ save([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectLis
          
          for block = 1:length(a)
              
-             actions = sort(unique(a{block}));
+             actions = params.Actions;
              
              for Act = 1:length(a{block})
                  
@@ -209,7 +209,7 @@ save([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectLis
         
          for block = 1:length(a)
         
-        actions = sort(unique(a{block}));
+        actions = params.Actions;
         
         for Act = 1:length(a{block})
             

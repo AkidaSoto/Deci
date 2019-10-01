@@ -51,6 +51,10 @@ Deci.DT.Ends       = {10};                                                      
 Deci.DT.Markers    = {[21 23] [27 28] [31 32] [51 52]};                                   % Cell Array of Markers for Trial Defs
 Deci.DT.Locks      = [14 30 50];                                                                % Num Array for each timelock (usually Stim, Rsp and Fdb Onset )
 Deci.DT.Toi        = [-2 3];                                                                    % Time of Interest, be sure to include larger window for freq
+
+Deci.DT.Displace.Num   = 1;
+Deci.DT.Displace.Markers = {[20 21 23 24] [31 32]};
+
 Deci.DT.Block.Start   = {11};                                                                     % Cell Array of Markers for Block Starts
 Deci.DT.Block.End     = {12};                                                                       % Cell Array of Markers for Block Starts
 Deci.DT.Block.Markers = [];      
@@ -125,11 +129,6 @@ end
             end
         end
 %% 4.) Model Analysis 
-Deci.Analysis.Conditions    = {[21] [23]};
-Deci.Analysis.LocksTitle = {'None'};
-info.Lock = 1;
-Deci.Analysis.CondTitle = {'Correct' 'Incorrect'}';        
-
 
 QL = [];
 mdl = repmat({[]},[1 2]);
@@ -170,10 +169,7 @@ for mdls = 1:length(mdl)
         
         sub = repmat(1:size(tt,1),[1 size(tt,2)])';
         cond = repmat(1:size(tt,2),[size(tt,1) 1]);
-        
-%         [stat(mdls,param,:),tbl,stats,terms] = anovan(tt(:),{sub(:),cond(:)},'varnames',{'Subject','Condition'},'display','off');
-        
-        
+
         excelparam(:,param) = tt(:);
         
     end
@@ -182,19 +178,11 @@ for mdls = 1:length(mdl)
     
 end
 
-excelmdldata = mat2cell([exceldata sub(:) cond(:)],[26],[ones([1 13])]);
+excelmdldata = mat2cell([exceldata sub(:) cond(:)],[length(sub(:))],[ones([1 size(exceldata,2)+2])]);
 
-excelmdldata = table(excelmdldata{:},'VariableNames',{'m1_Q01' 'm1_Q02' 'm1_a' 'm1_b' 'm2_Q01' 'm2_Q02' 'm2_aN' 'm2_aP' 'm2_b' 'm3_a' 'm3_b' 'Sub' 'Cond'});
+excelmdldata = table(excelmdldata{:},'VariableNames',{'m1_Q0Opt' 'm1_Q02Wor' 'm1_a' 'm1_b' 'm2_Q0Opt' 'm2_Q0Wor' 'm2_aR' 'm2_aP' 'm2_b' 'm3_a' 'm3_b' 'Sub' 'Cond'});
 
 writetable(excelmdldata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Parameters')
-
-% disp('---------')
-% disp('QL model Stats')
-% disp('Model (row) x Parameters (col)(4,5,2) x Stat Dimension [Subjects (N), Conditions(2)]');
-% stat
-
-% 
-
 
 exceldata = [];
 
@@ -209,33 +197,16 @@ for PRs = 1:length(PR)
 end
 
 
-excelPRdata = mat2cell([exceldata sub(:) cond(:)],[26],[ones([1 5])]);
+excelPRdata =mat2cell([exceldata sub(:) cond(:)],[length(sub(:))],[ones([1 size(exceldata,2)+2])]);
 
 excelPRdata = table(excelPRdata{:},'VariableNames',{'m1_PseudoR' 'm2_PseudoR' 'm3_PseudoR' 'Sub' 'Cond'});
 
 writetable(excelPRdata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Fitness')
 
-% 
-% disp('---------')
-% disp('PseudoR Stat')
-% disp('Model (row) x Dimension (col) [Subjects, Conditions]')
-% PRstat
-% 
-% disp('---------')
-% disp(['Reward Psuedo-R is ' num2str(mean(PR{PRs}(:,:,1),1)) ' (+-' num2str(std(PR{PRs}(:,:,1),[],1)) ') , Punishment Psuedo-R is ' num2str(mean(PR{PRs}(:,:,2),1)) ' (+-' num2str(std(PR{PRs}(:,:,2),[],1)) ')'])
-% disp(['Mean difference is ' num2str(diff(mean(PR{PRs},1)))])
-
-% 
 
  %% 5.) Behavioral Plots
  
-Deci.Analysis.Conditions    = {[21 31 51] [23 31 51] [21 31 52] [23 31 52] ...
-                               [21 32 51] [23 32 51] [21 32 52] [23 32 52]};
-Deci.Analysis.CondTitle     = {'Opt AB Corr' 'Opt CD Corr' ...
-                               'Opt AB Inc'  'Opt CD Inc' ...
-                               'Wst AB Corr' 'Wst CD Corr' ...
-                               'Wst AB Inc'  'Wst CD Inc' };
- 
+
 Deci.Plot.Behv = [];
 Deci.Plot.Behv.Source = 'Definition';
 
@@ -245,7 +216,7 @@ Deci.Plot.Behv.Acc.Subtotal = {{[1 3] [2 4]} {[1 5] [2 6]}};
 % Change [2 4] to [6 8] to flip punishment
 % have to be [2 4] when you run the behavioral stat section (6)
 
-Deci.Plot.Behv.Acc.Title = {'Percent of Optimal Choice' 'Percent of Cummulative Feedback Correct'};
+
 Deci.Plot.Behv.Acc.Subtitle = {{'Rew Percent' 'Pun Percent'} {'Rew Correct' 'Pun Correct'}};
 
 Deci.Plot.Behv.Acc.Block = [1:3];
@@ -255,20 +226,21 @@ Deci.Plot.Behv.Acc.Collapse.Trial =false;
 Deci.Plot.Behv.Acc.Collapse.Block = true;
 Deci.Plot.Behv.Acc.Collapse.Subject = true;             % turn to false if you want to plot individual subjects
 Deci.Plot.Behv.Acc.Collapse.Uneven = 'positional:nans';
-Deci.Plot.Behv.Acc.Collapse.Movmean =  false;
+Deci.Plot.Behv.Acc.Collapse.Movmean =  [false true];
 % Change this to true to activate cummulative scores for Feedback correct
 % Change this to false to turn off cummulative for Optimal Choice
 
 Deci.Plot.Behv.Acc.Collapse.MovWindow = 10;
+Deci.Plot.Behv.Acc.Title = {'Percent of Optimal Choice' ['Percent of Feedback Correct with sliding window ' num2str(Deci.Plot.Behv.Acc.Collapse.MovWindow)]};
 % Change the sliding scale window range. If -1, get complete cummulative
 
-Deci.Plot.Behv.RT.Figure = [true true];
+Deci.Plot.Behv.RT.Figure = [false true];
 Deci.Plot.Behv.RT.Draw = {{[1 3] [5 7] [2 4] [6 8]} {[1 3 5 7] [2 4 6 8]}};
 Deci.Plot.Behv.RT.Title = {'All Trials RT by CondxChoice' 'All Trials RT by Cond'};
 Deci.Plot.Behv.RT.Subtitle = {{'Rew-Opt' 'Rew-Wor' 'Pun-Opt' 'Pun-Worst'} {'Rew Percent' 'Pun Percent'}};
 Deci.Plot.Behv.RT.Locks = [1 2];
 
-Deci.Plot.Behv.RT.Block = [1:3];
+Deci.Plot.Behv.RT.Block = [3];
 Deci.Plot.Behv.RT.Collapse.Trial =false;
 Deci.Plot.Behv.RT.Collapse.Block =  true;
 % Change here for wires to bar, but across Blocks
@@ -288,6 +260,12 @@ Acc = fullAcc{1};
                 conds = [];
                 blks = []; 
                 trls = [];
+                
+             sumsubs = [];
+             sumconds= [];
+             sumblks= [];
+             sumacc = [];
+                
 for sub = 1:size(Acc,1)
     for cond = 1:size(Acc,2)
         for blk = 1:size(Acc,3)
@@ -297,13 +275,20 @@ for sub = 1:size(Acc,1)
                 blks(end+1) = blk;
                 trls(end+1) = trl;
             end
+            
+             sumsubs(end+1) =  sub;
+             sumconds(end+1)= cond;
+             sumblks(end+1)= blk;
+             sumacc(sub,cond,blk) = squeeze(nanmean(Acc(sub,cond,blk,:),4));
         end
     end
 end
 
 excelAccdata = table(subs',conds',blks',trls',Acc(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','Optimal_Choice'});
-
 writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','Accuracy');
+
+excelAccdata = table(sumsubs',sumconds',sumblks',sumacc(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Optimal_Choice'});
+writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','Accuracy_Summary');
 
 % cond = [];
 % for Conds = 1:size(Acc,2)
@@ -330,6 +315,12 @@ Acc = fullAcc{2};
                 conds = [];
                 blks = []; 
                 trls = [];
+                
+                sumsubs = [];
+                sumconds= [];
+                sumblks= [];
+                sumacc =[];
+                
 for sub = 1:size(Acc,1)
     for cond = 1:size(Acc,2)
         for blk = 1:size(Acc,3)
@@ -339,13 +330,21 @@ for sub = 1:size(Acc,1)
                 blks(end+1) = blk;
                 trls(end+1) = trl;
             end
+            
+            sumsubs(end+1) =  sub;
+            sumconds(end+1)= cond;
+            sumblks(end+1)= blk;
+            sumacc(sub,cond,blk) = squeeze(nanmean(Acc(sub,cond,blk,:),4));
         end
     end
 end
 
 excelAccdata = table(subs',conds',blks',trls',Acc(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','Correct_Feedback'});
 
-writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','Correct')
+writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','Correct_Cummulative')
+
+excelAccdata = table(sumsubs',sumconds',sumblks',sumacc(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Optimal_Choice'});
+writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','Correct_Cummulative_Summary');
 
 
 % for Subjs = 1:size(Acc,1)
@@ -365,5 +364,43 @@ writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType
 % [RTstat,tbl,stats,terms] = anovan(cat(1,cond{:}),{cat(1,condtitle{:})},'varnames',{'Condition'},'display','off');
 % 
 % 
+
+load([Deci.Folder.Version filesep 'Plot' filesep 'SimRT'],'fullRT');
+RT = fullRT{2};
+
+                subs= [];
+                conds = [];
+                blks = []; 
+                trls = [];
+                
+                sumsubs = [];
+                sumconds= [];
+                sumblks= [];
+                sumRT =[];
+                
+for sub = 1:size(RT,1)
+    for cond = 1:size(RT,2)
+        for blk = 1:size(RT,3)
+            for trl = 1:size(RT,4)
+                subs(end+1) =  sub;
+                conds(end+1) = cond;
+                blks(end+1) = blk;
+                trls(end+1) = trl;
+            end
+            
+            sumsubs(end+1) =  sub;
+            sumconds(end+1)= cond;
+            sumblks(end+1)= blk;
+            sumRT(sub,cond,blk) = squeeze(nanmean(RT(sub,cond,blk,:),4));
+        end
+    end
+end
+
+excelAccdata = table(subs',conds',blks',trls',RT(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','RT'});
+
+writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','RT')
+
+excelAccdata = table(sumsubs',sumconds',sumblks',sumRT(:),'VariableNames',{'Subj' 'Cond' 'Blk' 'Optimal_Choice'});
+writetable(excelAccdata,[Deci.Folder.Plot filesep 'Behavioraloutputs'],'FileType','spreadsheet','Sheet','RT_Summary');
 
    

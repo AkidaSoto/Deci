@@ -56,7 +56,9 @@ for subject_list = 1:length(Deci.SubjectList)
 %     if ~all(ismember([1:length(unique(cfg.DT.Locks))],unique(floor(cfg.trl(:,4)))))
 %         error(['No trials were defined for condition(s) ' num2str(find(~ismember([1:length(unique(cfg.DT.Locks))],unique(floor(cfg.trl(:,4))))))]);
 %     end
-    
+
+
+%%
     mkdir([Deci.Folder.Definition]);
     disp('Saving Preprocessing Data');
     save([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}],'cfg')

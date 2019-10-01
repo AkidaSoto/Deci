@@ -32,6 +32,16 @@ if rem(length(find(ismember({event.value},startstop)')),2) ~= 0
     error('invalid number of start and end pairings, check data!');
 end
 
+%Culling mini trials
+% start = [event(ismember({event.value},{'10' '11'})).sample];
+% stop = [event(ismember({event.value},{'200' '201' '202'})).sample];
+% 
+% sindex = zeros(size(start));
+% 
+% for ss = 1:length(stop)
+%    ind( start < stop(ss),1,'last')
+% end
+
 startstopseg = reshape(find(ismember({event.value},startstop)'),[2 length(find(ismember({event.value},startstop)'))/2]);
 
 if ~isempty(cfg.DT.Block)
@@ -64,17 +74,27 @@ for j = 1:length(startstopseg)
     value = cellfun(@str2num,value);
     sample = {event(startstopseg(1,j):startstopseg(2,j)).sample};
     
-    if ~ismember(399,value) && ~isempty(value) && sum(isnan(value))~=0
+    if ~ismember(399,value) && ~isempty(value) %&& sum(isnan(value))~=0
         value = [value(1:find(ismember(value,211:218))) 399 value(find(ismember(value,211:218))+1:end)];
         sample = [sample(1:find(ismember(value,211:218))) sample(find(ismember(value,211:218))) sample(find(ismember(value,211:218))+1:end)];
     end
     
-    if ~ismember(499,value) && ~isempty(value) && sum(isnan(value))~=0 %empty and NAN trial segs.  
+    if ~ismember(499,value) && ~isempty(value) %&& sum(isnan(value))~=0 %empty and NAN trial segs.  
         value = [value 499];
-        sample = [sample sample{length(sample)}]
+        
+        try
+        sample = [sample sample{length(sample)}];
+        
+        catch
+           k = 0; 
+        end
     end
     
     if all(ismember(cfg.DT.Locks,value))
+        
+        if isempty(sample)
+            k = 0;
+        end
         
         begsample = sample{1} + sstime(1)*hdr.Fs;
         endsample = sample{end} + sstime(2)*hdr.Fs;
@@ -99,8 +119,8 @@ for j = 1:length(startstopseg)
         %their minimum and maximum code. More or less will result in
         %incorrect orientation. TODO - Change subratrction pattern to length to
         %allow variable comparisons
-        mkval1 = [211,221;211,151;141,151;141,211;141,221];
-        code=[450,550,650,700,750];
+        mkval1 = [211,221;146,221;211,151;141,151;141,211;141,221];
+        code=[450,500,550,650,700,750];
         for gw = 1:size(mkval1,1) 
             id1 = findelement(max(mkval1(gw,:)),cfg.DT.Markers);
             id2 = findelement(min(mkval1(gw,:)),cfg.DT.Markers);
