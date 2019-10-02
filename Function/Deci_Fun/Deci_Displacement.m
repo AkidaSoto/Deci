@@ -7,11 +7,6 @@ for subject_list = 1:length(Deci.SubjectList)
     data.trialinfo = data.trl(:,end-length(Deci.DT.Locks)+1:end);
 
     
-    if isempty(Params.Block)
-        Deci.Plot.Behv.RT.Block = {-1};
-    end
-   
-    
     combn = [];
     combntitles =[];
     
@@ -32,13 +27,23 @@ for subject_list = 1:length(Deci.SubjectList)
     combntitles = arrayfun(@(c) strjoin(combntitles(c,:),', '),1:size(combntitles,1),'UniformOutput',false)';
     
     
-    for blk = 1:length(Params.Block)
+    
+    if isa(Params.Block,'function_handle')
+        cfg.event(:,find(data.event(1,:) < 1)) = Params.Block(data.event(:,find(data.event(1,:) < 1)));
+        
+        ParamsBlock= unique(cfg.event(:,find(cfg.event(1,:) < 1)),'stable');
+    elseif isempty(Deci.Plot.Behv.Acc.Block)
+        ParamsBlock = {-1};
+    end
+    
+    
+    for blk = 1:length(ParamsBlock)
         
         for stat = 1:length(Params.Static)
             
             
-            statictrialinfo = cfg.event([logical(sum(ismember(cfg.event,Params.Static(stat)),2)) & any(ismember(cfg.event,-1*Params.Block(blk)),2)],:);
-            statictrl = cfg.trl([logical(sum(ismember(cfg.event,Params.Static(stat)),2)) & any(ismember(cfg.event,-1*Params.Block(blk)),2)],:);
+            statictrialinfo = cfg.event([logical(sum(ismember(cfg.event,Params.Static(stat)),2)) & any(ismember(cfg.event,ParamsBlock(blk)),2)],:);
+            statictrl = cfg.trl([logical(sum(ismember(cfg.event,Params.Static(stat)),2)) & any(ismember(cfg.event,ParamsBlock(blk)),2)],:);
             
             for draw = 1:size(combn,1)
                 
@@ -80,6 +85,46 @@ else
     blktitle = strsplit(num2str(1:size(RT,2)),' ');
 end
 
+%% Excel Save
+
+
+%ExportExcel
+
+sub = [];
+blk = [];
+cond = [];
+subcond = [];
+dura = [];
+
+for subs = 1:size(RT,1)
+    for blks = 1:size(RT,2)
+        for conds = 1:size(RT,3)
+            for subconds = 1:size(RT,4)
+                for duras = 1:size(RT,5)
+                    
+                    sub(end+1) = subs;
+                    blk(end+1) = blks;
+                    cond(end+1) = conds;
+                    subcond(end+1) = subconds;
+                    dura(end+1) = duras;
+                    
+                end
+            end
+        end
+    end
+end
+
+duratitles = arrayfun(@(c) ['n+' num2str(c-1)],1:size(RT,5),'UniformOutput',false);
+
+exceldata = reshape(RT,[prod(size(RT)) 1]);
+
+excelAccdata = table(Deci.SubjectList(sub)',abs(ParamsBlock(blk)),Params.StaticTitle(cond)',combntitles(subcond),duratitles(dura)',exceldata,'VariableNames',{'Subj' 'Blk' 'Cond' 'SubCond' 'Displacement','Reaction_Time'});
+writetable(excelAccdata,[Deci.Folder.Plot filesep 'Nlet_Outputs' ],'FileType','spreadsheet','Sheet',Params.Title);
+
+
+
+%% Plot
+
 RTsz = length(size(RT));
 
 MeanRT = permute(nanmean(RT,1),[2:RTsz 1]);
@@ -95,6 +140,9 @@ cmap = jet(size(MeanRT,3))/1.5;
 
 % MeanRT Dimensions are Blk_Conditions_SubConditions_Duration
 % MeanRTCount Dimensions are Blk_Conditions_Subconditions
+
+
+
 
 for blk = 1:size(MeanRT,1)
     

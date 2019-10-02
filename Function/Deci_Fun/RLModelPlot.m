@@ -25,35 +25,25 @@ for subj = 1:length(Deci.SubjectList)
     end
 end
 
-stat = [];
+subs = [];
+conds = [];
 
 exceldata = [];
 
-for mdls = 1:length(mdl)
-    
-    excelparam = [];
-    
-    for param = 1:size(mdl{mdls},2)
-        
-        
-        
-        tt = squeeze([mdl{mdls}(:,param,:)]);
-        
-        sub = repmat(1:size(tt,1),[1 size(tt,2)])';
-        cond = repmat(1:size(tt,2),[size(tt,1) 1]);
-        
-        excelparam(:,param) = tt(:);
-        
-    end
-    
-    exceldata = cat(2,exceldata,excelparam);
-    
+for model = 1:length(mdl)
+    exceldata = [exceldata reshape(permute(mdl{model},[1 3 2]),[size(permute(mdl{model},[1 3 2]),1)*size(permute(mdl{model},[1 3 2]),2) size(permute(mdl{model},[1 3 2]),3)])];
 end
 
-excelmdldata = mat2cell([exceldata sub(:) cond(:)],[length(sub(:))],[ones([1 size(exceldata,2)+2])]);
+for cond = 1:size(mdl{model},3)
+    for sub = 1:size(mdl{model},1)
+        subs(end+1) =  sub;
+        conds(end+1) = cond;
+    end
+end
 
-excelmdldata = table(excelmdldata{:},'VariableNames',{'m1_Q0Opt' 'm1_Q02Wor' 'm1_a' 'm1_b' 'm2_Q0Opt' 'm2_Q0Wor' 'm2_aR' 'm2_aP' 'm2_b' 'm3_a' 'm3_b' 'Sub' 'Cond'});
+excelmdldata = mat2cell([exceldata],[size(mdl{model},1)*2], [ones([1 size(exceldata,2)])]);
 
+excelmdldata = table(excelmdldata{:},Deci.SubjectList(subs)', Deci.Analysis.CondTitle(conds),'VariableNames',{'m1_Q0Opt' 'm1_Q02Wor' 'm1_aR' 'm1_aP1' 'm1_b' 'm2_aR' 'm2_aP' 'm2_b' 'm3_a' 'm3_b' 'Sub' 'Cond'});
 writetable(excelmdldata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Parameters')
 
 exceldata = [];
@@ -68,10 +58,25 @@ for PRs = 1:length(PR)
     exceldata = cat(2,exceldata,tt(:));
 end
 
+subs = [];
+conds = [];
 
-excelPRdata =mat2cell([exceldata sub(:) cond(:)],[length(sub(:))],[ones([1 size(exceldata,2)+2])]);
+exceldata = [];
 
-excelPRdata = table(excelPRdata{:},'VariableNames',{'m1_PseudoR' 'm2_PseudoR' 'm3_PseudoR' 'Sub' 'Cond'});
+for model = 1:length(PR)
+    exceldata = [exceldata reshape(permute(PR{model},[1 3 2]),[size(permute(PR{model},[1 3 2]),1)*size(permute(PR{model},[1 3 2]),2) size(permute(PR{model},[1 3 2]),3)])];
+end
+
+for cond = 1:size(PR{model},3)
+    for sub = 1:size(PR{model},1)
+        subs(end+1) =  sub;
+        conds(end+1) = cond;
+    end
+end
+
+excelPRdata =mat2cell([exceldata],[size(PR{model},1)*2], [ones([1 size(exceldata,2)])]);
+
+excelPRdata = table(excelPRdata{:},Deci.SubjectList(subs)', Deci.Analysis.CondTitle(conds),'VariableNames',{'m1_PseudoR' 'm2_PseudoR' 'm3_PseudoR' 'Sub' 'Cond'});
 
 writetable(excelPRdata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Fitness')
 

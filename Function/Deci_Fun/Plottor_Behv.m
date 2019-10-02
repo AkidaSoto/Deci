@@ -26,7 +26,7 @@ for subject_list = 1:length(Deci.SubjectList)
     
     for fig = find(Deci.Plot.Behv.RT.Figure)
         
-        if exist('RT') == 0
+        if exist('RT') == 0 || length(RT) < fig
            RT{fig} = []; 
         end
         
@@ -37,20 +37,19 @@ for subject_list = 1:length(Deci.SubjectList)
                 error('DT.Locks seems to not have enough to calculate Locks(2)-Locks(1)')
             end
             
-            if isempty(Deci.Plot.Behv.RT.Block)
-                Deci.Plot.Behv.RT.Block = {-1};
+            
+            if isa(Deci.Plot.Behv.RT.Block,'function_handle')
+                data.event(:,find(data.event(1,:) < 1)) = Deci.Plot.Behv.RT.Block(data.event(:,find(data.event(1,:) < 1)));
+                
+                RTBlock= unique(data.event(:,find(data.event(1,:) < 1)),'stable');
+            elseif isempty(Deci.Plot.Behv.RT.Block)
+                RTBlock = {-1};
             end
             
             
-            for blk = 1:length(Deci.Plot.Behv.RT.Block)
+            for blk = 1:length(RTBlock)
                 for draw = 1:length(Deci.Plot.Behv.RT.Draw{fig})
                     
-                    
-                    if any(any(data.event < 0))
-                        iblk = -1;
-                    else
-                        iblk = 1;
-                    end
                     
                     draws = Deci.Analysis.Conditions(Deci.Plot.Behv.RT.Draw{fig}{draw});
                                         
@@ -59,7 +58,7 @@ for subject_list = 1:length(Deci.SubjectList)
                         if sum(ismember(Deci.Plot.Behv.Static,[draws{:}])) == 1
                             
                            eve = data.event(logical(sum(ismember(data.event,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
-                           eve = eve(find(any(ismember(eve,iblk*Deci.Plot.Behv.RT.Block(blk)),2)),:);
+                           eve = eve(find(any(ismember(eve,RTBlock(blk)),2)),:);
                         else
                            eve = data.event;
                         end
@@ -67,7 +66,7 @@ for subject_list = 1:length(Deci.SubjectList)
                         eve = data.event;
                     end
                     
-                    eveTotal = nan([1 length(find(any(ismember(eve,iblk*Deci.Plot.Behv.RT.Block(blk)),2)))]);
+                    eveTotal = nan([1 length(find(any(ismember(eve,RTBlock(blk)),2)))]);
                     
                     maxt = max(sum(ismember(eve,[draws{:}]),2));
                     trl = [sum(ismember(eve,[draws{:}]),2) == maxt];
@@ -88,9 +87,6 @@ for subject_list = 1:length(Deci.SubjectList)
                         RT{fig}(subject_list,draw,blk,:) = eveTotal;
                     end
                         
-                    
-                    
-                    
                 end
             end
             
@@ -102,27 +98,25 @@ for subject_list = 1:length(Deci.SubjectList)
     for fig = find(Deci.Plot.Behv.Acc.Figure)
         
         
-        if exist('Acc') == 0
-            RT{fig} = [];
+        if exist('Acc') == 0 || length(Acc) < fig
+            Acc{fig} = [];
         end
 
         if ~isempty(Deci.Plot.Behv.Acc)
             Exist(Deci.Plot.Behv.Acc,'Total');
             Exist(Deci.Plot.Behv.Acc,'Subtotal');
             
-            if isempty(Deci.Plot.Behv.Acc.Block)
-                Deci.Plot.Behv.Acc.Block = {-1};
-            end
             
+            if isa(Deci.Plot.Behv.Acc.Block,'function_handle')
+                data.event(:,find(data.event(1,:) < 1)) = Deci.Plot.Behv.Acc.Block(data.event(:,find(data.event(1,:) < 1)));
+                
+                AccBlock= unique(data.event(:,find(data.event(1,:) < 1)),'stable');
+            elseif isempty(Deci.Plot.Behv.Acc.Block)
+                AccBlock = {-1};
+            end     
             
-            for blk = 1:length(Deci.Plot.Behv.Acc.Block)
+            for blk = 1:length(AccBlock)
                 for draw = 1:length(Deci.Plot.Behv.Acc.Total{fig})
-                    
-                    if any(any(data.event < 0))
-                        iblk = -1;
-                    else
-                        iblk = 1;
-                    end
                     
                     draws = Deci.Analysis.Conditions(Deci.Plot.Behv.Acc.Total{fig}{draw});
                     
@@ -131,7 +125,7 @@ for subject_list = 1:length(Deci.SubjectList)
                         if sum(ismember(Deci.Plot.Behv.Static,[draws{:}])) == 1
                             
                            eve = data.event(logical(sum(ismember(data.event,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
-                           eve = eve(find(any(ismember(eve,iblk*Deci.Plot.Behv.Acc.Block(blk)),2)),:);
+                           eve = eve(find(any(ismember(eve,AccBlock(blk)),2)),:);
                         else
                            eve = data.event;
                         end
@@ -139,7 +133,7 @@ for subject_list = 1:length(Deci.SubjectList)
                         eve = data.event;
                     end
                     
-                    eveTotal = nan([1 length(find(any(ismember(eve,iblk*Deci.Plot.Behv.Acc.Block(blk)),2)))]);
+                    eveTotal = nan([1 length(find(any(ismember(eve,AccBlock(blk)),2)))]);
                     
                     maxt = max(sum(ismember(eve,[draws{:}]),2));
                     trl = find([[sum(ismember(eve,[draws{:}]),2)] == maxt]);
@@ -151,8 +145,21 @@ for subject_list = 1:length(Deci.SubjectList)
                     subtrl = [[sum(ismember(eve,[subdraws{:}]),2) ] == maxt2];
                     
                     eveTotal(subtrl) = 1;
+                                
+                    if size(eveTotal,2) ~= size(Acc{fig},4) && size(Acc{fig},1) ~= 0
+                        
+                        if size(eveTotal,2) > size(Acc{fig},4)
+                            Acc{fig} = cat(4, Acc{fig}, nan(size(Acc{fig},1),size(Acc{fig},2),size(Acc{fig},3),size(eveTotal,2)-size(Acc{fig},4)));
+                            Acc{fig}(subject_list,draw,blk,:) = eveTotal;
+                        else
+                            eveTotal = [eveTotal nan([1 size(Acc{fig},4)-size(eveTotal,2)])];
+                            Acc{fig}(subject_list,draw,blk,:) = eveTotal;
+                        end
+                        
+                    else
+                        Acc{fig}(subject_list,draw,blk,:) = eveTotal;
+                    end
                     
-                    Acc{fig}(subject_list,draw,blk,:) = eveTotal;
                     
                     Deci.Plot.Behv.Acc.Collapse = Exist(Deci.Plot.Behv.Acc.Collapse,'Movmean',[]);
                     
@@ -225,7 +232,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
             Sub.Acc = {'SubjAvg'};
         end
         
-        save([Deci.Folder.Version filesep 'Plot' filesep 'SimAcc'],'Acc','fullAcc');
+        %save([Deci.Folder.Version filesep 'Plot' filesep 'SimAcc'],'Acc','fullAcc');
     end
 end
 
@@ -252,7 +259,7 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
             Sub.RT = {'SubjAvg'};
         end
         
-        save([Deci.Folder.Version filesep 'Plot' filesep 'SimRT'],'RT','fullRT');
+        %save([Deci.Folder.Version filesep 'Plot' filesep 'SimRT'],'RT','fullRT');
     end
     
 end
@@ -287,9 +294,9 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
     end
     
     sAcc = size(fullAcc{fig});
-    fAcc = reshape(fullAcc{fig},prod([sAcc]));
+    fAcc = reshape(fullAcc{fig},[prod([sAcc]) 1]);
 
-    excelAccdata = table(Deci.SubjectList(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',blks',trls',fAcc,'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','Accuracy'});
+    excelAccdata = table(Deci.SubjectList(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(AccBlock(blks))',trls',fAcc,'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','Accuracy'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Full');
     
     subs= [];
@@ -313,11 +320,11 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
     
     sAcc = size(Acc{fig});
     
-    fAcc = reshape(Acc{fig},prod([sAcc]));
-    fAccsem = reshape(Accsem{fig},prod([sAcc]));
+    fAcc = reshape(Acc{fig},[prod([sAcc]) 1]);
+    fAccsem = reshape(Accsem{fig},[prod([sAcc]) 1]);
     
     
-    excelAccdata = table(Deci.SubjectList(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',blks',trls',fAcc,fAccsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'Accuracy' 'SEM'});
+    excelAccdata = table(Deci.SubjectList(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(AccBlock(blks))',trls',fAcc,fAccsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'Accuracy' 'SEM'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Summary');
     
 end
@@ -344,9 +351,9 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     end
 
     sRT = size(fullRT{fig});
-    fRT = reshape(fullRT{fig},prod([sRT]));
+    fRT = reshape(fullRT{fig},[prod([sRT]) 1]);
     
-    excelAccdata = table(subs',conds',blks',trls',fRT,'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','ReactonTime'});
+    excelAccdata = table(Deci.SubjectList(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(RTBlock(blks))',trls',fRT,'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','ReactonTime'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Full');
     
     subs= [];
@@ -370,10 +377,10 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     
     sRT = size(RT{fig});
     
-    fRT = reshape(RT{fig},prod([sRT]));
-    fRTsem = reshape(RTsem{fig},prod([sRT]));
+    fRT = reshape(RT{fig},[prod([sRT]) 1]);
+    fRTsem = reshape(RTsem{fig},[prod([sRT]) 1]);
     
-    excelAccdata = table(Deci.SubjectList(subs)',conds',blks',trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
+    excelAccdata = table(Deci.SubjectList(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(RTBlock(blks))',trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Summary');
     
 end
@@ -418,6 +425,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
                     
                     if ~Deci.Plot.Behv.Acc.Collapse.Block && length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==1
                         h.Parent.XLabel.String = 'Block #';
+                        xticks(1:length(AccBlock))
                     elseif ~Deci.Plot.Behv.Acc.Collapse.Trial && length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==1
                         h.Parent.XLabel.String = 'Trial #';
                     end

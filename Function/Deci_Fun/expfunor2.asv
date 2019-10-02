@@ -32,15 +32,9 @@ startstopseg = reshape(find(ismember({event.value},startstop)'),[2 length(find(i
 
 if ~isempty(cfg.DT.Block)
     
-    
-    for sets = 1:size(cfg.DT.Block.Markers)
-        
-        bstartstop{sets} = [cfg.DT.Block.Markers(:)];
-        bstartstop{sets} = cellfun(@num2str,bstartstop{sets},'un',0);
-        
-        bstartstop{sets} = [find(ismember({event.value},bstartstop{sets}))];
-        
-    end
+        bstartstop = [cfg.DT.Block.Markers(:)];
+        bstartstop = cellfun(@num2str,bstartstop,'un',0);
+        bstartstop = [find(ismember({event.value},bstartstop))];
 end
 
 for j = 1:length(startstopseg)
@@ -71,17 +65,12 @@ for j = 1:length(startstopseg)
         end
     end
     
-    if ~isempty(cfg.DT.Block)
-        
-        for sets = 1:size(cfg.DT.Block.Markers)
-            
-            trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = nan;
-            
-            trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = [-10*[sets-1]]+[-1*find([event(startstopseg(1,j)).sample] >  [event(bstartstop{sets}).sample],1,'last')];
-
-            
-        end
-        
+    
+    trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = nan;
+    if ~isempty(cfg.DT.Block)   
+            trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = [-1*find([event(startstopseg(1,j)).sample] >  [event(bstartstop).sample],1,'last')];
+    else
+    trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = -1; 
     end
     
     
@@ -89,10 +78,25 @@ end
 
 if ~isempty(cfg.DT.Block)
    
-    for bisect = Deci.DT.Block.Bisect
-        
-       bisextindex =  -10*[sets-1];
-        
+   if cfg.DT.Block.Bisect
+       bindex =  find(trialinfo(1,:) < 0);
+       
+       allbi = unique(trialinfo(:,bindex),'stable');
+       
+       for ab = allbi'
+           
+           onebi = find(ismember(trialinfo(:,bindex),ab));
+           
+           onebi = reshape([onebi nan([1 rem(length(onebi),2)])],[length(onebi)/2 2]);
+           
+           for eachsect = 1:2
+               
+               trialinfo(onebi(:,eachsect),bindex) = trialinfo(onebi(:,eachsect),bindex) -.5*(eachsect-1);
+               
+           end
+           
+       end
+
     end
     
 end
@@ -103,14 +107,11 @@ if isfield(cfg.DT,'Displace')
     
     cfg.DT.Displace = Exist(cfg.DT.Displace,'Num',0);
     
-    
-    
-    
     if cfg.DT.Displace.Num ~= 0
         
-        blk = sort(unique(trialinfo(:,end)),'descend');
+        blk = sort(unique(ceil(trialinfo(:,end))),'descend');
         
-        blkpos = find(mean(trialinfo < 0));
+        blkpos = find(trialinfo(1,:) < 0);
         
         
         Displace = cfg.DT.Displace.Num;
@@ -125,9 +126,9 @@ if isfield(cfg.DT,'Displace')
                 
                 for dis = 1:length(blk)
                     
-                    block{stat,dis,dura}  = statictrialinfo(find(statictrialinfo(:,blkpos) == blk(dis)),:);
+                    block{stat,dis,dura}  = statictrialinfo(find(ceil(statictrialinfo(:,blkpos)) == blk(dis)),:);
                     
-                    shift{stat,dis,dura} = statictrl(find(statictrialinfo(:,blkpos) == blk(dis)),:);
+                    shift{stat,dis,dura} = statictrl(find(ceil(statictrialinfo(:,blkpos)) == blk(dis)),:);
                     
                     if ~isempty(cfg.DT.Displace.Markers)
                         

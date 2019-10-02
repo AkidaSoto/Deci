@@ -53,14 +53,14 @@ for init = 1:10
         q(init,:) = params.Start;
 
         [Value{1,init}] = ...
-            fmincon(@(x)  FeedbackQ([x(1) x(2)],Actions,Rewards,x(3),x(4),(5)),...
+            fmincon(@(x) SimpleQ([x(1) x(2)],Actions,Rewards,x(3),x(4),(5)),...
             [Fit1.init],[],[],[],[],[Fit1.LB],[Fit1.UB],[],...
             optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
         
-        [LLE(1,init),qs{1,init},P{1,init},PE{1,init}] = FeedbackQ([Value{1,init}(1) Value{1,init}(2)],Actions,Rewards, Value{1,init}(3),Value{1,init}(4));
+        [LLE(1,init),qs{1,init},P{1,init},PE{1,init}] = SimpleQ([Value{1,init}(1) Value{1,init}(2)],Actions,Rewards, Value{1,init}(3),Value{1,init}(4));
 
         [Value{2,init}] = ...
-            fmincon(@(x) FeedbackQ(q(init,:),Actions,Rewards,x(1),x(2),x(3)),...
+            fmincon(@(x) FeedbackQ(Actions,Rewards,x(1),x(2),x(5)),...
             [Fit2.init],[],[],[],[],[Fit2.LB],[Fit2.UB],[],...
             optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
         
@@ -74,7 +74,7 @@ for init = 1:10
         
         [LLE(3,init),qs{3,init},P{3,init},PE{3,init}] = SimpleQ(q(init,:),Actions,Rewards, Value{3,init}(1),Value{3,init}(2));
         
-        LLE2(:,init) = aicbic(-LLE(:,init),[5 3 2]);
+        LLE2(:,init) = aicbic(-LLE(:,init),[4 5 2]);
         
         
 end
@@ -155,9 +155,7 @@ save([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectLis
                 which = find(a{block}(Act) == actions);
                 
                 PE(end+1) = (r{block}(Act) -q(Act,which) );
-               
                 q(Act+1,which) = q(Act,which) + alp*PE(end);
-                
                 q(Act+1,find(a{block}(Act) ~= actions))  = q(Act,find(a{block}(Act) ~= actions));
                 
                 P(end+1) = exp(beta*q(Act+1,which))/sum(exp(beta*q(Act+1,:)));
@@ -204,36 +202,40 @@ save([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectLis
         
     end
 
-    function [LLE,qout,P,PE] = InteractiveQ(q,a,r,alpP,alpN,beta)
-        P = [];
-        PE = [];
+    function [LLE,qout,P,PE] = InteractiveQ(q,a,r,alpPP,alpNP,alpPR,alpNR,beta)
+        
+                 P = [];
         qout = [];
+        PE = [];
         
-        for block = 1:length(a)
+         for block = 1:length(a)
+        
+        actions = params.Actions;
+        
+        for Act = 1:length(a{block})
             
-            actions = params.Actions;
+            which = find(a{block}(Act) == actions);
             
-            for Act = 1:length(a{block})
-                
-                which = find(a{block}(Act) == actions);
-                
-                PE(end+1) = (r{block}(Act) -q(Act,which) );
-               
-                if PE(end) > 0
-                    q(Act+1,which) = q(Act,which) + alpP*PE(end);
-                else
-                    q(Act+1,which) = q(Act,which) + alpN*PE(end);
-                end
-                
-                q(Act+1,find(a{block}(Act) ~= actions))  = q(Act,find(a{block}(Act) ~= actions));
-                
-                P(end+1) = exp(beta*q(Act+1,which))/sum(exp(beta*q(Act+1,:)));
-                qout(end+1) = q(Act+1,which);
-                
-                
+            PE(end+1) = (r{block}(Act) - q(Act,which));
+            
+            if PE(end) > 0 && [r{block}(Act) > 0 || [r{block}(Act) == 0 && mean(unique(r{block})) < 0]]
+                q(Act+1,which) = q(Act,which) + alpPR*PE(end);
+            elseif PE(end) > 0 && r{block}(Act) < 0 || [r{block}(Act) == 0 && mean(unique(r{block})) > 0]
+                q(Act+1,which) = q(Act,which) + alpPP*PE(end);
+            elseif PE(end) < 0 && r{block}(Act) > 0 || [r{block}(Act) == 0 && mean(unique(r{block})) < 0]
+                q(Act+1,which) = q(Act,which) + alpNR*PE(end);
+            elseif PE(end) < 0 && r{block}(Act) < 0 || [r{block}(Act) == 0 && mean(unique(r{block})) < 0]
+                q(Act+1,which) = q(Act,which) + alpNP*PE(end);
             end
+            
+            q(Act+1,find(a{block}(Act) ~= actions))  = q(Act,find(a{block}(Act) ~= actions));
+            
+            P(end+1) = exp(beta*q(Act,which))/sum(exp(beta*q(Act,:)));
+            qout(end+1) = q(Act+1,which);
+            
         end
-        
+         end
+         
         LLE = -nansum(log(P));
     end
 
