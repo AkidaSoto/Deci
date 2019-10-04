@@ -20,7 +20,6 @@ for subject_list = 1:length(Deci.SubjectList)
     cfg.keepchannel = 'yes';
     tcfg.toilim = [[abs(condinfo{1}(:,1))/1000]+Deci.Art.crittoilim(1) [abs(condinfo{1}(:,end))/1000]+Deci.Art.crittoilim(2)];
     cfg.channel = 'all';
-    %plot native
     data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data));
     
     cfg = [];
