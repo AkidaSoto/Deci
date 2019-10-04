@@ -177,8 +177,8 @@ FenderJazz = [{audioread([path 'D.wav'])} {audioread([path 'E.wav'])} ...
     {audioread([path 'CSharp.wav'])}];
 FenderJazz = cellfun(@(c) c*2,FenderJazz,'UniformOutput',false);
 
-MelodyInstru = TenorSax;
-BassInstru =  Atmosphere ;
+MelodyInstru = VibroPhone;
+BassInstru =  FenderJazz;
 
 cadence = round([SampleRate/bpsec]);
 Song = zeros([[16*3*SampleRate]+218400-[cadence] 2]);
