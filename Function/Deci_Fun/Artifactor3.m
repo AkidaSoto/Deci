@@ -10,6 +10,8 @@ for subject_list = 1:length(Deci.SubjectList)
     data = [];
     load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
     
+    
+    if Deci.Art.do
     condinfo = data.condinfo;
     preart   = condinfo;
     
@@ -36,6 +38,8 @@ for subject_list = 1:length(Deci.SubjectList)
     data.preart = preart;
     
     data = rmfield(data,'cfg');
+    
+    end
     
     mkdir([Deci.Folder.Artifact])
     save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
