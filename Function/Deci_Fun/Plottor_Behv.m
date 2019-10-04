@@ -38,10 +38,12 @@ for subject_list = 1:length(Deci.SubjectList)
             end
             
             
+            RTevents = data.event;
+            
             if isa(Deci.Plot.Behv.RT.Block,'function_handle')
-                data.event(:,find(data.event(1,:) < 1)) = Deci.Plot.Behv.RT.Block(data.event(:,find(data.event(1,:) < 1)));
+                RTevents(:,find(data.event(1,:) < 1)) = Deci.Plot.Behv.RT.Block(RTevents(:,find(data.event(1,:) < 1)));
                 
-                RTBlock= unique(data.event(:,find(data.event(1,:) < 1)),'stable');
+                RTBlock= unique(RTevents(:,find(RTevents(1,:) < 1)),'stable');
             elseif isempty(Deci.Plot.Behv.RT.Block)
                 RTBlock = {-1};
             end
@@ -57,13 +59,13 @@ for subject_list = 1:length(Deci.SubjectList)
                        
                         if sum(ismember(Deci.Plot.Behv.Static,[draws{:}])) == 1
                             
-                           eve = data.event(logical(sum(ismember(data.event,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
+                           eve = RTevents(logical(sum(ismember(RTevents,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
                            eve = eve(find(any(ismember(eve,RTBlock(blk)),2)),:);
                         else
-                           eve = data.event;
+                           eve = RTevents;
                         end
                     else
-                        eve = data.event;
+                        eve = RTevents;
                     end
                     
                     eveTotal = nan([1 length(find(any(ismember(eve,RTBlock(blk)),2)))]);
@@ -107,10 +109,13 @@ for subject_list = 1:length(Deci.SubjectList)
             Exist(Deci.Plot.Behv.Acc,'Subtotal');
             
             
+            Accevents = data.event;
+            
+            
             if isa(Deci.Plot.Behv.Acc.Block,'function_handle')
-                data.event(:,find(data.event(1,:) < 1)) = Deci.Plot.Behv.Acc.Block(data.event(:,find(data.event(1,:) < 1)));
+                Accevents(:,find(data.event(1,:) < 1)) = Deci.Plot.Behv.Acc.Block(data.event(:,find(data.event(1,:) < 1)));
                 
-                AccBlock= unique(data.event(:,find(data.event(1,:) < 1)),'stable');
+                AccBlock= unique(Accevents(:,find(Accevents(1,:) < 1)),'stable');
             elseif isempty(Deci.Plot.Behv.Acc.Block)
                 AccBlock = {-1};
             end     
@@ -124,13 +129,13 @@ for subject_list = 1:length(Deci.SubjectList)
                        
                         if sum(ismember(Deci.Plot.Behv.Static,[draws{:}])) == 1
                             
-                           eve = data.event(logical(sum(ismember(data.event,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
+                           eve = Accevents(logical(sum(ismember(Accevents,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
                            eve = eve(find(any(ismember(eve,AccBlock(blk)),2)),:);
                         else
-                           eve = data.event;
+                           eve = Accevents;
                         end
                     else
-                        eve = data.event;
+                        eve = Accevents;
                     end
                     
                     eveTotal = nan([1 length(find(any(ismember(eve,AccBlock(blk)),2)))]);

@@ -68,6 +68,8 @@ for j = 1:length(startstopseg)
     
     trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = nan;
     if ~isempty(cfg.DT.Block)   
+        
+        
             trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = [-1*find([event(startstopseg(1,j)).sample] >  [event(bstartstop).sample],1,'last')];
     else
     trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = -1; 
@@ -77,28 +79,28 @@ for j = 1:length(startstopseg)
 end
 
 if ~isempty(cfg.DT.Block)
-   
-   if cfg.DT.Block.Bisect
-       bindex =  find(trialinfo(1,:) < 0);
-       
-       allbi = unique(trialinfo(:,bindex),'stable');
-       
-       for ab = allbi'
-           
-           onebi = find(ismember(trialinfo(:,bindex),ab));
-           
-           onebi = reshape([onebi nan([1 rem(length(onebi),2)])],[length(onebi)/2 2]);
-           
-           for eachsect = 1:2
-               
-               trialinfo(onebi(:,eachsect),bindex) = trialinfo(onebi(:,eachsect),bindex) -.5*(eachsect-1);
-               
-           end
-           
-       end
-
+    if isfield(cfg.DT.Block,'Bisect')
+        if cfg.DT.Block.Bisect
+            bindex =  find(trialinfo(1,:) < 0);
+            
+            allbi = unique(trialinfo(:,bindex),'stable');
+            
+            for ab = allbi'
+                
+                onebi = find(ismember(trialinfo(:,bindex),ab));
+                
+                onebi = reshape([onebi nan([1 rem(length(onebi),2)])],[length(onebi)/2 2]);
+                
+                for eachsect = 1:2
+                    
+                    trialinfo(onebi(:,eachsect),bindex) = trialinfo(onebi(:,eachsect),bindex) -.5*(eachsect-1);
+                    
+                end
+                
+            end
+            
+        end
     end
-    
 end
 
 

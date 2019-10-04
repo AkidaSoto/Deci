@@ -30,6 +30,8 @@ mkdir([folder '_new'])
 
 for k = 1:length(exp_files)
     
+    disp(['Subject :' exp_files(k).name ' starting...'])
+    
     hdr   = ft_read_header([folder filesep exp_files(k).name]);
     event = ft_read_event([folder filesep exp_files(k).name]); %Mk<Marker number>=<Type>,<Description>,<Position in data points>,
     dat   = ft_read_data([folder filesep exp_files(k).name]);
@@ -88,6 +90,9 @@ for k = 1:length(exp_files)
     hdr.orig.DataFile = [folder '_new' filesep  string{1}  '.eeg'];
     
     ft_write_data([folder '_new' filesep  string{1}],dat,'header',hdr,'dataformat','brainvision_eeg','event',event2)
+    
+    disp(['Subject :' exp_files(k).name ' done...'])
+    
 end
 
 

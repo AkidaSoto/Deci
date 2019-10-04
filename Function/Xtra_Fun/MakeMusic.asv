@@ -44,7 +44,7 @@ if isempty(bpm)
     bpm = freq.freq(I)*10;
 end
 
-bpm = bpm*2;
+bpm = bpm*4;
 bpsec = bpm/60;
 secpb = 1/bpsec;
 
@@ -102,7 +102,7 @@ for instru = 1:length(Channel)
     
     
     datahold.time{1} = mean(reshape(datahold.time{1},[floor(datahold.fsample/bpsec) ceil(length(datahold.trial{1})/floor(datahold.fsample/bpsec))]),1);
-    datahold.trial{1} = mean(reshape(datahold.trial{1},[floor(datahold.fsample/bpsec) ceil(length(datahold.trial{1})/floor(datahold.fsample/bpsec))]),1);
+    datahold.trial{1} = mean(reshape(datahold.trial{1},[floor(datahold.fsample/bpsec) ceil(length(datahold.trial{1})/[datahold.fsample/bpsec])]),1);
     datahold.fsample = bpsec;
     datahold = rmfield(datahold,'hdr');
     
@@ -131,7 +131,7 @@ PianoNotes = [{audioread([path 'piano-d.wav'])} {audioread([path 'piano-e.wav'])
     {audioread([path 'piano-fsharp.wav'])} {audioread([path 'piano-g.wav'])} ...
     {audioread([path 'piano-a.wav'])} {audioread([path 'piano-b.wav'])} ...
     {audioread([path 'piano-csharp.wav'])} ];
-PianoNotes = cellfun(@(c) c(1:67936,:)*.30,PianoNotes,'UniformOutput',false);
+%PianoNotes = cellfun(@(c) c(1:67936,:)*.30,PianoNotes,'UniformOutput',false);
 
 GuitarChords = [{audioread([path 'DMajor.wav'])} {audioread([path 'EMajor.wav'])} ...
     {audioread([path 'FSharp.wav'])} {audioread([path 'GMajor.wav'])} ...
@@ -145,43 +145,21 @@ VibroPhone = [{audioread([path 'D.wav'])} {audioread([path 'E.wav'])} ...
     {audioread([path 'FSharp.wav'])} {audioread([path 'G.wav'])} ...
     {audioread([path 'A.wav'])} {audioread([path 'B.wav'])} ...
     {audioread([path 'CSharp.wav'])}];
-VibroPhone = cellfun(@(c) c*1,VibroPhone,'UniformOutput',false);
-
-path = 'C:\Users\User\Desktop\Notes\TenorSax\';
-TenorSax = [{audioread([path 'D.wav'])} {audioread([path 'E.wav'])} ...
-    {audioread([path 'FSharp.wav'])} {audioread([path 'G.wav'])} ...
-    {audioread([path 'A.wav'])} {audioread([path 'B.wav'])} ...
-    {audioread([path 'CSharp.wav'])}];
-TenorSax = cellfun(@(c) c*.75,TenorSax,'UniformOutput',false);
-
+GuitarChords = cellfun(@(c) c*3,GuitarChords,'UniformOutput',false);
 
 path = 'C:\Users\User\Desktop\Notes\Atmosphere\';
 Atmosphere = [{audioread([path 'D.wav'])} {audioread([path 'E.wav'])} ...
     {audioread([path 'FSharp.wav'])} {audioread([path 'G.wav'])} ...
     {audioread([path 'A.wav'])} {audioread([path 'B.wav'])} ...
     {audioread([path 'CSharp.wav'])}];
-Atmosphere = cellfun(@(c) c*2,Atmosphere,'UniformOutput',false);
-
-path = 'C:\Users\User\Desktop\Notes\Goblin\';
-Goblin = [{audioread([path 'D.wav'])} {audioread([path 'E.wav'])} ...
-    {audioread([path 'FSharp.wav'])} {audioread([path 'G.wav'])} ...
-    {audioread([path 'A.wav'])} {audioread([path 'B.wav'])} ...
-    {audioread([path 'CSharp.wav'])}];
-Goblin = cellfun(@(c) c*1,Goblin,'UniformOutput',false);
+%Atmosphere = cellfun(@(c) c*3,GuitarChords,'UniformOutput',false);
 
 
-path = 'C:\Users\User\Desktop\Notes\FenderJazz\';
-FenderJazz = [{audioread([path 'D.wav'])} {audioread([path 'E.wav'])} ...
-    {audioread([path 'FSharp.wav'])} {audioread([path 'G.wav'])} ...
-    {audioread([path 'A.wav'])} {audioread([path 'B.wav'])} ...
-    {audioread([path 'CSharp.wav'])}];
-FenderJazz = cellfun(@(c) c*2,FenderJazz,'UniformOutput',false);
-
-MelodyInstru = TenorSax;
-BassInstru =  Atmosphere ;
+MelodyInstru = PianoNotes;
+BassInstru = Atmosphere;
 
 cadence = round([SampleRate/bpsec]);
-Song = zeros([[16*3*SampleRate]+218400-[cadence] 2]);
+Song = zeros([[16*3*SampleRate]+2183036-[cadence] 2]);
 
 
 
@@ -223,7 +201,7 @@ for Hz = 1:length(FinalMelody)
     end
     
     if Type(2)
-        if rem(Hz,ceil(length(FinalMelody)/[size(Song,1)/SampleRate])*ceil(max(cellfun(@(C) size(C,1),BassInstru))/SampleRate)) == 1
+        if rem(Hz,4) == 1
             
             if ~isempty(find(cellfun(@(c) ~isempty(c),FinalBass(Hz:min([Hz+3 length(FinalBass)]))),1,'first'))
             LongNote = BassInstru{find(cellfun(@(c) ~isempty(c),FinalBass(Hz:min([Hz+3 length(FinalBass)]))),1,'first')};
@@ -231,12 +209,6 @@ for Hz = 1:length(FinalMelody)
             
             Note = Song([[Hz-1]*cadence ]+1:[[Hz-1]*cadence]+size(LongNote,1),1:2)+LongNote;
             Song([[Hz-1]*cadence ]+1:[[Hz-1]*cadence ]+size(LongNote,1),1:2) = Note;
-            
-%             if FinalMelody{Hz} == noteseq{2,Hz}
-%             
-%             end
-            
-            
             end
         end
     end
