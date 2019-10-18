@@ -1,4 +1,4 @@
-function MakeMusic(File,bpm,Channel,Type)
+function MakeMusic(File,bpm,Channel,Type,Image)
 
 
 
@@ -12,14 +12,25 @@ cfg.dataset = File;
 
 %data = ft_definetrial(cfg);
 
+cfg.trialdef.eventtype = 'Stim';
+cfg.trialdef.eventvalue = 'S 10';
+cfg.trialdef.poststim = 54;
+cfg.trialdef.prestim = 0;
+
+
+cfg = ft_definetrial(cfg);
+
 cfg.detrend = 'yes';
 cfg.hpfilter = 'yes';
 cfg.hpfreq = 2;
 data = ft_preprocessing(cfg);
 
-tcfg.latency = [0.001 [16*3]+10];
-tcfg.channel = Channel;
-data = ft_selectdata(tcfg,data);
+ecfg.trials = logical(zeros(1,5));
+
+ecfg.trials(Image) = 1;
+ecfg.latency = [0.001 [16*3]+6];
+ecfg.channel = Channel;
+data = ft_selectdata(ecfg,data);
 data.time{1} = data.time{1} - 5;
 
 
@@ -86,16 +97,48 @@ for instru = 1:length(Channel)
     for n = 1:length(noteseq)
         noteseq{instru,n} = Scale{find(N(n,:))};
     end
+    
+    Topo{instru} = notes;
+    
 end
 %%
+% 
+% SquareData.powspctrm = double(permute(cat(3,Topo{:}),[4 3 1 2]));
+% SquareData.freq = [6 12 25];
+% SquareData.time = 1:size(Topo{1},2);
+% SquareData.label = Channel;
+% SquareData.dimord = 'rpt_chan_freq_time';
+% SquareData.trialinfo = 1;
+% cfg        = [];
+% cfg.layout = 'C:\Users\User\Documents\GitHub\Deci\Function\Gen_Fun\easycap_rob_eye.mat';
+% cfg.channel = Channel(1)';
+% cfg.trials = 1;
+% 
+% 
+% Framer = 0:1:size(Topo{1},2);
+% for a = 1:length(Framer)
+%     topofig = figure;
+%     
+%     ft_singleplotTFR(cfg,SquareData);
+%     hold on
+%     xticks(linspace(1,size(Topo{1},2),size(Topo{1},2)))
+%     xticklabels(noteseq(1,:))
+%     yticks([6 18 25]);
+%     yticklabels({'Theta' 'Alpha' 'Beta'});
+%     
+%     timer = plot([Framer(a) Framer(a)],topofig.Children(3).YLim,'Color','r','LineWidth',4);
+%     drawnow
+%     F(a) = getframe; 
+%     close all
+% end
 
+
+ fig = figure;
 for instru = 1:length(Channel)
     
     tcfg.latency = [0.001 [16*3]];
     tcfg.channel = Channel(instru);
     datahold = ft_selectdata(tcfg,data);
-    
-    datahold.trial{1} = datahold.trial{1} - min(datahold.trial{1});
     
     datahold.time{1} = 1:prod([floor(datahold.fsample/bpsec) length(datahold.trial{1})/[datahold.fsample/bpsec]]);
     datahold.trial{1} = datahold.trial{1}(1:prod([floor(datahold.fsample/bpsec) length(datahold.trial{1})/[datahold.fsample/bpsec]]));
@@ -105,15 +148,21 @@ for instru = 1:length(Channel)
     datahold.trial{1} = mean(reshape(datahold.trial{1},[floor(datahold.fsample/bpsec) ceil(length(datahold.trial{1})/floor(datahold.fsample/bpsec))]),1);
     datahold.fsample = bpsec;
     datahold = rmfield(datahold,'hdr');
-    
+    datahold.trial{1} = datahold.trial{1} - min(datahold.trial{1});
+        
     tcfg.keeptrials = 'yes';
     tcfg.vartrllength = 2;
     ERP = ft_timelockanalysis(tcfg,datahold);
     
     AverageEnergy = squeeze(mean(ERP.avg,2));
     
-    [~,NotePosition{instru}] = findpeaks(ERP.avg); %+ .5*std(ERP.avg);
+    [~,NotePosition{instru}] = findpeaks(datahold.trial{1}); %+ .5*std(ERP.avg);
+    
+    findpeaks(datahold.trial{1});
+    hold on;
+    
 end
+
 %figure;plot(ERP.avg)
 %%
 FinalMelody = cell(size(noteseq(1,:)));
@@ -177,8 +226,23 @@ FenderJazz = [{audioread([path 'D.wav'])} {audioread([path 'E.wav'])} ...
     {audioread([path 'CSharp.wav'])}];
 FenderJazz = cellfun(@(c) c*2,FenderJazz,'UniformOutput',false);
 
-MelodyInstru = VibroPhone;
-BassInstru =  FenderJazz;
+
+path = 'C:\Users\User\Desktop\Notes\Cello\';
+Cello = [{audioread([path 'D.wav'])} {audioread([path 'E.wav'])} ...
+    {audioread([path 'FSharp.wav'])} {audioread([path 'G.wav'])} ...
+    {audioread([path 'A.wav'])} {audioread([path 'B.wav'])} ...
+    {audioread([path 'CSharp.wav'])}];
+Cello = cellfun(@(c) c*.5,Cello,'UniformOutput',false);
+
+path = 'C:\Users\User\Desktop\Notes\Cello2\';
+Cello2 = [{audioread([path 'D.wav'])} {audioread([path 'E.wav'])} ...
+    {audioread([path 'FSharp.wav'])} {audioread([path 'G.wav'])} ...
+    {audioread([path 'A.wav'])} {audioread([path 'B.wav'])} ...
+    {audioread([path 'CSharp.wav'])}];
+Cello2 = cellfun(@(c) c*.8,Cello2,'UniformOutput',false);
+
+MelodyInstru = PianoNotes;
+BassInstru = TenorSax;
 
 cadence = round([SampleRate/bpsec]);
 Song = zeros([[16*3*SampleRate]+218400-[cadence] 2]);
@@ -242,7 +306,28 @@ for Hz = 1:length(FinalMelody)
     end
 end
 
-sound(Song,SampleRate)
+%sound(Song,SampleRate)
+
+% xticks(linspace(1,size(Topo{1},2),49))
+% xticklabels(0:48)
+% 
+% legend({'Time' 'Melody' ' ' 'Chord' ' ' 'Bass' ' '})
+% timer = plot([1 1],fig.Children(2).YLim,'Color',[.5 .5 .5],'LineWidth',4);
+% uistack(timer,'bottom') 
+% legend({'Time' 'Melody' ' ' 'Chord' ' ' 'Bass' ' '})
+% tic
+% a = toc;
+% 
+% while a < 16*3
+%     timer.XData = [[a/48]*size(Topo{1},2) [a/48]*size(Topo{1},2)];
+%     pause(.001);
+%     a = toc;
+% end
+
+
+
+audiowrite(['C:\Users\User\Desktop\Music\' num2str(Image) '.wav'],Song,SampleRate)
+
 
 
 FinalMelody = array2table(FinalMelody');

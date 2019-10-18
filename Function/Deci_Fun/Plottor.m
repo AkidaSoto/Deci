@@ -3,12 +3,6 @@ function Plottor(Deci)
 
 %% File Checks
 
-if ~isempty(Deci.Plot.Version)
-    Deci.Folder.Analysis = [Deci.Plot.Version filesep 'Analysis'];
-    Deci.Folder.Plot = [Deci.Plot.Version filesep 'Plot'];
-    mkdir(Deci.Folder.Plot);
-end
-
 for subject_list = 1:length(Deci.SubjectList)
     
     if Deci.Run.Freq 
@@ -47,11 +41,6 @@ for subject_list = 1:length(Deci.SubjectList)
     end
 end
 
-if ~isempty(Deci.Folder.Plot)
-    mkdir(Deci.Folder.Plot);
-end
-
-
 %% Split
 
 if Deci.Run.Freq && ~isempty(Deci.Plot.Freq)
@@ -61,10 +50,6 @@ end
 if Deci.Run.ERP && ~isempty(Deci.Plot.ERP)
     Plottor_ERP(Deci);
 end
-
-% if Deci.Run.PRP && ~isempty(Deci.Plot.PRP)
-%
-% end
 
 if Deci.Run.CFC && ~isempty(Deci.Plot.CFC)
     Plottor_CFC(Deci);
@@ -76,7 +61,6 @@ end
 
 if Deci.Run.Extra && ~isempty(Deci.Plot.Extra)
     for funs = find(Deci.Plot.Extra.List)
-        
         feval(Deci.Plot.Extra.Functions{funs},Deci,Deci.Plot.Extra.Params{funs}{:});
     end
 end

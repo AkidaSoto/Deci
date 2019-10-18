@@ -130,6 +130,12 @@ if isfield(cfg.DT,'Displace')
                     
                     block{stat,dis,dura}  = statictrialinfo(find(ceil(statictrialinfo(:,blkpos)) == blk(dis)),:);
                     
+                    if isempty(block{stat,dis,dura})
+                        block{stat,dis,dura} = [];
+                        continue;
+                    end
+                    
+                    
                     shift{stat,dis,dura} = statictrl(find(ceil(statictrialinfo(:,blkpos)) == blk(dis)),:);
                     
                     if ~isempty(cfg.DT.Displace.Markers)

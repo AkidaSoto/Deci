@@ -32,16 +32,8 @@ for subject_list = 1:length(Deci.SubjectList)
     cfg = [];
     cfg.dataset = [Deci.Folder.Raw filesep Deci.SubjectList{subject_list} files_ending{1}];
     cfg.DT = Deci.DT;
+    cfg.trialfun = cfg.DT.Type;
     cfg.file_ending = files_ending{1};
-    
-    if strcmpi(Deci.DT.Type,'Manual') 
-    cfg.trialfun = 'expfunor2';
-    else
-    cfg.trialfun = Deci.DT.Type;
-    end
-    
-    cfg.Raw = Deci.Folder.Version;
-    cfg.Subject = Deci.SubjectList{subject_list};
     evalc('cfg = ft_definetrial(cfg);'); % will return cfg.trl, the segmented data
     
     cfg.trialnum = cfg.trl(:,4);
@@ -49,21 +41,8 @@ for subject_list = 1:length(Deci.SubjectList)
     
     trllength = num2str(length(find(~isnan(mean(cfg.trl,2)))));
     disp(['Found ' num2str(trllength) ' trials out of ' num2str(size(cfg.trl,1)) ' for ' Deci.SubjectList{subject_list}]);
-    
-%     [~,i] = sort(cfg.trl(:,4));
-%     cfg.trl = cfg.trl(i,:);
-%     
-%     if ~all(ismember([1:length(unique(cfg.DT.Locks))],unique(floor(cfg.trl(:,4)))))
-%         error(['No trials were defined for condition(s) ' num2str(find(~ismember([1:length(unique(cfg.DT.Locks))],unique(floor(cfg.trl(:,4))))))]);
-%     end
-
-
-%%
-    mkdir([Deci.Folder.Definition]);
-    disp('Saving Preprocessing Data');
     save([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}],'cfg')
 
-    
 end
 
 disp(['Finished DefineTrial at ' num2str(toc)]);

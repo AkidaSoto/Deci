@@ -73,6 +73,27 @@ if Deci.Analysis.Laplace
     data = ft_scalpcurrentdensity(ecfg, data);
 end
 
+if isfield(Deci.Analysis,'HemifieldFlip')
+   if Deci.Analysis.HemifieldFlip.do
+      
+       Hemifields = condinfo{2}(:,find(mean(ismember(condinfo{2},Deci.Analysis.HemifieldFlip.Markers),1)));
+       
+       FlipCfg.trials  = ismember(Hemifields,Deci.Analysis.HemifieldFlip.Markers(2));
+       
+       FlipData = ft_selectdata(FlipCfg,data);
+       FlipData = hemifieldflip(FlipData);
+       
+       FlipCfg.trials = ~FlipCfg.trials;
+       
+       NotFlipData = ft_selectdata(FlipCfg,data);
+
+       data = ft_appenddata([],FlipData,NotFlipData);
+       
+       
+   end
+end
+
+
 
 for Cond = 1:length(Deci.Analysis.Conditions)
     
@@ -80,8 +101,8 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     
     maxt = max(sum(ismember(condinfo{2},Deci.Analysis.Conditions{Cond}),2));
     info.alltrials = sum(ismember(condinfo{2},Deci.Analysis.Conditions{Cond}),2) == maxt;
-    info.allnonnans = ~isnan(mean(condinfo{1},2)) & ~isnan(mean(condinfo{2},2));
-    ccfg.trials =  info.alltrials ;%& info.allnonnans;
+    info.allnonnans = ~isnan(mean(condinfo{1},2)) ;% & ~isnan(mean(condinfo{2},2));
+    ccfg.trials =  info.alltrials & info.allnonnans;
     
     
     dat = ft_selectdata(ccfg,data);
@@ -113,20 +134,23 @@ for Cond = 1:length(Deci.Analysis.Conditions)
         end
     end
     
-    if Deci.Analysis.Extra.do
-        
-        info.subject_list = subject_list;
-        info.Cond = Cond;
-        
-        dat.condinfo = condinfo;
-        
-        for funs = find(Deci.Analysis.Extra.Once)
+    
+    if isfield(Deci.Analysis.Extra,'do')
+        if Deci.Analysis.Extra.do
             
-            if Deci.Analysis.Extra.list(funs)
-                feval(Deci.Analysis.Extra.Functions{funs},Deci,info,dat,Deci.Analysis.Extra.Params{funs}{:});
+            info.subject_list = subject_list;
+            info.Cond = Cond;
+            
+            dat.condinfo = condinfo;
+            
+            for funs = find(Deci.Analysis.Extra.Once)
+                
+                if Deci.Analysis.Extra.list(funs)
+                    feval(Deci.Analysis.Extra.Functions{funs},Deci,info,dat,Deci.Analysis.Extra.Params{funs}{:});
+                end
             end
+            
         end
-        
     end
             
     if Deci.Analysis.Freq.do
@@ -227,14 +251,19 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 freq.trllength = trllength;
                 save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
                 
-                if Deci.Analysis.Extra.do
-                    info.Channels = Chan;
-                    info.ChanNum = i;
-                    
-                    for funs = find(~Deci.Analysis.Extra.Once)
+                
+                if isfield(Deci.Analysis.Extra,'do')
+                    if Deci.Analysis.Extra.do
+                        info.Channels = Chan;
+                        info.ChanNum = i;
                         
-                        if Deci.Analysis.Extra.list(funs)
-                            feval(Deci.Analysis.Extra.Functions{funs},Deci,info,freqplaceholder,Deci.Analysis.Extra.Params{funs}{:}); 
+                        info.Lock = Lock;
+                        
+                        for funs = find(~Deci.Analysis.Extra.Once)
+                            
+                            if Deci.Analysis.Extra.list(funs)
+                                feval(Deci.Analysis.Extra.Functions{funs},Deci,info,freqplaceholder,Deci.Analysis.Extra.Params{funs}{:});
+                            end
                         end
                     end
                 end

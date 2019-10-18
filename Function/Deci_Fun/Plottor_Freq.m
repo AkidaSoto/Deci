@@ -64,7 +64,7 @@ for  subject_list = 1:length(Deci.SubjectList)
     
     tic;
     
-    for Conditions = 1:length(Deci.Plot.IndexTitle)
+    for Conditions = 1:length(Deci.Plot.CondTitle)
         
         for Channel = 1:length(Chois)
             
@@ -74,11 +74,11 @@ for  subject_list = 1:length(Deci.SubjectList)
             
             switch Deci.Plot.Freq.Type
                 case 'TotalPower'
-                    load([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.IndexTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
+                    load([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
                 case 'ITPC'
-                    load([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.IndexTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
+                    load([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
                 case 'TotalPower Mean/Var'
-                    load([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.IndexTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
+                    load([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
             end
             
             foi = freq.freq >= round(Fois(1),4) & freq.freq <= round(Fois(2),4);
@@ -113,11 +113,11 @@ for Conditions = 1:size(Subjects,2)
                     
                 switch Deci.Plot.Freq.Type
                     case 'TotalPower'
-                        load([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.IndexTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
+                        load([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
                     case 'ITPC'
-                        load([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.IndexTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
+                        load([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
                     case 'TotalPower Mean/Var'
-                        load([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.IndexTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
+                        load([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
                 end
                 
                 foi = freq.freq >= round(Fois(1),4) & freq.freq <= round(Fois(2),4);
@@ -493,16 +493,16 @@ for cond = 1:length(Deci.Plot.Draw)
                 set(0, 'CurrentFigure', wire(subj) )
                 wire(subj).Visible = 'on';
                 
-                top = squeeze(nanmean(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1),2),3)) + squeeze(nanstd(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,2),3),1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
-                bot = squeeze(nanmean(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1),2),3)) - squeeze(nanstd(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,2),3),1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
+                top = squeeze(nanmean(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1),2),3)) + squeeze(nanstd(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,2),3),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
+                bot = squeeze(nanmean(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1),2),3)) - squeeze(nanstd(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,2),3),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
                 
-                if length(Deci.SubjectList) ~= 1
-                pgon = polyshape([wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time(1) fliplr(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time(end))],[top' fliplr(bot')],'Simplify', false);
+                 if Deci.Plot.GrandAverage
+                pgon = polyshape([wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time fliplr(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time)],[top' fliplr(bot')],'Simplify', false);
                 b(subcond) = plot(pgon,'HandleVisibility','off');
                 hold on
                 b(subcond).EdgeAlpha = 0;
                 b(subcond).FaceAlpha = .15;
-                end
+                 end
                 
 
                 
@@ -530,8 +530,10 @@ for cond = 1:length(Deci.Plot.Draw)
             pcfg.linewidth = 1;
             ft_singleplotER(pcfg,wiredata{subj,Deci.Plot.Draw{cond}});
             
+            if Deci.Plot.GrandAverage
             arrayfun(@(c) uistack(c,'top'),b);
-            
+            end
+
             axis tight
             hold on
             plot([wiredata{cond}.time(1), wiredata{cond}.time(end)], [0 0], 'k--') % hor. line
@@ -585,7 +587,7 @@ for cond = 1:length(Deci.Plot.Draw)
             
             
             CleanBars(mean(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.powspctrm,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1), ...
-                nanstd(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.powspctrm,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1) ...
+                nanstd(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.powspctrm,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),[],1) ...
                 /sqrt(size(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.powspctrm,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1)));
             
             l = legend(Deci.Plot.Subtitle{cond});
@@ -631,7 +633,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 set(0, 'CurrentFigure', topo(subj) )
                 topo(subj).Visible = 'on';
                 suptitle(Deci.Plot.Title{cond});
-                
+                colormap(CoolMap)
                 for r = 1:length(cirky(:))
                     
                     if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
@@ -660,7 +662,7 @@ for cond = 1:length(Deci.Plot.Draw)
             set(0, 'CurrentFigure', square(subj))
             square(subj).Visible = 'on';
             suptitle([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond}]);
-            
+            colormap(CoolMap)
             for r = 1:length(subby(:))
                 
                 if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)

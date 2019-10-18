@@ -1,8 +1,8 @@
-function Deci_Corr(Deci,params)
+function out =  Deci_Corr(Deci,params)
 %% Load Data
 
 if isequal(params.Channel,'all')
-    params.Channel = [{'AF3'  } {'AF4'  } {'AF7'  } ...
+    Deci.Plot.Freq.(Dims{Dim}).Channel = [{'AF3'  } {'AF4'  } {'AF7'  } ...
         {'AF8'  } {'AFz'  } {'C1'   } {'C2'   } {'C3'   } {'C4'   } {'C5'   } ...
         {'C6'   } {'CP1'  } {'CP2'  } {'CP3'  } {'CP4'  } {'CP5'  } {'CP6'  } ...
         {'CPz'  } {'Cz'   } {'F1'   } {'F2'   } {'F3'   } {'F4'   } {'F5'   } ...
@@ -19,15 +19,19 @@ for subject_list = 1:length(Deci.SubjectList)
     for Conditions = 1:length(Deci.Plot.CondTitle)
         switch params.Freq
             case 'Magnitude'
-                for Channel = 1:length(params.Channel)
-                    load([Deci.Folder.Analysis filesep 'Extra' filesep 'Simp' filesep 'Mag' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep params.Channel{Channel}], 'Mag')
+                Chois = CleanDir([Deci.Folder.Analysis filesep 'Extra' filesep 'Simp' filesep 'Mag' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions}]);
+                
+                for Channel = 1:length(Chois)
+                    load([Deci.Folder.Analysis filesep 'Extra' filesep 'Simp' filesep 'Mag' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel}], 'Mag')
                     
                     Corr{Channel} = Mag;
                 end
                 
             case 'Phase'
-                for Channel = 1:length(params.Channel)
-                    load([Deci.Folder.Analysis filesep 'Extra' filesep 'Simp' filesep 'Pha' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep params.Channel{Channel} ], 'Pha')
+                Chois = CleanDir([Deci.Folder.Analysis filesep 'Extra' filesep 'Simp' filesep 'Pha' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions}]);
+                
+                for Channel = 1:length(Chois)
+                    load([Deci.Folder.Analysis filesep 'Extra' filesep 'Simp' filesep 'Pha' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} ], 'Pha')
                     Corr{Channel} = Pha;
                 end
         end
@@ -48,15 +52,19 @@ for Conditions = 1:size(Subjects,2)
             
             switch params.Freq
                 case 'Magnitude'
-                    for Channel = 1:length(params.Channel)
-                        load([Deci.Folder.Analysis filesep 'Extra' filesep 'Simp' filesep 'Mag' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep params.Channel{Channel}], 'Mag')
+                    Chois = CleanDir([Deci.Folder.Analysis filesep 'Extra' filesep 'Simp' filesep 'Mag' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions}]);
+                    
+                    for Channel = 1:length(Chois)
+                        load([Deci.Folder.Analysis filesep 'Extra' filesep 'Simp' filesep 'Mag' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel}], 'Mag')
                         
                         BCorr{Channel} = Mag;
                     end
                     
                 case 'Phase'
-                    for Channel = 1:length(params.Channel)
-                        load([Deci.Folder.Analysis filesep 'Extra' filesep 'Simp' filesep 'Pha' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep params.Channel{Channel}], 'Pha')
+                    Chois = CleanDir([Deci.Folder.Analysis filesep 'Extra' filesep 'Simp' filesep 'Pha' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions}]);
+                    
+                    for Channel = 1:length(Chois)
+                        load([Deci.Folder.Analysis filesep 'Extra' filesep 'Simp' filesep 'Pha' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel}], 'Pha')
                         BCorr{Channel} = Pha;
                     end
             end

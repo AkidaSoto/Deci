@@ -1,14 +1,15 @@
-function [trl,trialinfo] = expfunor(cfg)
+function [trl,trialinfo] = EEG_Polymerase(cfg)
+
+%EEG_Polymerase will create
+%trl: Relevant times, [TrialStart-Toi(1) TrialEnd+Toi(2) 0 trialnumber Lock1 Lock2 ....]
+%trialinfo: Relevant Markers
+%trialnumber will be transfered to it's own field during DefineTrialor
+
+% Each Row represents 1 trial
 
 startstop ={cfg.DT.Starts{:} cfg.DT.Ends{:}};
 startstop = cellfun(@num2str,startstop,'un',0);
 sstime = cfg.DT.Toi;
-
-cfg.DT = Exist(cfg.DT,'Beha',[]);
-cfg.DT.Beha = Exist(cfg.DT.Beha,'Acc',[]);
-cfg.DT.Beha = Exist(cfg.DT.Beha,'RT',[]);
-
-cfg.DT = Exist(cfg.DT,'Conditions',1:length(cfg.DT.Markers));
 
 if ~strcmp(cfg.file_ending,'.mat')
     event = ft_read_event(cfg.dataset);
@@ -21,7 +22,6 @@ else
 end
 
 trl = [];
-
 event =  StandardizeEventMarkers(event);
 
 if rem(length(find(ismember({event.value},startstop)')),2) ~= 0
@@ -68,6 +68,8 @@ for j = 1:length(startstopseg)
     
     trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = nan;
     if ~isempty(cfg.DT.Block)   
+        
+        
             trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = [-1*find([event(startstopseg(1,j)).sample] >  [event(bstartstop).sample],1,'last')];
     else
     trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = -1; 
@@ -77,28 +79,28 @@ for j = 1:length(startstopseg)
 end
 
 if ~isempty(cfg.DT.Block)
-   
-   if cfg.DT.Block.Bisect
-       bindex =  find(trialinfo(1,:) < 0);
-       
-       allbi = unique(trialinfo(:,bindex),'stable');
-       
-       for ab = allbi'
-           
-           onebi = find(ismember(trialinfo(:,bindex),ab));
-           
-           onebi = reshape([onebi nan([1 rem(length(onebi),2)])],[length(onebi)/2 2]);
-           
-           for eachsect = 1:2
-               
-               trialinfo(onebi(:,eachsect),bindex) = trialinfo(onebi(:,eachsect),bindex) -.5*(eachsect-1);
-               
-           end
-           
-       end
-
+    if isfield(cfg.DT.Block,'Bisect')
+        if cfg.DT.Block.Bisect
+            bindex =  find(trialinfo(1,:) < 0);
+            
+            allbi = unique(trialinfo(:,bindex),'stable');
+            
+            for ab = allbi'
+                
+                onebi = find(ismember(trialinfo(:,bindex),ab));
+                
+                onebi = reshape([onebi nan([1 rem(length(onebi),2)])],[length(onebi)/2 2]);
+                
+                for eachsect = 1:2
+                    
+                    trialinfo(onebi(:,eachsect),bindex) = trialinfo(onebi(:,eachsect),bindex) -.5*(eachsect-1);
+                    
+                end
+                
+            end
+            
+        end
     end
-    
 end
 
 
@@ -128,13 +130,19 @@ if isfield(cfg.DT,'Displace')
                     
                     block{stat,dis,dura}  = statictrialinfo(find(ceil(statictrialinfo(:,blkpos)) == blk(dis)),:);
                     
+                    if isempty(block{stat,dis,dura})
+                        block{stat,dis,dura} = [];
+                        continue;
+                    end
+                    
+                    
                     shift{stat,dis,dura} = statictrl(find(ceil(statictrialinfo(:,blkpos)) == blk(dis)),:);
                     
                     if ~isempty(cfg.DT.Displace.Markers)
                         
                         for dmrk = 1:length(cfg.DT.Displace.Markers)
                             
-                            dmrks{stat,dis,dura} = statictrialinfo(find(statictrialinfo(:,blkpos) == blk(dis)),:);
+                            dmrks{stat,dis,dura} = statictrialinfo(find(ceil(statictrialinfo(:,blkpos)) == blk(dis)),:);
                             
                             dmrks{stat,dis,dura} = dmrks{stat,dis,dura}(:,find(mean(ismember(dmrks{stat,dis,dura},cfg.DT.Displace.Markers{dmrk}))))+1000*dura;
                             

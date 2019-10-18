@@ -1,10 +1,18 @@
-function [out] = QL2(Deci,info,freq,params)
+function [out] = QL2(Deci,info,dat,params)
 %params.States = [20 21 23 24];
 %params.Actions = [31 32];
 %params.Reward  = [51 52];
 %params.Value  = {[20 10] [10 0] [0 -10] [-10 -20]};
 
-trialtypes = freq.condinfo{2}(info.alltrials & info.allnonnans,:);
+
+maxt = max(sum(ismember(dat.preart{2},Deci.Analysis.Conditions{info.Cond}),2));
+info.alltrials = find(sum(ismember(dat.preart{2},Deci.Analysis.Conditions{info.Cond}),2) == maxt);
+
+%ignore all locks that are missing
+minamountofnans = min(mean(isnan(dat.preart{1}(info.alltrials,:)),2));
+info.allnonnans = mean(isnan(dat.preart{1}(info.alltrials,:)),2) == minamountofnans;% & ~isnan(mean(condinfo{2},2));
+
+trialtypes = dat.preart{2}(info.alltrials(info.allnonnans),:);
 
 
 %Basic Data Maintence for finding block numbers
@@ -39,8 +47,8 @@ end
 
 for init = 1:10
         
-        Fit1.LB = [min([params.Value{:}]) min([params.Value{:}]) 0 0 1e-6];
-        Fit1.UB = [max([params.Value{:}]) max([params.Value{:}]) 1 1 30];
+        Fit1.LB = [min([params.Value{:}]) min([params.Value{:}]) 0 0 .001];
+        Fit1.UB = [max([params.Value{:}]) max([params.Value{:}]) 1 1 10];
         Fit1.init =rand(1,length(Fit1.LB)).*(Fit1.UB-Fit1.LB)+Fit1.LB;
         
         Fit2.LB = [0 0 1e-6];
@@ -53,18 +61,18 @@ for init = 1:10
         q(init,:) = params.Start;
 
         [Value{1,init}] = ...
-            fmincon(@(x)  FeedbackQ([x(1) x(2)],Actions,Rewards,x(3),x(4),(5)),...
+            fmincon(@(x)  FeedbackQ([x(1) x(2)],Actions,Rewards,x(3),x(4),x(5)),...
             [Fit1.init],[],[],[],[],[Fit1.LB],[Fit1.UB],[],...
             optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
         
-        [LLE(1,init),qs{1,init},P{1,init},PE{1,init}] = FeedbackQ([Value{1,init}(1) Value{1,init}(2)],Actions,Rewards, Value{1,init}(3),Value{1,init}(4));
+        [LLE(1,init),qs{1,init},P{1,init},PE{1,init}] = FeedbackQ([Value{1,init}(1) Value{1,init}(2)],Actions,Rewards, Value{1,init}(3),Value{1,init}(4),Value{1,init}(5));
 
         [Value{2,init}] = ...
             fmincon(@(x) FeedbackQ(q(init,:),Actions,Rewards,x(1),x(2),x(3)),...
             [Fit2.init],[],[],[],[],[Fit2.LB],[Fit2.UB],[],...
             optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
         
-        [LLE(2,init),qs{2,init},P{2,init},PE{2,init}] = FeedbackQ([Value{2,init}(1) Value{2,init}(2)],Actions,Rewards, Value{2,init}(3),Value{2,init}(4),Value{2,init}(5));
+        [LLE(2,init),qs{2,init},P{2,init},PE{2,init}] = FeedbackQ(q(init,:),Actions,Rewards, Value{2,init}(1),Value{2,init}(2),Value{2,init}(3));
          
 
         [Value{3,init}] = ...
@@ -89,7 +97,14 @@ for m = 1:size(Best,1)
     Pe{m} = PE{m,I2(m,1)};
     PseudoR{m} = 1 - [-Best(m)/[length(cat(1,Actions{:}))*log(.05)]];
     AIC{m} = Best2(m);
+    
+    if Deci.Analysis.ApplyArtReject
+        Q{m} = Q{m}(find(ismember(dat.preart{3}(info.alltrials(info.allnonnans)),dat.condinfo{3})));
+        Pe{m} = Pe{m}(find(ismember(dat.preart{3}(info.alltrials(info.allnonnans)),dat.condinfo{3})));
+    end
 end
+
+
 
 out = {QL Q Pe PseudoR AIC};
 

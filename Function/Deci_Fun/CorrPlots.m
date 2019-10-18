@@ -22,7 +22,7 @@ for freq = 1:length(params.Freq)
                     PChan{Choi} = P;
                     
                     if any(any(R.powspctrm > 1))
-                      k = 0;  
+                        k = 0;
                     end
                     
                 end
@@ -49,8 +49,8 @@ for freq = 1:length(params.Freq)
                 
             end
             
-            RCond{Cond} = rmfield(ft_freqgrandaverage(struct('parameter','powspctrm','keepindividual','no'),RSub{:}),'cfg');
-            PCond{Cond} = rmfield(ft_freqgrandaverage(struct('parameter','powspctrm','keepindividual','no'),PSub{:}),'cfg');
+            RCond{Cond} = rmfield(ft_freqgrandaverage(struct('parameter','powspctrm','keepindividual','yes'),RSub{:}),'cfg');
+            PCond{Cond} = rmfield(ft_freqgrandaverage(struct('parameter','powspctrm','keepindividual','yes'),PSub{:}),'cfg');
             
         end
         
@@ -64,15 +64,51 @@ for freq = 1:length(params.Freq)
             end
         end
         
+        %% stats
+            neighbours       = load('easycap_neighbours','neighbours');
+            Deci.Plot.Stat.neighbours = neighbours.neighbours;
+            Deci.Plot.Stat.ivar = 1;
+            Deci.Plot.Stat.uvar = 2;
+            Deci.Plot.Stat.tail = 1;
+            Deci.Plot.Stat.statistic = 'depsamplesFmultivariate';
+            
+            for conds = 1:length(Deci.Plot.Draw)
+                design = [];
+                
+                for subcond = 1:length(Deci.Plot.Draw{conds})
+                    for subj = 1:length(Deci.SubjectList)
+                        design(1,subj+length(Deci.SubjectList)*[subcond-1]) =  subcond;
+                        design(2,subj+length(Deci.SubjectList)*[subcond-1]) = subj;
+                    end
+
+                end
+                
+                Deci.Plot.Stat.design = design;
+                
+                [RCondStat{conds}] = ft_freqstatistics(Deci.Plot.Stat, RCond{Deci.Plot.Draw{conds}});
+                RCondStat{conds}.mask = double(RCondStat{conds}.mask);
+                RCondStat{conds}.mask(RCondStat{conds}.mask == 0) = .2;
+
+            end
+            
+            for subcond = 1:size(RCond,2)
+                RCond{subcond}.powspctrm = squeeze(nanmean(RCond{subcond}.powspctrm));
+                RCond{subcond}.dimord = 'chan_freq_time';
+            end
+
+            
         %%
         
         for cond = 1:length(Deci.Plot.Draw)
             
-            for subj = 1:length(Deci.SubjectList)
+            for subj = 1:size(RCond,1)
                 
                 if Deci.Plot.Extra.Corr.Square
                     Corrsquare(subj) = figure;
                     suptitle([Deci.Plot.Title{cond} ' '  Deci.Plot.Extra.Corr.Freq{freq} '_' Deci.Plot.Extra.Corr.Variable{param}]);
+                    
+                    ButtonH=uicontrol('Parent', Corrsquare(subj),'Style','pushbutton','String','p Mask','Position',[10 75 45 25],'Visible','on','Callback',@pmask);
+                    ButtonH.UserData = @ones;
                 end
                 
                 % Topo plot with lines for connections, Time has a Dial
@@ -80,13 +116,16 @@ for freq = 1:length(params.Freq)
                     Corrtopo(subj)  = figure;
                     suptitle([Deci.Plot.Title{cond} ' '  Deci.Plot.Extra.Corr.Freq{freq} '_' Deci.Plot.Extra.Corr.Variable{param}]);
                     
+                    ButtonH=uicontrol('Parent', Corrtopo(subj),'Style','pushbutton','String','p Mask','Position',[10 75 45 25],'Visible','on','Callback',@pmask);
+                    ButtonH.UserData = @ones;
                 end
                 
-                if Deci.Plot.Extra.Corr.Wire
-                    Corrwire(subj)  = figure;
-                end
                 
                 for subcond = 1:length(Deci.Plot.Draw{cond})
+
+                   
+                    RCond{subcond}.mask = RCondStat{cond}.mask;
+
                     
                     if Deci.Plot.Extra.Corr.Topo
                         set(0, 'CurrentFigure', Corrtopo(subj) )
@@ -104,6 +143,9 @@ for freq = 1:length(params.Freq)
                         %RCond{subj,subcond}.mask = ft_selectdata(struct('latency',RCond{subj,subcond}.time(1),'frequency',RCond{subj,subcond}.freq(1)),PCond{subj,subcond});
                         %RCond{subj,subcond}.mask = RCond{subj,subcond}.mask.powspctrm;
                         
+                        Crosscfg.clim = 'maxmin';
+                        Crosscfg.maskparameter ='mask';
+                        
                         ft_topoplotER(Crosscfg,ft_selectdata(struct('latency',RCond{subj,subcond}.time(1),'frequency',RCond{subj,subcond}.freq(1)),RCond{subj,subcond}));
                         ctopo(subj,subcond).UserData = {RCond{subj,subcond},Crosscfg};
                     end
@@ -118,6 +160,9 @@ for freq = 1:length(params.Freq)
                         Crosscfg.layout = Deci.Layout.Noeye;
                         Crosscfg.choi = 1;
                         
+                        Crosscfg.clim = 'maxmin';
+                        Crosscfg.maskparameter ='mask';
+                        
                         title([Deci.SubjectList{subj} ' Cond '  num2str(cond)],'Interpreter', 'none');
                         
                         ft_singleplotTFR(Crosscfg,ft_selectdata(struct('channel',RCond{subj,subcond}.label(1)),RCond{subj,subcond}));
@@ -126,64 +171,32 @@ for freq = 1:length(params.Freq)
                         colorbar;
                     end
                     
-                    if Deci.Plot.Extra.Corr.Wire
-                        set(0, 'CurrentFigure', CFCwire(subj) )
-                        CFCwire(subj).Visible = 'on';
-                        
-                        Crosscfg.chan = 1;
-                        Crosscfg.foi = 1;
-                        
-                        cwire(subj,subcond)    =  subplot(length(Deci.Plot.Draw{cond}),1,subcond);
-                        
-                        top = squeeze(mean(CFCData{subj,Deci.Plot.Draw{cond}(subcond)}.crsspctrm(chanl,chanh,:),1)) + squeeze(mean(CFCSem{subj,Deci.Plot.Draw{cond}(subcond)}.crsspctrm(chanl,chanh,:),1));
-                        bot = squeeze(mean(CFCData{subj,Deci.Plot.Draw{cond}(subcond)}.crsspctrm(chanl,chanh,:),1)) - squeeze(mean(CFCSem{subj,Deci.Plot.Draw{cond}(subcond)}.crsspctrm(chanl,chanh,:),1));
-                        
-                        pgon = polyshape([CFCData{subj,Deci.Plot.Draw{cond}(subcond)}.timelow fliplr(CFCData{subj,Deci.Plot.Draw{cond}(subcond)}.timelow)],[top' fliplr(bot')],'Simplify', false);
-                        b = plot(pgon,'HandleVisibility','off');
-                        hold on
-                        b.EdgeAlpha = 0;
-                        b.FaceAlpha = .15;
-                        
-                        h =  plot(CFCData{subj,subcond}.timelow,squeeze(CFCData{subj,subcond}.crsspctrm(chanl,chanh,:)));
-                        h.Color = b.FaceColor;
-                        h.LineWidth = 1;
-                        
-                        hold on
-                    end
                 end
                 
-                
-                if Deci.Plot.Extra.Corr.Wire
-                    for WireLim = 1:length(cwire(subj,:))
-                        Vect = CombVec(CFCData{subj,subcond}.labellow',CFCData{subj,subcond}.labelhigh')';
-                        legend(cwire(subj,WireLim),arrayfun(@(c) [Vect{c,1} Vect{c,2}],1:size(Vect,1),'un',0));
-                        cwire(subj,WireLim).YLim = [min([cwire(subj,:).YLim]) max([cwire(subj,:).YLim])];
-                    end
-                end
                 
                 if Deci.Plot.Extra.Corr.Topo
                     
                     set(0, 'CurrentFigure', Corrtopo(subj) )
                     
                     text = uicontrol('style','text','position',[225 75 100 25],'String',['Time of Interest: '  num2str(RCond{subj,subcond}.time(1))]);
-                    uicontrol('style','pushbutton','position',[175 75 45 25],'String','<','callback',{@ChangeDim,ctopo(subj,:),-1,'toi',text,'Time of Interest: ','Topo'})
-                    uicontrol('style','pushbutton','position',[325 75 45 25],'String','>','callback',{@ChangeDim,ctopo(subj,:),+1,'toi',text,'Time of Interest: ','Topo'})
+                    uicontrol('style','pushbutton','position',[175 75 45 25],'String','<','callback',{@ChangeDim,ctopo(subj,:),-1,'toi',text,'Time of Interest: ','Topo',Deci.Plot.Extra.Corr.Freq{freq} })
+                    uicontrol('style','pushbutton','position',[325 75 45 25],'String','>','callback',{@ChangeDim,ctopo(subj,:),+1,'toi',text,'Time of Interest: ','Topo',Deci.Plot.Extra.Corr.Freq{freq}})
                     
                     
                     text = uicontrol('style','text','position',[225+100+25+50+50 75 100 25],'String',['Freq of Interest: '  num2str(RCond{subj,subcond}.freq(1))]);
-                    uicontrol('style','pushbutton','position',[175+100+25+50+50 75 45 25],'String','<','callback',{@ChangeDim,ctopo(subj,:),-1,'foi',text,'Freq of Interest: ','Topo'})
-                    uicontrol('style','pushbutton','position',[325+100+25+50+50 75 45 25],'String','>','callback',{@ChangeDim,ctopo(subj,:),+1,'foi',text,'Freq of Interest: ','Topo'})
+                    uicontrol('style','pushbutton','position',[175+100+25+50+50 75 45 25],'String','<','callback',{@ChangeDim,ctopo(subj,:),-1,'foi',text,'Freq of Interest: ','Topo',Deci.Plot.Extra.Corr.Freq{freq}})
+                    uicontrol('style','pushbutton','position',[325+100+25+50+50 75 45 25],'String','>','callback',{@ChangeDim,ctopo(subj,:),+1,'foi',text,'Freq of Interest: ','Topo',Deci.Plot.Extra.Corr.Freq{freq}})
                     
-                    ChangeDim([],[],ctopo(subj,:),-1,'toi',text,'Time of Interest: ','Topo')
+                    ChangeDim([],[],ctopo(subj,:),-1,'toi',text,'Time of Interest: ','Topo',Deci.Plot.Extra.Corr.Freq{freq})
                 end
                 
                 
                 if Deci.Plot.Extra.Corr.Square
                     
                     set(0, 'CurrentFigure', Corrsquare(subj) )
-                    text = uicontrol('style','pushbutton','position',[225 75 125 25],'String',['Channel of Interest: '  RCond{subj,subcond}.label{1}],'callback',{@ChangeDim,csquare(subj,:),0,'choi',text,'Channel of Interest: ','Square'});
+                    text = uicontrol('style','pushbutton','position',[225 75 125 25],'String',['Channel of Interest: '  RCond{subj,subcond}.label{1}],'callback',{@ChangeDim,csquare(subj,:),0,'choi',text,'Channel of Interest: ','Square',Deci.Plot.Extra.Corr.Freq{freq}});
                     
-                    ChangeDim([],[],csquare(subj,:),0,'choi',text,'Channel of Interest: ','Square')
+                    ChangeDim([],[],csquare(subj,:),0,'choi',text,'Channel of Interest: ','Square',Deci.Plot.Extra.Corr.Freq{freq})
                 end
                 
             end
@@ -197,7 +210,7 @@ end
 
 
 
-    function ChangeDim(popup,event,Axes,Change,Dim,TextUI,Text,Type)
+    function ChangeDim(popup,event,Axes,Change,Dim,TextUI,Text,Type,FreqType)
         
         if strcmpi(Dim,'choi')
             if ~isempty(popup)
@@ -256,14 +269,49 @@ end
             
             switch Type
                 case 'Topo'
-                    Axes(Axe).CLim = [-1*max(arrayfun(@(c) nanmax(nanmax(abs(c.Children(end).CData))),Axes,'UniformOutput',1)) max(arrayfun(@(c) nanmax(nanmax(abs(c.Children(end).CData))),Axes,'UniformOutput',1))];
+                    
+                    if strcmpi(FreqType,'Magnitude')
+                        Axes(Axe).CLim = [-1*max(arrayfun(@(c) nanmax(nanmax(abs(c.Children(end).CData))),Axes,'UniformOutput',1)) max(arrayfun(@(c) nanmax(nanmax(abs(c.Children(end).CData))),Axes,'UniformOutput',1))];
+                    else
+                        Axes(Axe).CLim = [0 max(arrayfun(@(c) nanmax(nanmax(abs(c.Children(end).CData))),Axes,'UniformOutput',1))];
+                    end
+                    
                 case 'Square'
-                    Axes(Axe).CLim = [-1*max(arrayfun(@(c) nanmax(nanmax(abs(c.Children.CData))),Axes,'UniformOutput',1)) max(arrayfun(@(c) nanmax(nanmax(abs(c.Children.CData))),Axes,'UniformOutput',1)) ];
+                    if strcmpi(FreqType,'Magnitude')
+                        Axes(Axe).CLim = [-1*max(arrayfun(@(c) nanmax(nanmax(abs(c.Children.CData))),Axes,'UniformOutput',1)) max(arrayfun(@(c) nanmax(nanmax(abs(c.Children.CData))),Axes,'UniformOutput',1)) ];
+                    else
+                       Axes(Axe).CLim = [0  max(arrayfun(@(c) nanmax(nanmax(abs(c.Children.CData))),Axes,'UniformOutput',1)) ];
+                    end
+                    
             end
             
             
         end
         
+    end
+
+    function pmask(PushButton, EventData)
+        
+        Axes = PushButton.Parent.Children.findobj('Type','Axes');
+        Axes = Axes(arrayfun(@(c) ~isempty(c.String), [Axes.Title]));
+        
+        for a = 1:length(Axes)
+            
+            imag = Axes(a).Children.findobj('Type','Image');
+            
+            if isempty(imag)
+                imag =  Axes(a).Children.findobj('Type','Surface');
+                
+            end
+            
+            if isempty(imag.UserData)
+                imag.UserData = logical(~isnan(imag.CData));
+            end
+            
+            placeholder = imag.UserData;
+            imag.UserData = imag.AlphaData;
+            imag.AlphaData = placeholder;
+        end
     end
 end
 
