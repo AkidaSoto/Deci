@@ -6,12 +6,12 @@
 %% 0. MainMenu
 
 Deci = [];
-Deci.Folder.Raw         = ['C:\Users\User\Desktop\Prob_Stim\RawData_new'];              % Raw Data Folder Directory
+Deci.Folder.Raw         = ['C:\Users\User\Desktop\Chris\Prob\RawData'];              % Raw Data Folder Directory
 Deci.SubjectList        = 'all';                                                  % Cell Array of strings, 'all' or 'gui'
 Deci.Step               = 1 ;                                              % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
 Deci.Proceed            = true;                                                                  % Continue to next step when current step is done?
 Deci.PCom               = false;                                                                  % Activates Parallel Computing for PP and Analysis only
-Deci.Folder.Version     = ['C:\Users\User\Desktop\Prob_Stim\ProcessedData'];        % Output Folder Directory
+Deci.Folder.Version     = ['C:\Users\User\Desktop\Chris\Prob\ProcessedData'];        % Output Folder Directory
 %% 1. Trial Definitions
 
 Deci.DT.Type = 'Prob_Exp';
@@ -23,7 +23,7 @@ Deci.DT.Toi        = [-2 3];
 
 %MrkMake('C:\Users\User\Desktop\Prob_Stim\RawData',{{'111' '113' '115'} {'112' '114' '116'}},{'110' '117'},[-1/1000 1/1000])
 
-Deci.DT.Block.Markers = {[100 102] 110};  
+Deci.DT.Block.Markers = {[100 102]};  
 %% 2. PreProcessing Steps
 
 Deci.PP.HBP        = 1;                                                                         % Scalar,High-bandpass filter, in Hz.

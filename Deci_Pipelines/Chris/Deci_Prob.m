@@ -1,4 +1,6 @@
-%% *Welcome to Deci*
+%% Matlab
+
+%*Welcome to Deci*
 % *A fluid pipeline to analyze EEG Data with ease*
 % 
 % Written and Compiled by @John Nguyen of Robert Reinhart Lab on 10/15/2018, 
