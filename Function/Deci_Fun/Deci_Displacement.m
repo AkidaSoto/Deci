@@ -82,54 +82,47 @@ if Params.Collapse.Block
     RTcount = nanmean(RTcount,2);
     blktitle = {'all'};
 else
-    blktitle = strsplit(num2str(1:size(RT,2)),' ');
+    blktitle = cellstr(num2str(abs(ParamsBlock)))';
 end
 
-%% Excel Save
+if length([Params.RepDim]) > 2
+    displacer = 1;
+else
+    displacer = 0;
+end
 
+
+%% Excel Save
+if Params.Excel
 
 %ExportExcel
-blk = [];
-cond = [];
-subcond = [];
-dura = [];
 colnames = [];
-duratitles = arrayfun(@(c) ['n+' num2str(c-1)],1:size(RT,5),'UniformOutput',false);
+duratitles = arrayfun(@(c) ['n' num2str(c-1-displacer)],1:size(RT,5),'UniformOutput',false);
 
-for blks = 1:size(RT,2)
-    for conds = 1:size(RT,3)
-        for subconds = 1:size(RT,4)
-            for duras = 1:size(RT,5)
-                
-                blk(end+1) = blks;
-                cond(end+1) = conds;
-                subcond(end+1) = subconds;
-                dura(end+1) = duras;
-                
+for duras = 1:size(RT,5)
+    for subconds = 1:size(RT,4)
+        for conds = 1:size(RT,3)
+            for blks = 1:size(RT,2)
                 colnames{end+1} = [Params.StaticTitle{conds} ' ' combntitles{subconds} ' ' duratitles{duras}  ' : Block ' num2str(abs(ParamsBlock(blks)))];
-                
             end
         end
     end
 end
 
-
-
 exceldata = reshape(RT,[size(RT,1) prod(size(RT,[2 3 4 5]))]);
-
-
 exceldata = horzcat(Deci.SubjectList',num2cell(exceldata));
 exceldata = vertcat([{'Nlet'} colnames],exceldata);
 
-excelAccdata = table(exceldata);
-
 if exist([Deci.Folder.Plot filesep 'Nlet_Outputs.xls']) == 2
-    delete([Deci.Folder.Plot filesep 'Nlet_Outputs.xls']);
+    writematrix([],[Deci.Folder.Plot filesep 'Nlet_Outputs'],'FileType','spreadsheet','Sheet','TempSheet');
+    xls_delete_sheets([Deci.Folder.Plot filesep 'Nlet_Outputs.xls'],Params.Title);
 end
 
-writetable(excelAccdata,[Deci.Folder.Plot filesep 'Nlet_Outputs' ],'FileType','spreadsheet','Sheet',Params.Title);
+writecell(exceldata,[Deci.Folder.Plot filesep 'Nlet_Outputs'],'FileType','spreadsheet','Sheet',Params.Title);
 
+xls_delete_sheets([Deci.Folder.Plot filesep 'Nlet_Outputs.xls'],'TempSheet'); 
 
+end
 
 %% Plot
 
@@ -169,7 +162,7 @@ for blk = 1:size(MeanRT,1)
         
         xLim = xlim;
         xticks([1:size(MeanRT,4)]);
-        xticklabels(arrayfun(@(c) ['n+' num2str(c-1)],1:size(MeanRT,4),'UniformOutput',false));
+        xticklabels(arrayfun(@(c) ['n' num2str(c-1-displacer)],1:size(MeanRT,4),'UniformOutput',false));
         
         xlim([xLim(1)*.9 xLim(2)*1.1]);
         
@@ -188,7 +181,7 @@ for blk = 1:size(MeanRT,1)
         xLim = xlim;
         
         xticks([1:size(MeanRT,4)]);
-        xticklabels(arrayfun(@(c) ['n+' num2str(c-1)],1:size(MeanRT,4),'UniformOutput',false));
+        xticklabels(arrayfun(@(c) ['n' num2str(c-1-displacer)],1:size(MeanRT,4),'UniformOutput',false));
         
         xlim([xLim(1)*.9 xLim(2)*1.1]);
         
@@ -217,10 +210,10 @@ for blk = 1:size(MeanRT,1)
         legend(combntitles);
         ylabel('delta time (ms)');
         
-        xticklabels(arrayfun(@(c) ['[n+' num2str(c) ' - n+'  num2str(c-1) ']'],1:size(MeanRT,4)-1,'UniformOutput',false));
+        xticklabels(arrayfun(@(c) ['[n' num2str(c-displacer) ' - n'  num2str(c-1-displacer) ']'],1:size(MeanRT,4)-1,'UniformOutput',false));
         
         if size(RT,5) > 2
-            xticklabels([arrayfun(@(c) ['[n+' num2str(c) ' - n+'  num2str(c-1) ']'],1:size(MeanRT,4)-1,'UniformOutput',false) {'n+2 - n+0'}]);
+            xticklabels([arrayfun(@(c) ['[n' num2str(c-displacer) ' - n'  num2str(c-1-displacer) ']'],1:size(MeanRT,4)-1,'UniformOutput',false) {'[n1 - n-1]'}]);
         end
         
     end
@@ -233,7 +226,7 @@ for lim = 1:numel(h)
 end
 
 for lim = 1:numel(f)
-   f(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],f,'UniformOutput',false))); 
+   f(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],f(:)','UniformOutput',false))); 
 end
 
 for lim = 1:numel(g)

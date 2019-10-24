@@ -405,8 +405,11 @@ end
 
 %% plot
 
-if ~isempty(Deci.Plot.Behv.Acc)
-    for fig = find(Deci.Plot.Behv.Acc.Figure)
+
+for fig = find(Deci.Plot.Behv.Acc.Figure)
+    
+    
+    if ~isempty(Deci.Plot.Behv.Acc)
         for subj = 1:size(Acc{fig},1)
             
             a(fig,subj) = figure;
@@ -477,27 +480,21 @@ if ~isempty(Deci.Plot.Behv.Acc)
             if length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) == 2
                 suptitle([Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{fig}]);
             end
-            
-            
         end
         
+        
     end
-    
-    for lim = 1:numel(a)
-        a(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],a(:),'UniformOutput',false)));
-    end
-    
 end
 
 
-if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
+for fig = find(Deci.Plot.Behv.RT.Figure)
     
-    for fig = find(Deci.Plot.Behv.RT.Figure)
+    if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
         for subj = 1:size(RT{fig},1)
             
             
-            a(fig,subj) = figure;
-            a(fig,subj).Visible = 'on';
+            b = figure;
+            b.Visible = 'on';
             
             
             for draw = 1:size(RT{fig},2)
@@ -564,11 +561,6 @@ if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
         
         
     end
-    
-    for lim = 1:numel(a)
-        a(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],a(:),'UniformOutput',false)));
-    end
-    
 end
 
 end
