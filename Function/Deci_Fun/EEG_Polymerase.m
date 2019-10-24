@@ -32,8 +32,8 @@ startstopseg = reshape(find(ismember({event.value},startstop)'),[2 length(find(i
 
 if ~isempty(cfg.DT.Block)
     
-        bstartstop = [cfg.DT.Block.Markers(:)];
-        bstartstop = cellfun(@num2str,bstartstop,'un',0);
+        bstartstop = [cfg.DT.Block.Markers{:}];
+        bstartstop = arrayfun(@num2str,bstartstop,'un',0);
         bstartstop = [find(ismember({event.value},bstartstop))];
 end
 
@@ -89,11 +89,11 @@ if ~isempty(cfg.DT.Block)
                 
                 onebi = find(ismember(trialinfo(:,bindex),ab));
                 
-                onebi = reshape([onebi nan([1 rem(length(onebi),2)])],[length(onebi)/2 2]);
-                
+                onebi = {onebi(1:floor(length(onebi)/2)) onebi(ceil(length(onebi)/2):end)};
+
                 for eachsect = 1:2
                     
-                    trialinfo(onebi(:,eachsect),bindex) = trialinfo(onebi(:,eachsect),bindex) -.5*(eachsect-1);
+                    trialinfo(onebi{eachsect},bindex) = trialinfo(onebi{eachsect},bindex) -.5*(eachsect-1);
                     
                 end
                 

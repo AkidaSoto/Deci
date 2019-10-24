@@ -180,18 +180,36 @@ cfg.viewmode = 'component';
 clear cfg.method
 cfg.channel = 'all';
 
+cfg.component = [];
+
+
 comps = [data_musc.trial{:}];
 eyes = [data.trial{:}];
 eyechan = eyes(ismember(data.label,Deci.ICA.eog),:);
 
-cfg.component = [];
+for eye = 1:size(eyechan,1)
+    for comp = 1:size(comps,1)
+        [compcorr, p] = corrcoef(eyechan(eye,:),comps(comp,:));
+        corr(eye,comp,1) = compcorr(1,2);
+        corr(eye,comp,2) = p(1,2);
+    end
+    
+    component{eye} = find(abs(corr(eye,:,1)) >= Deci.ICA.cutoff);
+end
+
+
 
 if ~Deci.ICA.Automatic
     
     cfg.component = [1:20];
     cfg.viewmode = 'component';
-    
     cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
+    
+    cfg.channelcolormap = zeros(20,3);
+    cfg.colorgroups = ones(20,1)+1;
+    
+    cfg.channelcolormap(unique([component{:}]),1) = 1;
+    cfg.colorgroups(unique([component{:}]),1) = 1;
     
     
     cfg.channel = 'all';
@@ -211,17 +229,7 @@ if ~Deci.ICA.Automatic
     close(fakeUI)
     corr = [];
 else
-    
-    for eye = 1:size(eyechan,1)
-        for comp = 1:size(comps,1)
-            [compcorr, p] = corrcoef(eyechan(eye,:),comps(comp,:));
-            corr(eye,comp,1) = compcorr(1,2);
-            corr(eye,comp,2) = p(1,2);
-        end
-        
-        cfg.component{eye} = find(abs(corr(eye,:,1)) >= Deci.ICA.cutoff);
-    end
-    cfg.component = [cfg.component{:}];
+    cfg.component = [component{:}];
 end
 
 cfg.demean = 'yes';

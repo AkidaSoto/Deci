@@ -633,7 +633,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 set(0, 'CurrentFigure', topo(subj) )
                 topo(subj).Visible = 'on';
                 suptitle(Deci.Plot.Title{cond});
-                colormap(CoolMap)
+                colormap(jet)
                 for r = 1:length(cirky(:))
                     
                     if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
@@ -662,7 +662,7 @@ for cond = 1:length(Deci.Plot.Draw)
             set(0, 'CurrentFigure', square(subj))
             square(subj).Visible = 'on';
             suptitle([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond}]);
-            colormap(CoolMap)
+            colormap(jet)
             for r = 1:length(subby(:))
                 
                 if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)

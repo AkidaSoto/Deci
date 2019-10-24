@@ -41,6 +41,8 @@ for subject_list = 1:length(Deci.SubjectList)
     
     trllength = num2str(length(find(~isnan(mean(cfg.trl,2)))));
     disp(['Found ' num2str(trllength) ' trials out of ' num2str(size(cfg.trl,1)) ' for ' Deci.SubjectList{subject_list}]);
+    
+    mkdir(Deci.Folder.Definition);
     save([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}],'cfg')
 
 end
