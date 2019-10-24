@@ -117,10 +117,6 @@ end
 
 exceldata = reshape(RT,[size(RT,1) prod(size(RT,[2 3 4 5]))]);
 
-
-exceldata = horzcat(Deci.SubjectList',num2cell(exceldata));
-exceldata = vertcat([{'Nlet'} colnames],exceldata);
-
 excelAccdata = table(Deci.SubjectList,colnames,exceldata,'VariableNames',{'Subj' 'Blk' 'Cond' 'SubCond' 'Displacement','Reaction_Time'});
 
 if exist([Deci.Folder.Plot filesep 'Nlet_Outputs.xls']) == 2
