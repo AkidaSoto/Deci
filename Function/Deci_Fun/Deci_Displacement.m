@@ -32,7 +32,7 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.event(:,find(data.event(1,:) < 1)) = Params.Block(data.event(:,find(data.event(1,:) < 1)));
         
         ParamsBlock= unique(cfg.event(:,find(cfg.event(1,:) < 1)),'stable');
-    elseif isempty(Deci.Plot.Behv.Acc.Block)
+    elseif isempty(Params.Block)
         ParamsBlock = {-1};
     end
     

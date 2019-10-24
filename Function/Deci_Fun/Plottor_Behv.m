@@ -262,6 +262,7 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
             RTsem{fig} = nanstd(RT{fig},[],1)/sqrt(size(RT{fig},1));
             RT{fig} =  nanmean(RT{fig},1);
             Sub.RT = {'SubjAvg'};
+            
         end
         
         %save([Deci.Folder.Version filesep 'Plot' filesep 'SimRT'],'RT','fullRT');
@@ -281,27 +282,22 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
     subs= [];
     conds = [];
     blks = [];
-    trls = [];
 
     
     for sub = 1:size(fullAcc{fig},1)
         for cond = 1:size(fullAcc{fig},2)
             for blk = 1:size(fullAcc{fig},3)
-                for trl = 1:size(fullAcc{fig},4)
                     subs(end+1) =  sub;
                     conds(end+1) = cond;
                     blks(end+1) = blk;
-                    trls(end+1) = trl;
-                end
-                
             end
         end
     end
     
-    sAcc = size(fullAcc{fig});
-    fAcc = reshape(fullAcc{fig},[prod([sAcc]) 1]);
+    sAcc = size(nanmean(fullAcc{fig},4));
+    fAcc = reshape(nanmean(fullAcc{fig},4),[prod([sAcc]) 1]);
 
-    excelAccdata = table(Deci.SubjectList(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(AccBlock(blks))',trls',fAcc,'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','Accuracy'});
+    excelAccdata = table(Deci.SubjectList(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(AccBlock(blks)),fAcc,'VariableNames',{'Subj' 'Cond' 'Blk','Accuracy'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Full');
     
     subs= [];
@@ -329,7 +325,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
     fAccsem = reshape(Accsem{fig},[prod([sAcc]) 1]);
     
     
-    excelAccdata = table(Deci.SubjectList(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(AccBlock(blks))',trls',fAcc,fAccsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'Accuracy' 'SEM'});
+    excelAccdata = table(Sub.Acc(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(AccBlock(blks)),trls',fAcc,fAccsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'Accuracy' 'SEM'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Summary');
     
 end
@@ -339,26 +335,22 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     subs= [];
     conds = [];
     blks = [];
-    trls = [];
     
     
     for sub = 1:size(fullRT{fig},1)
         for cond = 1:size(fullRT{fig},2)
             for blk = 1:size(fullRT{fig},3)
-                for trl = 1:size(fullRT{fig},4)
                     subs(end+1) =  sub;
                     conds(end+1) = cond;
                     blks(end+1) = blk;
-                    trls(end+1) = trl;
-                end
             end
         end
     end
 
-    sRT = size(fullRT{fig});
-    fRT = reshape(fullRT{fig},[prod([sRT]) 1]);
+    sRT = size(nanmean(fullRT{fig},4));
+    fRT = reshape(nanmean(fullRT{fig},4),[prod([sRT]) 1]);
     
-    excelAccdata = table(Deci.SubjectList(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(RTBlock(blks))',trls',fRT,'VariableNames',{'Subj' 'Cond' 'Blk' 'Trl','ReactonTime'});
+    excelAccdata = table(Deci.SubjectList(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(RTBlock(blks)),fRT,'VariableNames',{'Subj' 'Cond' 'Blk','ReactonTime'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Full');
     
     subs= [];
@@ -385,7 +377,7 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     fRT = reshape(RT{fig},[prod([sRT]) 1]);
     fRTsem = reshape(RTsem{fig},[prod([sRT]) 1]);
     
-    excelAccdata = table(Deci.SubjectList(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(RTBlock(blks))',trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
+    excelAccdata = table(Sub.RT(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(RTBlock(blks)),trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Summary');
     
 end
