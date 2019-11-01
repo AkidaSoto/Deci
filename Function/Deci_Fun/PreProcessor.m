@@ -229,7 +229,7 @@ if ~Deci.ICA.Automatic
     close(fakeUI)
     corr = [];
 else
-    cfg.component = [component{:}];
+    cfg.component = unique([component{:}]);
 end
 
 cfg.demean = 'yes';

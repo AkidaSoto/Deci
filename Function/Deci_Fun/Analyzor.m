@@ -146,7 +146,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     fcfg.output='fourier';
                     fcfg.pad = 'maxperlen';
                     fcfg.scc = 0;
-                    fcfg.keeptapers = 'no';
+                    fcfg.keeptapers = 'yes';
                     fcfg.keeptrials = 'yes';
                     fcfg.toi = Deci.Analysis.Freq.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Freq.Toi(2);
                     
@@ -190,6 +190,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     acfg.appenddim = 'freq';
                     
                     Fourier = rmfield(ft_appendfreq(acfg,tempfreq{:}),'cfg');
+                    Fourier.dimord = 'rpt_chan_freq_time';
                     Fourier.condinfo = dat.condinfo;
                     trllength = size(Fourier.fourierspctrm,1);
                 end
