@@ -20,7 +20,7 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
         cfg.eog = Deci.Art.eog;
         cfg.keepchannel = 'yes';
-        tcfg.toilim = [abs(nanmax(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(2)];
+        tcfg.latency = [abs(nanmax(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(2)];
         cfg.channel = 'all';
         
         if Deci.Art.AddComponents
@@ -53,7 +53,7 @@ for subject_list = 1:length(Deci.SubjectList)
             cfg =[];
             cfg.viewmode = 'vertical';
             cfg.trials = condinfo{3};
-            artf = ft_databrowser(cfg,ft_redefinetrial(cfg,data_comp));
+            artf = ft_databrowser(cfg,ft_selectdata(cfg,data_comp));
             
             datacomp_rej = ft_rejectartifact(artf.artfctdef,ft_selectdata(cfg,data_comp));
             

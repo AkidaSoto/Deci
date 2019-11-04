@@ -171,7 +171,7 @@ cfg.unmixing  =data_musc.unmixing;
 cfg.topolabel = data_musc.topolabel;
 cfg.feedback = feedback;
 cfg.demean     = 'no';
-data_muscfree     = rmfield(ft_componentanalysis(cfg, data),'cfg');
+data_all     = rmfield(ft_componentanalysis(cfg, data),'cfg');
 
 figure;
 cfg.component = [1:20];
@@ -205,10 +205,10 @@ if ~Deci.ICA.Automatic
     cfg.viewmode = 'component';
     cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
     
-    cfg.channelcolormap = zeros(20,3);
+    cfg.channelcolormap = zeros(2,3);
     cfg.colorgroups = ones(20,1)+1;
     
-    cfg.channelcolormap(unique([component{:}]),1) = 1;
+    cfg.channelcolormap(1,1) = 1;
     cfg.colorgroups(unique([component{:}]),1) = 1;
     
     
@@ -217,7 +217,7 @@ if ~Deci.ICA.Automatic
     fakeUI = figure;
     select_labels(fakeUI,[],sort(data_musc.label));
     fakeUI.Visible =  'off';
-    ft_databrowser(cfg,data_musc);
+    ft_databrowser(cfg,data_all);
     suptitle(Deci.SubjectList{subject_list});
     waitfor(findall(0,'Name','Select Labels'),'BeingDeleted','on');
     
@@ -228,12 +228,20 @@ if ~Deci.ICA.Automatic
     end
     close(fakeUI)
     corr = [];
+    
+%     if ~isempty(artf.artfctdef.visual.artifact)
+%     
+%        data_art = ft_rejectartifact(artf,data_all)
+%         
+%     end
 else
     cfg.component = unique([component{:}]);
 end
 
 cfg.demean = 'yes';
-data = ft_rejectcomponent(cfg, data_muscfree);
+data = ft_rejectcomponent(cfg, data_all);
+data.unmixing = cfg.unmixing;
+data.topolabel = cfg.topolabel;
 
 data.condinfo = condinfo;
 data.preart = preart;
