@@ -15,8 +15,8 @@ for Dim = 1:length(Dims)
     
     if Deci.Plot.Freq.(Dims{Dim}).do
         if isequal(Deci.Plot.Freq.(Dims{Dim}).Channel,'Reinhart-All')
-            Deci.Plot.Freq.(Dims{Dim}).Channel = [{'AF3'  } {'AF4'  } {'AF7'  } ...
-                {'AF8'  } {'AFz'  } {'C1'   } {'C2'   } {'C3'   } {'C4'   } {'C5'   } ...
+            Deci.Plot.Freq.(Dims{Dim}).Channel = [{'AF3'  } {'AF4'  }...
+                {'AFz'  } {'C1'   } {'C2'   } {'C3'   } {'C4'   } {'C5'   } ...
                 {'C6'   } {'CP1'  } {'CP2'  } {'CP3'  } {'CP4'  } {'CP5'  } {'CP6'  } ...
                 {'CPz'  } {'Cz'   } {'F1'   } {'F2'   } {'F3'   } {'F4'   } {'F5'   } ...
                 {'F6'   } {'F7'   } {'F8'   } {'FC1'  } {'FC2'  } {'FC3'  } {'FC4'  } ...
@@ -139,8 +139,8 @@ for Conditions = 1:size(Subjects,2)
             
             Bsl{subject_list,Conditions}.powspctrm =  Bsl{subject_list,Conditions}.powspctrm(:,:,toi1);
             Bsl{subject_list,Conditions}.time = Bsl{subject_list,Conditions}.time(toi1);
-            bsl = ft_selectdata(ccfg, Bsl{subject_list,Conditions});
-            bsl = repmat(bsl.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
+            Bsl{subject_list,Conditions} = ft_selectdata(ccfg, Bsl{subject_list,Conditions});
+            Bsl{subject_list,Conditions}.powspctrm = repmat(Bsl{subject_list,Conditions}.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
             
         else
             
@@ -151,26 +151,26 @@ for Conditions = 1:size(Subjects,2)
             Bsl{subject_list,Conditions} =Subjects{subject_list,Conditions};
             Bsl{subject_list,Conditions}.powspctrm =  Bsl{subject_list,Conditions}.powspctrm(:,:,toi1);
             Bsl{subject_list,Conditions}.time = Bsl{subject_list,Conditions}.time(toi1);
-            bsl = ft_selectdata(ccfg, Bsl{subject_list,Conditions});
-            bsl = repmat(bsl.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
+            Bsl{subject_list,Conditions} = ft_selectdata(ccfg, Bsl{subject_list,Conditions});
+            Bsl{subject_list,Conditions}.powspctrm = repmat(Bsl{subject_list,Conditions}.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
         end
         
 
         switch Deci.Plot.Freq.BslType
             case 'none'
-                
             case 'absolute'
-                Subjects{subject_list,Conditions}.powspctrm =  Subjects{subject_list,Conditions}.powspctrm - bsl;
+                Subjects{subject_list,Conditions}.powspctrm =  Subjects{subject_list,Conditions}.powspctrm - Bsl{subject_list,Conditions}.powspctrm;
             case 'relative'
-                Subjects{subject_list,Conditions}.powspctrm=  Subjects{subject_list,Conditions}.powspctrm ./ bsl;
+                Subjects{subject_list,Conditions}.powspctrm=  Subjects{subject_list,Conditions}.powspctrm ./ Bsl{subject_list,Conditions}.powspctrm;
             case 'relchange'
-                Subjects{subject_list,Conditions}.powspctrm = ( Subjects{subject_list,Conditions}.powspctrm - bsl) ./ bsl;
+                Subjects{subject_list,Conditions}.powspctrm = ( Subjects{subject_list,Conditions}.powspctrm - Bsl{subject_list,Conditions}.powspctrm) ./ Bsl{subject_list,Conditions}.powspctrm;
             case 'db'
-                Subjects{subject_list,Conditions}.powspctrm = 10*log10( Subjects{subject_list,Conditions}.powspctrm ./ bsl);
+                Subjects{subject_list,Conditions}.powspctrm = 10*log10( Subjects{subject_list,Conditions}.powspctrm ./ Bsl{subject_list,Conditions}.powspctrm);
         end
         
         Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(toi);
         Subjects{subject_list,Conditions}.powspctrm = Subjects{subject_list,Conditions}.powspctrm(:,:,toi);
+        
     end
 end
 
@@ -183,6 +183,7 @@ if ~isempty(Deci.Plot.Math)
             MathData{subj} = ft_math(scfg,Subjects{subj,:});
         end 
         Subjects(:,size(Subjects,2)+1) = MathData;
+        
     end
 end
 
@@ -288,49 +289,89 @@ for conds = 1:size(Subjects,2)
             
             bartdata{subj,conds} = ft_selectdata(tcfg,bardata{subj,conds}); 
 
-            
         end
     end
 end
 
 if Deci.Plot.Stat.do
+    
     neighbours       = load('easycap_neighbours','neighbours');
     Deci.Plot.Stat.neighbours = neighbours.neighbours;
     Deci.Plot.Stat.ivar = 1;
-    Deci.Plot.Stat.uvar = 2;
-    Deci.Plot.Stat.tail = 1;
-    Deci.Plot.Stat.statistic = 'depsamplesFmultivariate';
-        
+    
     for conds = 1:length(Deci.Plot.Draw)
         design = [];
+       
         
-        for subcond = 1:length(Deci.Plot.Draw{conds})
-            for subj = 1:size(Subjects,1)
-                design(1,subj+size(Subjects,1)*[subcond-1]) =  subcond;
-                design(2,subj+size(Subjects,1)*[subcond-1]) = subj;
-            end
-        end
         
-        Deci.Plot.Stat.design = design;
-        
-        if Deci.Plot.Freq.Topo.do
-            [topostat{conds}] = ft_freqstatistics(Deci.Plot.Stat, topotdata{Deci.Plot.Draw{conds}});
-        end
-        
-        if Deci.Plot.Freq.Square.do
-            [squarestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, squaretdata{:,Deci.Plot.Draw{conds}});
-        end
-        
-        if Deci.Plot.Freq.Wire.do
-            [wirestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, wiretdata{:,Deci.Plot.Draw{conds}});
-        end
-        
-        if Deci.Plot.Freq.Bar.do
-            [barstat{conds}] = ft_freqstatistics(Deci.Plot.Stat, bartdata{Deci.Plot.Draw{conds}});
-        end
+        switch Deci.Plot.Stat.Comp
+            case 'Conditions'
+                
+                Deci.Plot.Stat.uvar = 2;
+    
+                
+                for subcond = 1:length(Deci.Plot.Draw{conds})
+                    for subj = 1:size(Subjects,1)
+                        design(1,subj+size(Subjects,1)*[subcond-1]) =  subcond;
+                        design(2,subj+size(Subjects,1)*[subcond-1]) = subj;
+                    end
+                end
+                
+                Deci.Plot.Stat.design = design;
+                
+                Deci.Plot.Stat.tail = 1;
+                Deci.Plot.Stat.statistic = 'depsamplesFmultivariate';
+                
+                if Deci.Plot.Freq.Topo.do
+                    [topostat{conds}] = ft_freqstatistics(Deci.Plot.Stat, topotdata{Deci.Plot.Draw{conds}});
+                end
+                
+                if Deci.Plot.Freq.Square.do
+                    [squarestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, squaretdata{:,Deci.Plot.Draw{conds}});
+                end
+                
+                if Deci.Plot.Freq.Wire.do
+                    [wirestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, wiretdata{:,Deci.Plot.Draw{conds}});
+                end
+                
+                if Deci.Plot.Freq.Bar.do
+                    [barstat{conds}] = ft_freqstatistics(Deci.Plot.Stat, bartdata{Deci.Plot.Draw{conds}});
+                end
+                
+            case 'Bsl'
+                Deci.Plot.Stat.tail = 0;
+                Deci.Plot.Stat.statistic = 'indepsamplesT';
+                
+                Deci.Plot.Stat.design = ones(size(Subjects,1));
+                
+                
+                if Deci.Plot.Freq.Topo.do
+                    alltopotdata = ft_freqgrandaverage([],topotdata{Deci.Plot.Draw{conds}});
+                    alltopotdata.dimord = 'rpt_chan_freq_time';
+                    [topostat{conds}] = ft_freqstatistics(Deci.Plot.Stat, alltopotdata);
+                end
+                
+                if Deci.Plot.Freq.Square.do
+                    allsquaretdata = ft_freqgrandaverage([],squaretdata{Deci.Plot.Draw{conds}});
+                    allsquaretdata.dimord = 'rpt_chan_freq_time';
+                    [squarestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, allsquaretdata);
+                end
+                
+                if Deci.Plot.Freq.Wire.do
+                    allwiretdata = ft_freqgrandaverage([],wiretdata{Deci.Plot.Draw{conds}});
+                    allwiretdata.dimord = 'rpt_chan_freq_time';
+                    [wirestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, allwiretdata);
+                end
+                
+                if Deci.Plot.Freq.Bar.do
+                    allbartdata = ft_freqgrandaverage([],bartdata{Deci.Plot.Draw{conds}});
+                    allbartdata.dimord = 'rpt_chan_freq_time';
+                    [barstat{conds}] = ft_freqstatistics(Deci.Plot.Stat, allbartdata);
+                end
+                
+        end 
     end
 end
-
 
 %% Plot
 
@@ -459,7 +500,7 @@ for cond = 1:length(Deci.Plot.Draw)
                     title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
 
                     colorbar('vert');
-                    map = colormap('jet'); %'hot' 'gray'
+                    map = colormap('pink'); %'hot' 'gray'
                     colormap(map);
                     
                 else
@@ -485,7 +526,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 title([Deci.Plot.Subtitle{cond}{subcond}]);
 
                 colorbar('vert');
-                map = colormap('jet'); %'hot' 'gray'
+                map = colormap('pink'); %'hot' 'gray'
                 colormap(map);
             end
             
