@@ -115,12 +115,12 @@ exceldata = vertcat([{'Nlet'} colnames],exceldata);
 
 if exist([Deci.Folder.Plot filesep 'Nlet_Outputs.xls']) == 2
     writematrix([],[Deci.Folder.Plot filesep 'Nlet_Outputs'],'FileType','spreadsheet','Sheet','TempSheet');
-    xls_delete_sheets([Deci.Folder.Plot filesep 'Nlet_Outputs.xls'],Params.Title);
+    %xls_delete_sheets([Deci.Folder.Plot filesep 'Nlet_Outputs.xls'],Params.Title);
 end
 
 writecell(exceldata,[Deci.Folder.Plot filesep 'Nlet_Outputs'],'FileType','spreadsheet','Sheet',Params.Title);
 
-xls_delete_sheets([Deci.Folder.Plot filesep 'Nlet_Outputs.xls'],'TempSheet'); 
+%xls_delete_sheets([Deci.Folder.Plot filesep 'Nlet_Outputs.xls'],'TempSheet'); 
 
 end
 

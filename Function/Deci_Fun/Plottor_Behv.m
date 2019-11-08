@@ -295,11 +295,11 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
     
     if exist([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ]) == 2
         writematrix([],[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','TempSheet');
-        xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Full');
+        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Full');
     end
     
     writecell(exceldata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Full');
-    xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
+    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
     
     subs= [];
     conds = [];
@@ -332,12 +332,12 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
     
     if exist([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ]) == 2
         writematrix([],[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','TempSheet');
-        xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Summary');
+        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Summary');
     end
 
     excelAccdata = table(Sub.Acc(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(AccBlock(blks)),trls',fAcc,fAccsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'Accuracy' 'SEM'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Summary');
-    xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
+    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
 end
 
 for fig = find(Deci.Plot.Behv.RT.Figure)
@@ -357,11 +357,11 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     
     if exist([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ]) == 2
         writematrix([],[Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','TempSheet');
-        xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'RT_Full');
+        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'RT_Full');
     end
     
     writecell(exceldata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Full');
-    xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'TempSheet');
+    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'TempSheet');
     
     
     
@@ -392,12 +392,12 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     
     if exist([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ]) == 2
         writematrix([],[Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','TempSheet');
-        xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'RT_Summary');
+        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'RT_Summary');
     end
     
     excelAccdata = table(Sub.RT(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(RTBlock(blks)),trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
     writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Summary');
-    xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'TempSheet');
+    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'TempSheet');
     
     
 end
@@ -484,7 +484,7 @@ if ~isempty(Deci.Plot.Behv.Acc)
     end
     
     for lim = 1:numel(a)
-        a(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],a(:),'UniformOutput',false)));
+        a(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],a(:)','UniformOutput',false)));
     end
     
 end
@@ -496,8 +496,8 @@ if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
         for subj = 1:size(RT{fig},1)
             
             
-            a(fig,subj) = figure;
-            a(fig,subj).Visible = 'on';
+            d(fig,subj) = figure;
+            d(fig,subj).Visible = 'on';
             
             
             for draw = 1:size(RT{fig},2)
@@ -565,8 +565,8 @@ if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
         
     end
     
-    for lim = 1:numel(a)
-        a(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],a(:),'UniformOutput',false)));
+    for lim = 1:numel(d)
+        d(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],d(:)','UniformOutput',false)));
     end
     
 end
