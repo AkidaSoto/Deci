@@ -74,7 +74,11 @@ for subject_list = 1:length(Deci.SubjectList)
         
     else
         mkdir([Deci.Folder.Artifact])
-        copyfile([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat'],[Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '.mat'])
+        
+        load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
+        
+        data = rmfield(rmfield(data,'unmixing'),'topolabel');
+        save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
         
         
         data = [];
