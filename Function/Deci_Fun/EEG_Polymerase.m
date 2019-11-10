@@ -43,6 +43,7 @@ for j = 1:length(startstopseg)
     value = cellfun(@str2num,value);
     sample = {event(startstopseg(1,j):startstopseg(2,j)).sample};
     
+    
     begsample = sample{ismember(value,cfg.DT.Locks(1))} + sstime(1)*hdr.Fs;
     endsample = sample{ismember(value,cfg.DT.Locks(end))} + sstime(2)*hdr.Fs;
     

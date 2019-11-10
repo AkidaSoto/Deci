@@ -319,8 +319,15 @@ if Deci.Plot.Stat.do
                 
                 Deci.Plot.Stat.design = design;
                 
-                Deci.Plot.Stat.tail = 1;
-                Deci.Plot.Stat.statistic = 'depsamplesFmultivariate';
+                if length(Deci.Plot.Draw{conds}) > 2
+                    Deci.Plot.Stat.tail = 1;
+                    Deci.Plot.Stat.statistic = 'depsamplesFmultivariate';
+                    Deci.Plot.Stat.clustertail      = 1;
+                else
+                    Deci.Plot.Stat.statistic = 'depsamplesT';
+                    Deci.Plot.Stat.tail = 0;
+                    Deci.Plot.Stat.clustertail      = 0;
+                end
                 
                 if Deci.Plot.Freq.Topo.do
                     [topostat{conds}] = ft_freqstatistics(Deci.Plot.Stat, topotdata{Deci.Plot.Draw{conds}});
@@ -395,6 +402,10 @@ for cond = 1:length(Deci.Plot.Draw)
                 
                 ft_singleplotTFR(tacfg,squarestat{cond})
                 title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
+                          
+                ButtonH=uicontrol('Parent', squaret(cond),'Style','pushbutton','String','p Mask','Position',[10 10 100 25],'Visible','on','Callback',@pmask);
+                ButtonH.UserData = @ones;
+                
                 colormap('jet'); %'hot' 'gray'
                 ylabel('F score');
                 xlabel('time');
@@ -410,6 +421,12 @@ for cond = 1:length(Deci.Plot.Draw)
             if Deci.Plot.Stat.FPlots
                 topot(cond)  = figure;
                 topot(cond).Visible = 'on';
+                
+                tcfg.clim = 'maxmin';
+                tcfg.maskparameter ='mask';
+                
+                ButtonH=uicontrol('Parent', topot(cond),'Style','pushbutton','String','p Mask','Position',[10 10 100 25],'Visible','on','Callback',@pmask);
+                ButtonH.UserData = @ones;
                 
                 ft_topoplotER(tcfg, topostat{cond});
                 title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);

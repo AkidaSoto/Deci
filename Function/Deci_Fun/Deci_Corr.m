@@ -219,7 +219,7 @@ for param = 1:size(RVar,2)
             scfg.parameter = 'powspctrm';
             scfg.operation = Deci.Plot.Math{conds};
             MathData = ft_math(scfg,RCond{:});
-            RCond{size(RCond,1)+1} = MathData;
+            RCond{size(RCond,2)+1} = MathData;
         end
     end
     

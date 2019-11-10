@@ -86,10 +86,14 @@ for Cond = 1:length(Deci.Analysis.Conditions)
         
         info.subject_list = subject_list;
         info.Cond = Cond;
-        for funs = find(Deci.Analysis.Extra.Once)
+        
+        if isfield(Deci.Analysis.Extra,'Once')
             
-            if Deci.Analysis.Extra.list(funs)
-                feval(Deci.Analysis.Extra.Functions{funs},Deci,info,data,Deci.Analysis.Extra.Params{funs}{:});
+            for funs = find(Deci.Analysis.Extra.Once)
+                
+                if Deci.Analysis.Extra.list(funs)
+                    feval(Deci.Analysis.Extra.Functions{funs},Deci,info,data,Deci.Analysis.Extra.Params{funs}{:});
+                end
             end
         end
         
@@ -233,12 +237,13 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             info.Channels = Chan;
                             info.ChanNum = i;
                             info.Lock = Lock;
-                            
+                            if isfield(Deci.Analysis.Extra,'Once')
                             for funs = find(~Deci.Analysis.Extra.Once)
                                 
                                 if Deci.Analysis.Extra.list(funs)
                                     feval(Deci.Analysis.Extra.Functions{funs},Deci,info,freqplaceholder,Deci.Analysis.Extra.Params{funs}{:});
                                 end
+                            end
                             end
                         end
                     end
@@ -254,6 +259,9 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         mkdir([Deci.Folder.Analysis filesep 'CFC' filesep Deci.Analysis.CFC.method filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock}])
                         save([Deci.Folder.Analysis filesep 'CFC' filesep Deci.Analysis.CFC.method filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}],'cfc','-v7.3');
                     end
+                    
+                
+                    
                 end
                 
                 
