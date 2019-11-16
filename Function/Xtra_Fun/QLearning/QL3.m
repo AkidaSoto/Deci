@@ -45,7 +45,7 @@ end
 % Loop for running models 10 times with randomized starting conditinos
 
 
-for init = 1:10
+for init = 1:500
         
         Fit1.LB = [min([params.Value{:}]) min([params.Value{:}]) 0 0 .001];
         Fit1.UB = [max([params.Value{:}]) max([params.Value{:}]) 1 1 10];
