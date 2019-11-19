@@ -1,4 +1,4 @@
-function crossfreq = ft_singlecfc(cfg, freqlow, freqhigh)
+function crossfreq = ft_singlecfc(cfg,Deci,info,fourier,params)
 
 % FT_CROSSFREQUENCYANALYSIS performs cross-frequency analysis
 %
@@ -73,15 +73,8 @@ if ft_abort
     return
 end
 
-if nargin<3
-    % use the same data for the low and high frequencies
-    freqhigh = freqlow;
-end
-
-% ensure that the input data is valid for this function, this will also do
-% backward-compatibility conversions of old data that for example was read from
-% an old *.mat file
-freqhigh = freqlow;
+freqhigh = fourier;
+freqlow = fourier;
 
 freqlow  = ft_checkdata(freqlow,  'datatype', 'freq', 'feedback', 'yes');
 freqhigh = ft_checkdata(freqhigh, 'datatype', 'freq', 'feedback', 'yes');
@@ -154,163 +147,190 @@ timehigh = [min(latencyhigh,[],1); max(latencyhigh,[],1)];
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %TODO: make all instances of cfcdata the same dimensionality
 
-switch cfg.method
+for method = 1:length(Deci.Analysis.CFC.methods)
     
-    case 'coh'
-        % coherence
-        cohdatas = zeros(ntrial,nchan,size(LF,2),size(HF,2)) ;
-        for  i =1:nchan
-            chandataLF = freqlow.fourierspctrm(:,i,:,:);
-            chandataHF = freqhigh.fourierspctrm(:,i,:,:);
-            for j = 1:ntrial
-                cohdatas(j,i,:,:) = data2coh(squeeze(chandataLF(j,:,:,:)),squeeze(chandataHF(j,:,:,:)));
+    switch Deci.Analysis.CFC.methods{method}
+        
+        case 'coh'
+            % coherence
+            cohdatas = zeros(ntrial,nchan,size(LF,2),size(HF,2)) ;
+            for  i =1:nchan
+                chandataLF = freqlow.fourierspctrm(:,i,:,:);
+                chandataHF = freqhigh.fourierspctrm(:,i,:,:);
+                for j = 1:ntrial
+                    cohdatas(j,i,:,:) = data2coh(squeeze(chandataLF(j,:,:,:)),squeeze(chandataHF(j,:,:,:)));
+                end
             end
-        end
-        cfcdata = cohdatas;
-        
-    case 'plv'
-        % phase locking value
-        plvdatas = zeros(ntrial,nchanlow,nchanhigh,size(LF,2),size(HF,2),timebin) ;
-        
-        for t = 1:timebin
-            for  i =1:nchanlow
-                for k = 1:nchanhigh
-                    for fl = 1:size(LF,2)
-                        for fh = 1:size(HF,2)
-                            ltime = freqlow.time >= timelow(1,t) & freqlow.time <= timelow(2,t);
-                            htime = freqhigh.time >= timehigh(1,t) & freqhigh.time <= timehigh(2,t);
-                            
-                            lfreq = freqlow.freq >= LF(1,fl) & freqlow.freq <= LF(2,fl);
-                            hfreq = freqhigh.freq >= HF(1,fh) & freqhigh.freq <= HF(2,fh);
-                            
-                            chandataLF = freqlow.fourierspctrm(:,i,lfreq,ltime);
-                            chandataHF = freqhigh.fourierspctrm(:,k,hfreq,htime);
-                            for j = 1:ntrial
-                                plvdatas(j,i,k,fl,fh,t) = data2plv(permute(chandataLF(j,:,:,:),[4 2 3 1]),permute(chandataHF(j,:,:,:),[4 2 3 1]));
+            cfcdata = cohdatas;
+            
+        case 'plv'
+            % phase locking value
+            plvdatas = zeros(ntrial,nchanlow,nchanhigh,size(LF,2),size(HF,2),timebin) ;
+            
+            for t = 1:timebin
+                for  i =1:nchanlow
+                    for k = 1:nchanhigh
+                        for fl = 1:size(LF,2)
+                            for fh = 1:size(HF,2)
+                                ltime = freqlow.time >= timelow(1,t) & freqlow.time <= timelow(2,t);
+                                htime = freqhigh.time >= timehigh(1,t) & freqhigh.time <= timehigh(2,t);
+                                
+                                lfreq = freqlow.freq >= LF(1,fl) & freqlow.freq <= LF(2,fl);
+                                hfreq = freqhigh.freq >= HF(1,fh) & freqhigh.freq <= HF(2,fh);
+                                
+                                chandataLF = freqlow.fourierspctrm(:,i,lfreq,ltime);
+                                chandataHF = freqhigh.fourierspctrm(:,k,hfreq,htime);
+                                for j = 1:ntrial
+                                    plvdatas(j,i,k,fl,fh,t) = data2plv(permute(chandataLF(j,:,:,:),[4 2 3 1]),permute(chandataHF(j,:,:,:),[4 2 3 1]));
+                                end
                             end
                         end
                     end
                 end
             end
-        end
-        cfcdata = plvdatas;
-        
-    case  'mvl'
-        % mean vector length
-        mvldatas = zeros(ntrial,nchan,size(LF,2),size(HF,2));
-        for  i =1:nchan
-            chandataLF = freqlow.fourierspctrm(:,i,:,:);
-            chandataHF = freqhigh.fourierspctrm(:,i,:,:);
-            for j = 1:ntrial
-                mvldatas(j,i,:,:) = data2mvl(squeeze(chandataLF(j,:,:,:)),squeeze(chandataHF(j,:,:,:)));
+            cfcdata = plvdatas;
+            
+        case  'mvl'
+            % mean vector length
+            mvldatas = zeros(ntrial,nchan,size(LF,2),size(HF,2));
+            for  i =1:nchan
+                chandataLF = freqlow.fourierspctrm(:,i,:,:);
+                chandataHF = freqhigh.fourierspctrm(:,i,:,:);
+                for j = 1:ntrial
+                    mvldatas(j,i,:,:) = data2mvl(squeeze(chandataLF(j,:,:,:)),squeeze(chandataHF(j,:,:,:)));
+                end
             end
-        end
-        cfcdata = mvldatas;
-        
-    case  'mi'
-        % modulation index
-        nbin       = 21; % number of phase bin + 1
-        pacdatas = zeros(ntrial,nchanlow,nchanhigh,size(LF,2),size(HF,2),timebin) ;
-        
-        for t = 1:timebin
-            for  i =1:nchanlow
-                for k = 1:nchanhigh
-                    
-                    for fl = 1:size(LF,2)
-                        for fh = 1:size(HF,2)
-                            ltime = freqlow.time >= timelow(1,t) & freqlow.time <= timelow(2,t);
-                            htime = freqhigh.time >= timehigh(1,t) & freqhigh.time <= timehigh(2,t);
-                            
-                            lfreq = freqlow.freq >= LF(1,fl) & freqlow.freq <= LF(2,fl);
-                            hfreq = freqhigh.freq >= HF(1,fh) & freqhigh.freq <= HF(2,fh);
-                            
-                            chandataLF = freqlow.fourierspctrm(:,i,lfreq,ltime);
-                            chandataHF = freqhigh.fourierspctrm(:,k,hfreq,htime);
-                            
-                            for j = 1:ntrial
-                                pacdatas(j,i,k,fl,fh,t) = data2pac(squeeze(chandataLF(j,:,:,:)),squeeze(chandataHF(j,:,:,:)),nbin);
+            cfcdata = mvldatas;
+            
+        case  'mi'
+            % modulation index
+            nbin       = 21; % number of phase bin + 1
+            pacdatas = zeros(ntrial,nchanlow,nchanhigh,size(LF,2),size(HF,2),timebin) ;
+            
+            for t = 1:timebin
+                for  i =1:nchanlow
+                    for k = 1:nchanhigh
+                        
+                        for fl = 1:size(LF,2)
+                            for fh = 1:size(HF,2)
+                                ltime = freqlow.time >= timelow(1,t) & freqlow.time <= timelow(2,t);
+                                htime = freqhigh.time >= timehigh(1,t) & freqhigh.time <= timehigh(2,t);
+                                
+                                lfreq = freqlow.freq >= LF(1,fl) & freqlow.freq <= LF(2,fl);
+                                hfreq = freqhigh.freq >= HF(1,fh) & freqhigh.freq <= HF(2,fh);
+                                
+                                chandataLF = freqlow.fourierspctrm(:,i,lfreq,ltime);
+                                chandataHF = freqhigh.fourierspctrm(:,k,hfreq,htime);
+                                
+                                for j = 1:ntrial
+                                    pacdatas(j,i,k,fl,fh,t) = data2pac(squeeze(chandataLF(j,:,:,:)),squeeze(chandataHF(j,:,:,:)),nbin);
+                                end
+                                
                             end
-                            
                         end
                     end
                 end
             end
-        end
-        
-        cfcdata = pacdatas;
-        
-end % switch method for data preparation
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% do the actual computation
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-switch cfg.method
+            
+            cfcdata = pacdatas;
+        case 'cs_cl'
+            pacdatas   = zeros(2,nchan,ntime) ;
+            for  i =1:nchan
+                chandataLF = circ_ang2rad(circ_mean(angle(freqlow.fourierspctrm(:,i,:,:)),[],3));
+                chandataHF =  mean(abs(freqhigh.fourierspctrm(:,i,:,:)),3);
+                for j = 1:ntime
+                    [pacdatas(1,i,j) pacdatas(2,i,j)] = circ_corrcl(squeeze(chandataLF(:,:,:,j)),squeeze(chandataHF(:,:,:,j)));
+                end
+            end
+            cfcdata = pacdatas;
+        case 'cs_cc'
+            pacdatas   = zeros(2,nchan,ntime) ;
+            for  i =1:nchan
+                chandataLF = circ_ang2rad(circ_mean(angle(freqlow.fourierspctrm(:,i,:,:)),[],3));
+                chandataHF = circ_ang2rad(circ_mean(angle(freqhigh.fourierspctrm(:,i,:,:)),[],3));
+                for j = 1:ntime
+                    [pacdatas(1,i,j) pacdatas(2,i,j)] = circ_corrcc(squeeze(chandataLF(j,:,:,:)),squeeze(chandataHF(j,:,:,:)));
+                end
+            end
+            cfcdata = pacdatas;
+    end % switch method for data preparation
     
-    case 'coh'
-        [ntrial,nchan,nlf,nhf] = size(cfcdata);
-        if strcmp(cfg.keeptrials, 'no')
-            crsspctrm = reshape(abs(mean(cfcdata,1)), [nchan, nlf, nhf]);
-            dimord = 'chan_freqlow_freqhigh' ;
-        else
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % do the actual computation
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    switch Deci.Analysis.CFC.methods{method}
+        
+        case 'coh'
+            [ntrial,nchan,nlf,nhf] = size(cfcdata);
+            if strcmp(cfg.keeptrials, 'no')
+                crsspctrm = reshape(abs(mean(cfcdata,1)), [nchan, nlf, nhf]);
+                dimord = 'chan_freqlow_freqhigh' ;
+            else
+                crsspctrm = abs(cfcdata);
+                dimord = 'rpt_chan_freqlow_freqhigh' ;
+            end
+            
+        case 'plv'
+            [ntrial,nchanlow,nchanhigh,nlf,nhf,ntime] = size(cfcdata);
+            
             crsspctrm = abs(cfcdata);
-            dimord = 'rpt_chan_freqlow_freqhigh' ;
-        end
-        
-    case 'plv'
-        [ntrial,nchanlow,nchanhigh,nlf,nhf,ntime] = size(cfcdata);
-        
-        crsspctrm = abs(cfcdata);
-        dimord = 'rpt_chan_chan_freqlow_freqhigh_time' ;
-        
-        if strcmp(cfg.keeptrials, 'no')
-            dimord = 'chan_chan_freqlow_freqhigh_time' ;
-            crsspctrm =  permute(mean(crsspctrm,1),[2:length(size(crsspctrm)) 1]);
-        end
-        
-    case  'mvl'
-        [ntrial,nchan,nlf,nhf] = size(cfcdata);
-        if strcmp(cfg.keeptrials, 'no')
-            crsspctrm = reshape(abs(mean(cfcdata,1)), [nchan, nlf, nhf]);
-            dimord = 'chan_freqlow_freqhigh' ;
-        else
-            crsspctrm = abs(cfcdata);
-            dimord = 'rpt_chan_freqlow_freqhigh' ;
-        end
-        
-    case  'mi'
-        [ntrial,nchanlow,nchanhigh,nlf,nhf,nbin,ntime] = size(cfcdata);
-        
-        dimord = 'rpt_chan_chan_freqlow_freqhigh_time' ;
-        crsspctrm = cfcdata;
-       
-        
-        if strcmp(cfg.keeptrials, 'no')
-            dimord = 'chan_chan_freqlow_freqhigh_time' ;
-            crsspctrm =  permute(mean(crsspctrm,1),[2:length(size(crsspctrm)) 1]);
-            cfcdata = permute(mean(cfcdata,1),[2:length(size(cfcdata)) 1]);
-        end
-        
-end % switch method for actual computation
-
-
-crossfreq.labellow      = freqlow.label;
-crossfreq.labelhigh      = freqhigh.label;
-crossfreq.crsspctrm  = crsspctrm;
-crossfreq.dimord     = dimord;
-crossfreq.freqlow    = cfg.freqlow;
-crossfreq.freqhigh   = cfg.freqhigh;
-crossfreq.timelow = mean(timelow,1);
-crossfreq.timehigh = mean(timehigh,1);
-
-ft_postamble debug
-ft_postamble trackconfig
-ft_postamble previous   freqlow freqhigh
-% ft_postamble provenance crossfreq
-ft_postamble history    crossfreq
-ft_postamble savevar    crossfreq
-
+            dimord = 'rpt_chan_chan_freqlow_freqhigh_time' ;
+            
+            if strcmp(cfg.keeptrials, 'no')
+                dimord = 'chan_chan_freqlow_freqhigh_time' ;
+                crsspctrm =  permute(mean(crsspctrm,1),[2:length(size(crsspctrm)) 1]);
+            end
+            
+        case  'mvl'
+            [ntrial,nchan,nlf,nhf] = size(cfcdata);
+            if strcmp(cfg.keeptrials, 'no')
+                crsspctrm = reshape(abs(mean(cfcdata,1)), [nchan, nlf, nhf]);
+                dimord = 'chan_freqlow_freqhigh' ;
+            else
+                crsspctrm = abs(cfcdata);
+                dimord = 'rpt_chan_freqlow_freqhigh' ;
+            end
+            
+        case  'mi'
+            [ntrial,nchanlow,nchanhigh,nlf,nhf,nbin,ntime] = size(cfcdata);
+            
+            dimord = 'rpt_chan_chan_freqlow_freqhigh_time' ;
+            crsspctrm = cfcdata;
+            
+            
+            if strcmp(cfg.keeptrials, 'no')
+                dimord = 'chan_chan_freqlow_freqhigh_time' ;
+                crsspctrm =  permute(mean(crsspctrm,1),[2:length(size(crsspctrm)) 1]);
+                cfcdata = permute(mean(cfcdata,1),[2:length(size(cfcdata)) 1]);
+            end
+            
+    end % switch method for actual computation
+    
+    
+    crossfreq.labellow      = freqlow.label;
+    crossfreq.labelhigh      = freqhigh.label;
+    crossfreq.crsspctrm  = crsspctrm;
+    crossfreq.dimord     = dimord;
+    crossfreq.freqlow    = cfg.freqlow;
+    crossfreq.freqhigh   = cfg.freqhigh;
+    crossfreq.timelow = mean(timelow,1);
+    crossfreq.timehigh = mean(timehigh,1);
+    
+    ft_postamble debug
+    ft_postamble trackconfig
+    ft_postamble previous   freqlow freqhigh
+    % ft_postamble provenance crossfreq
+    ft_postamble history    crossfreq
+    ft_postamble savevar    crossfreq
+    
+    
+    mkdir([Deci.Folder.Analysis filesep 'CFC' filesep Deci.Analysis.CFC.methods{method} filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.LocksTitle{info.Lock}])
+    save([Deci.Folder.Analysis filesep 'CFC' filesep Deci.Analysis.CFC.methods{method} filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}],'crossfreq','-v7.3');
+    
 end % function
+
+end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -410,7 +430,7 @@ for i = 1:size(Ang,1)
         
         P = squeeze(pac)/ nansum(pac);
         pcdata(i,j) = nansum(P.* log2(P./Q))./log2(nbin-1);
-
+        
         
     end
 end

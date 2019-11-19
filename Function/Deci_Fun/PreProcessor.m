@@ -169,71 +169,6 @@ cfg           = [];
 cfg.numcomponent= 20;
 cfg.unmixing  =data_musc.unmixing;
 cfg.topolabel = data_musc.topolabel;
-cfg.feedback = feedback;
-cfg.demean     = 'no';
-data_muscfree     = rmfield(ft_componentanalysis(cfg, data),'cfg');
-
-figure;
-cfg.component = [1:20];
-cfg.viewmode = 'component';
-
-clear cfg.method
-cfg.channel = 'all';
-
-cfg.component = [];
-
-
-comps = [data_musc.trial{:}];
-eyes = [data.trial{:}];
-eyechan = eyes(ismember(data.label,Deci.ICA.eog),:);
-
-for eye = 1:size(eyechan,1)
-    for comp = 1:size(comps,1)
-        [compcorr, p] = corrcoef(eyechan(eye,:),comps(comp,:));
-        corr(eye,comp,1) = compcorr(1,2);
-        corr(eye,comp,2) = p(1,2);
-    end
-    
-    component{eye} = find(abs(corr(eye,:,1)) >= Deci.ICA.cutoff);
-end
-
-
-
-if ~Deci.ICA.Automatic
-    
-    cfg.component = [1:20];
-    cfg.viewmode = 'component';
-    cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
-    
-    cfg.channelcolormap = zeros(20,3);
-    cfg.colorgroups = ones(20,1)+1;
-    
-    cfg.channelcolormap(unique([component{:}]),1) = 1;
-    cfg.colorgroups(unique([component{:}]),1) = 1;
-    
-    
-    cfg.channel = 'all';
-    
-    fakeUI = figure;
-    select_labels(fakeUI,[],sort(data_musc.label));
-    fakeUI.Visible =  'off';
-    ft_databrowser(cfg,data_musc);
-    suptitle(Deci.SubjectList{subject_list});
-    waitfor(findall(0,'Name','Select Labels'),'BeingDeleted','on');
-    
-    if isempty(fakeUI.UserData)
-        cfg.component = [];
-    else
-        cfg.component = find(ismember(data_musc.label,fakeUI.UserData));
-    end
-    close(fakeUI)
-    corr = [];
-else
-    cfg.component = [component{:}];
-end
-
-cfg.demean = 'yes';
-data = ft_rejectcomponent(cfg, data_muscfree);
 
 data.condinfo = condinfo;
 data.preart = preart;
@@ -241,8 +176,6 @@ data.preart = preart;
 data = rmfield(data,'cfg');
 
 mkdir([Deci.Folder.Preproc])
-save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data','-v7.3')
-data = rmfield(data,'trial');
-save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '_info'],'data','corr','-v7.3');
+save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data','cfg','-v7.3')
 
 end

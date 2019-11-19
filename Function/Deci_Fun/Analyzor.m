@@ -13,7 +13,6 @@ else
     noneeg_flag = 0;
 end
 
-
 if noneeg_flag
     load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list} '.mat'],'cfg');
     data =cfg;
@@ -26,7 +25,6 @@ if noneeg_flag
 else
     load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data');
 end
-
 
 condinfo = data.condinfo;
 preart = data.preart;
@@ -86,10 +84,14 @@ for Cond = 1:length(Deci.Analysis.Conditions)
         
         info.subject_list = subject_list;
         info.Cond = Cond;
-        for funs = find(Deci.Analysis.Extra.Once)
+        
+        if isfield(Deci.Analysis.Extra,'Once')
             
-            if Deci.Analysis.Extra.list(funs)
-                feval(Deci.Analysis.Extra.Functions{funs},Deci,info,data,Deci.Analysis.Extra.Params{funs}{:});
+            for funs = find(Deci.Analysis.Extra.Once)
+                
+                if Deci.Analysis.Extra.list(funs)
+                    feval(Deci.Analysis.Extra.Functions{funs},Deci,info,data,Deci.Analysis.Extra.Params{funs}{:});
+                end
             end
         end
         
@@ -146,7 +148,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     fcfg.output='fourier';
                     fcfg.pad = 'maxperlen';
                     fcfg.scc = 0;
-                    fcfg.keeptapers = 'no';
+                    fcfg.keeptapers = 'yes';
                     fcfg.keeptrials = 'yes';
                     fcfg.toi = Deci.Analysis.Freq.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Freq.Toi(2);
                     
@@ -190,6 +192,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     acfg.appenddim = 'freq';
                     
                     Fourier = rmfield(ft_appendfreq(acfg,tempfreq{:}),'cfg');
+                    Fourier.dimord = 'rpt_chan_freq_time';
                     Fourier.condinfo = dat.condinfo;
                     trllength = size(Fourier.fourierspctrm,1);
                 end
@@ -232,12 +235,13 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             info.Channels = Chan;
                             info.ChanNum = i;
                             info.Lock = Lock;
-                            
+                            if isfield(Deci.Analysis.Extra,'Once')
                             for funs = find(~Deci.Analysis.Extra.Once)
                                 
                                 if Deci.Analysis.Extra.list(funs)
                                     feval(Deci.Analysis.Extra.Functions{funs},Deci,info,freqplaceholder,Deci.Analysis.Extra.Params{funs}{:});
                                 end
+                            end
                             end
                         end
                     end
@@ -245,16 +249,12 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 
                 
                 %% Do CFC Analysis
-                if Deci.Analysis.CFC.do
-                    for method = 1:length(Deci.Analysis.CFC.methods)
-                        Deci.Analysis.CFC.method = Deci.Analysis.CFC.methods{method};
-                        cfc = ft_singlecfc(Deci.Analysis.CFC,Fourier);
-                        cfc.method = Deci.Analysis.CFC.method;
-                        mkdir([Deci.Folder.Analysis filesep 'CFC' filesep Deci.Analysis.CFC.method filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock}])
-                        save([Deci.Folder.Analysis filesep 'CFC' filesep Deci.Analysis.CFC.method filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}],'cfc','-v7.3');
-                    end
+                if Deci.Analysis.Connectivity.do
+                        for funs = find(Deci.Analysis.Connectivity.list)
+                            feval(Deci.Analysis.Connectivity.Functions{funs},Deci,info,Fourier,Deci.Analysis.Connectivity.Params{funs}{:});
+                        end
+
                 end
-                
                 
                 disp(['s:' num2str(subject_list) ' c:' num2str(Cond) ' Lock' num2str(Lock) ' time: ' num2str(etime(clock ,TimerChan))]);
             end
