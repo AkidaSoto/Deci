@@ -1,44 +1,40 @@
 function AppendEEGs(Dir,datatype)
 
-b = CleanDir(Dir);
+AllFiles = CleanDir(Dir);
 
 if exist(strcat(Dir,'_new'),'dir')
- b = b(~ismember(b,CleanDir(strcat(Dir,'_new'))));
+ AllFiles = AllFiles(~ismember(AllFiles,CleanDir(strcat(Dir,'_new'))));
 end
 
-b = unique(cellfun(@(d) d(1),cellfun(@(c) strsplit(c,'.'),b,'un',0)));
+AllFiles = unique(cellfun(@(d) d(1),cellfun(@(c) strsplit(c,'.'),AllFiles,'un',0)));
 
-a = cellfun(@(c) isequal('2',c{end}(1)),cellfun(@(c) strsplit(c,'_'),b,'UniformOutput',false));
+IsCopy = cellfun(@(c) isstrprop(c{end}(1),'digit'),cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',false));
 
-c = b(~a);
-d = b(a);
+BaseFiles = AllFiles(~IsCopy);
+CopyFiles = AllFiles(IsCopy);
 
-d2 = cellfun(@(e) e([1:end-2]),d,'UniformOutput',false);
-
-[commons,notcommons] = intersect(d2,c);
+CopysBaseName = cellfun(@(e) e([1:end-2]),CopyFiles,'UniformOutput',false);
 
 mkdir(strcat(Dir,'_new'));
-
-
-for j = 1:length(commons)
+for Each = 1:length(BaseFiles)
     
+    Copies = CopyFiles(ismember(CopysBaseName,BaseFiles{Each}));
     
-    hdr   = ft_read_header([Dir filesep commons{j} '.' datatype]);
-    event1 = ft_read_event([Dir filesep commons{j} '.' datatype]); 
-    dat1   = ft_read_data([Dir filesep commons{j} '.' datatype]);
+    hdr   = ft_read_header([Dir filesep BaseFiles{Each} '.' datatype]);
+    event = ft_read_event([Dir filesep BaseFiles{Each} '.' datatype]); 
+    dat   = ft_read_data([Dir filesep BaseFiles{Each} '.' datatype]);
     
-    event2 = ft_read_event([Dir filesep commons{j} '.' datatype]); 
-    dat2   = ft_read_data([Dir filesep commons{j} '.' datatype]);
+    for cop = 1:length(Copies)
+        
+        event2 = ft_read_event([Dir filesep Copies{cop} '.' datatype]);
+        dat2   = ft_read_data([Dir filesep Copies{cop} '.' datatype]);
+        
+        event = [event arrayfun(@(c) setfield(c,'sample',c.sample + event(end).sample),event2)];
+        dat = cat(2,dat,dat2);
+    end
+   
+    ft_write_data([Dir '_new' filesep BaseFiles{Each}],dat,'header',hdr,'dataformat','brainvision_eeg','event',event)
     
-    event = [event1 arrayfun(@(c) setfield(c,'sample',c.sample + event1(end).sample),event2)];
-    dat = cat(2,dat1,dat2);
-    
-    ft_write_data([Dir '_new' filesep commons{j}],dat,'header',hdr,'dataformat','brainvision_eeg','event',event)
-    
-end
-
-if ~isempty(notcommons)
-    movefile(c(~ismember(c,d2)),[Dir  '_new'])
 end
 
 end

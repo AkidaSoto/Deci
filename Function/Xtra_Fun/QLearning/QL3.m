@@ -1,4 +1,4 @@
-function [out] = QL2(Deci,info,dat,params)
+function [out] = QL3(Deci,info,dat,params)
 %params.States = [20 21 23 24];
 %params.Actions = [31 32];
 %params.Reward  = [51 52];
@@ -23,7 +23,7 @@ else
     blocknumbers = -1;
 end
 
-Values = any(ismember(trialtypes',params.States)');
+Values = find(ismember(params.States,trialtypes));
 
 %Sorting data into blcks
 for blk = 1:length(blocknumbers)
@@ -44,11 +44,11 @@ end
 
 % Loop for running models 10 times with randomized starting conditinos
 
-
-for init = 1:500
+try
+for init = 1:params.Reps
         
-        Fit1.LB = [min([params.Value{:}]) min([params.Value{:}]) 0 0 .001];
-        Fit1.UB = [max([params.Value{:}]) max([params.Value{:}]) 1 1 10];
+        Fit1.LB = [min([params.Value{:}]) min([params.Value{:}]) 0 0 1e-6];
+        Fit1.UB = [max([params.Value{:}]) max([params.Value{:}]) 1 1 30];
         Fit1.init =rand(1,length(Fit1.LB)).*(Fit1.UB-Fit1.LB)+Fit1.LB;
         
         Fit2.LB = [0 0 1e-6];
@@ -57,6 +57,7 @@ for init = 1:500
         
         Fit3.LB = [0 1e-6];
         Fit3.UB = [1 3];
+        
         Fit3.init =rand(1,length(Fit3.LB)).*(Fit3.UB-Fit3.LB)+Fit3.LB;
         q(init,:) = params.Start;
 
@@ -65,14 +66,14 @@ for init = 1:500
             [Fit1.init],[],[],[],[],[Fit1.LB],[Fit1.UB],[],...
             optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
         
-        [LLE(1,init),qs{1,init},P{1,init},PE{1,init}] = FeedbackQ([Value{1,init}(1) Value{1,init}(2)],Actions,Rewards, Value{1,init}(3),Value{1,init}(4),Value{1,init}(5));
-
+        [LLE(1,init),qs{1,init},P{1,init},PE{1,init},qblock{1,init},Peblock{1,init}] = FeedbackQ([Value{1,init}(1) Value{1,init}(2)],Actions,Rewards, Value{1,init}(3),Value{1,init}(4),Value{1,init}(5));
+        
         [Value{2,init}] = ...
             fmincon(@(x) FeedbackQ(q(init,:),Actions,Rewards,x(1),x(2),x(3)),...
             [Fit2.init],[],[],[],[],[Fit2.LB],[Fit2.UB],[],...
             optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
         
-        [LLE(2,init),qs{2,init},P{2,init},PE{2,init}] = FeedbackQ(q(init,:),Actions,Rewards, Value{2,init}(1),Value{2,init}(2),Value{2,init}(3));
+        [LLE(2,init),qs{2,init},P{2,init},PE{2,init},qblock{2,init},Peblock{2,init}] = FeedbackQ(q(init,:),Actions,Rewards, Value{2,init}(1),Value{2,init}(2),Value{2,init}(3));
          
 
         [Value{3,init}] = ...
@@ -80,12 +81,17 @@ for init = 1:500
             [Fit3.init],[],[],[],[],[Fit3.LB],[Fit3.UB],[],...
             optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
         
-        [LLE(3,init),qs{3,init},P{3,init},PE{3,init}] = SimpleQ(q(init,:),Actions,Rewards, Value{3,init}(1),Value{3,init}(2));
+        [LLE(3,init),qs{3,init},P{3,init},PE{3,init},qblock{3,init},Peblock{3,init}] = SimpleQ(q(init,:),Actions,Rewards, Value{3,init}(1),Value{3,init}(2));
         
         LLE2(:,init) = aicbic(-LLE(:,init),[5 3 2]);
         
         
 end
+catch
+    error(['init ' num2str(Fit1.init) ' ' num2str(Fit2.init) ' ' num2str(Fit3.init) ' ']);
+end
+
+
 [Best,I] = min(LLE,[],2);
 [Best2,I2] = min(LLE2,[],2);
 
@@ -98,10 +104,14 @@ for m = 1:size(Best,1)
     PseudoR{m} = 1 - [-Best(m)/[length(cat(1,Actions{:}))*log(.05)]];
     AIC{m} = Best2(m);
     
+    Q_all{m} = qblock{m};
+    Pe_all{m} = Peblock{m};
+    
     if Deci.Analysis.ApplyArtReject
         Q{m} = Q{m}(find(ismember(dat.preart{3}(info.alltrials(info.allnonnans)),dat.condinfo{3})));
         Pe{m} = Pe{m}(find(ismember(dat.preart{3}(info.alltrials(info.allnonnans)),dat.condinfo{3})));
     end
+    
 end
 
 
@@ -119,88 +129,87 @@ save([Deci.Folder.Analysis filesep 'Extra' filesep 'Q' filesep Deci.SubjectList{
 mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Pe' filesep Deci.SubjectList{info.subject_list}  filesep  ])
 save([Deci.Folder.Analysis filesep 'Extra' filesep 'Pe' filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.CondTitle{info.Cond}],'Pe');
 
+mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Q_all' filesep Deci.SubjectList{info.subject_list}])
+save([Deci.Folder.Analysis filesep 'Extra' filesep 'Q_all' filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.CondTitle{info.Cond}],'Q_all');
+
+mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Pe_all' filesep Deci.SubjectList{info.subject_list}  filesep  ])
+save([Deci.Folder.Analysis filesep 'Extra' filesep 'Pe_all' filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.CondTitle{info.Cond}],'Pe_all');
+
 mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'PseudoR' filesep Deci.SubjectList{info.subject_list} ])
 save([Deci.Folder.Analysis filesep 'Extra' filesep 'PseudoR' filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.CondTitle{info.Cond}],'PseudoR');
 
 mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectList{info.subject_list} ])
 save([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.CondTitle{info.Cond}],'AIC');
 
-% 
-% for blk = 1:size(Best,3)
-%     
-%     figure;
-%     
-%     
-%     plot(Actions{blk} == params.Actions(1))
-%     
-%     Pb = [];
-%     for m = 1:size(Best,1)
-%         for t = 1:1000
-%             Pb(t,:) = Simu(P{m,I(m,1,blk),blk});
-%         end
-%         hold on
-%         plot(mean(Pb,1))
-%     end
-%     
-%     legend(['Actual Data'],...
-%     ['SimpleQ (' num2str(Best(1,blk)) ')' ], ...
-%     ['FeedbackQ(' num2str(Best(2,blk)) ')' ],...
-%     ['InteractiveQ (' num2str(Best(3,blk)) ')' ]);
-% 
-% title(['block ' num2str(blk)])
-% 
-% end
-
-
-
-    function [LLE,qout,P,PE] = SimpleQ(q,a,r,alp,beta)
-        
-        %[qout,PE,P,LLE] =
+    function [LLE,qout,P,PE,qblock,PEblock] = SimpleQ(q,a,r,alp,beta)
         
         P = [];
         PE = [];
         qout = [];
+        qin = q;
         
         for block = 1:length(a)
             
             actions = params.Actions;
+            qblock{block} = [];
+            PEblock{block} = [];
+            q = qin;
             
             for Act = 1:length(a{block})
                 
                 which = find(a{block}(Act) == actions);
                 
-                PE(end+1) = (r{block}(Act) -q(Act,which) );
+                qout(end+1) = q(Act,which);
+                qblock{block}(end+1) =  qout(end);
+                
+                PE(end+1) = (r{block}(Act) - q(Act,which));
+                PEblock{block}(end+1) =  PE(end);
                
+                P(end+1) = exp(q(Act,which)/beta)/[exp(q(Act,which)/beta) + exp(q(Act,find(a{block}(Act) ~= actions))/beta)];
+                
+                if isnan(P(end))
+                    P(end) = q(Act,which) > q(Act,find(a{block}(Act) ~= actions));
+                end
+                
                 q(Act+1,which) = q(Act,which) + alp*PE(end);
-                
                 q(Act+1,find(a{block}(Act) ~= actions))  = q(Act,find(a{block}(Act) ~= actions));
-                
-                P(end+1) = exp(beta*q(Act+1,which))/sum(exp(beta*q(Act+1,:)));
-                qout(end+1) = q(Act+1,which);
-                
-                
             end
         end
         
-        LLE = -nansum(log(P));
-        
+        LLE = -sum(P);
     end
 
-    function [LLE,qout,P,PE] = FeedbackQ(q,a,r,alpP,alpN,beta)
+    function [LLE,qout,P,PE,qblock,PEblock] = FeedbackQ(q,a,r,alpP,alpN,beta)
         
          P = [];
          PE = [];
          qout = [];
+         qin = q;
+         
          
          for block = 1:length(a)
              
              actions = params.Actions;
-             
+             qblock{block} = [];
+             PEblock{block} = [];
+             q = qin;
+
              for Act = 1:length(a{block})
                  
                  which = find(a{block}(Act) == actions);
                  
+                 qout(end+1) = q(Act,which);
+                 qblock{block}(end+1) =  qout(end);
+                                  
                  PE(end+1) = (r{block}(Act) - q(Act,which));
+                 PEblock{block}(end+1) =  PE(end);
+                 
+                 P(end+1) = exp(q(Act,which)/beta)/[exp(q(Act,which)/beta) + exp(q(Act,find(a{block}(Act) ~= actions))/beta)];
+                 
+                 if isnan(P(end))
+                     P(end) = q(Act,which) > q(Act,find(a{block}(Act) ~= actions));
+                 end
+                 
                  
                  if PE(end) > 0
                      q(Act+1,which) = q(Act,which) + alpP*PE(end);
@@ -208,25 +217,29 @@ save([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectLis
                      q(Act+1,which) = q(Act,which) + alpN*PE(end);
                  end
                  q(Act+1,find(a{block}(Act) ~= actions))  = q(Act,find(a{block}(Act) ~= actions));
+
                  
-                 P(end+1) = exp(beta*q(Act+1,which))/sum(exp(beta*q(Act+1,:)));
-                 qout(end+1) = q(Act+1,which);
                  
              end
          end
         
-        LLE = -nansum(log(P));
+        LLE = -sum(P);
         
     end
 
-    function [LLE,qout,P,PE] = InteractiveQ(q,a,r,alpP,alpN,beta)
+    function [LLE,qout,P,PE,qblock,PEblock] = InteractiveQ(q,a,r,alpP,alpN,beta)
         P = [];
         PE = [];
         qout = [];
+        qin = q;
+        
         
         for block = 1:length(a)
             
             actions = params.Actions;
+            qblock{block} = [];
+            PEblock{block} = [];
+            q = qin;
             
             for Act = 1:length(a{block})
                 
@@ -245,14 +258,15 @@ save([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectLis
                 P(end+1) = exp(beta*q(Act+1,which))/sum(exp(beta*q(Act+1,:)));
                 qout(end+1) = q(Act+1,which);
                 
-                
+                qblock{block}(end+1) =  qout(end);
+                PEblock{block}(end+1) =  PE(end);
             end
         end
         
         LLE = -nansum(log(P));
     end
 
-    function [LLE,qout,P,PE] = ModelQ(q,a,r,alpP,alpN,betaP,betaR)
+    function [LLE,qout,P,PE,qblock,PEblock] = ModelQ(q,a,r,alpP,alpN,betaP,betaR)
         
         actions = sort(unique(a));
         
@@ -281,19 +295,5 @@ save([Deci.Folder.Analysis filesep 'Extra' filesep 'AIC' filesep Deci.SubjectLis
         end
         
          LLE = -nansum(log(P));
-    end
-
-    function B = Simu(A)
-        
-        for act = 1:length(A)
-            if ~isnan(A(act))
-                
-                B(act) = rand < A(act);
-                
-            else
-                B(act) = 0;
-            end
-        end
-        
     end
 end
