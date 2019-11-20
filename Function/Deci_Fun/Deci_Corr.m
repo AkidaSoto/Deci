@@ -109,10 +109,7 @@ end
 for Var = 1:length(params.Variable)
     for Conditions = 1:length(Deci.Plot.CondTitle)
         for subject_list = 1:length(Deci.SubjectList)
-            
-            
-            
-            
+
             Variable = load([Deci.Folder.Analysis filesep 'Extra' filesep params.Variable{Var} filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.CondTitle{Conditions}],params.Variable{Var});
             
             Type = fieldnames(Variable);
@@ -282,7 +279,7 @@ for param = 1:size(RVar,2)
             for subcond = 1:length(Deci.Plot.Draw{cond})
                 
                 
-                RCond{subcond}.mask = RCondStat{cond}.mask;
+                RCond{Deci.Plot.Draw{cond}(subcond)}.mask = RCondStat{cond}.mask;
                 
                 
                 if params.Topo
@@ -304,8 +301,8 @@ for param = 1:size(RVar,2)
                     Crosscfg.clim = 'maxmin';
                     Crosscfg.maskparameter ='mask';
                     
-                    ft_topoplotER(Crosscfg,ft_selectdata(struct('latency',RCond{subj,subcond}.time(1),'frequency',RCond{subj,subcond}.freq(1)),RCond{subj,subcond}));
-                    ctopo(subj,subcond).UserData = {RCond{subj,subcond},Crosscfg};
+                    ft_topoplotER(Crosscfg,ft_selectdata(struct('latency',RCond{subj,Deci.Plot.Draw{cond}(subcond)}.time(1),'frequency',RCond{subj,Deci.Plot.Draw{cond}(subcond)}.freq(1)),RCond{subj,Deci.Plot.Draw{cond}(subcond)}));
+                    ctopo(subj,subcond).UserData = {RCond{subj,Deci.Plot.Draw{cond}(subcond)},Crosscfg};
                 end
                 
                 if params.Square
@@ -323,9 +320,9 @@ for param = 1:size(RVar,2)
                     
                     title([Deci.SubjectList{subj} ' Cond '  num2str(cond)],'Interpreter', 'none');
                     
-                    ft_singleplotTFR(Crosscfg,ft_selectdata(struct('channel',RCond{subj,subcond}.label(1)),RCond{subj,subcond}));
+                    ft_singleplotTFR(Crosscfg,ft_selectdata(struct('channel',RCond{subj,Deci.Plot.Draw{cond}(subcond)}.label(1)),RCond{subj,Deci.Plot.Draw{cond}(subcond)}));
                     
-                    csquare(subj,subcond).UserData = {RCond{subj,subcond},Crosscfg};
+                    csquare(subj,subcond).UserData = {RCond{subj,Deci.Plot.Draw{cond}(subcond)},Crosscfg};
                     colorbar;
                 end
                 
