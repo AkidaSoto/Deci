@@ -17,10 +17,11 @@ for subject_list = 1:length(Deci.SubjectList)
         preart   = data.preart;
         
         %% Do ICA
+        feedback = 'no';
         
         cfg.feedback = feedback;
         cfg.demean     = 'no';
-        data_all     = rmfield(ft_componentanalysis(cfg, data),'cfg');
+        data_ica     = rmfield(ft_componentanalysis(cfg, data),'cfg');
         
         figure;
         cfg.component = [1:20];
@@ -31,7 +32,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         cfg.component = [];
         
-        comps = [data_musc.trial{:}];
+        comps = [data_ica.trial{:}];
         eyes = [data.trial{:}];
         eyechan = eyes(ismember(data.label,Deci.ICA.eog),:);
         
@@ -61,16 +62,16 @@ for subject_list = 1:length(Deci.SubjectList)
             cfg.channel = 'all';
             
             fakeUI = figure;
-            select_labels(fakeUI,[],sort(data_musc.label));
+            select_labels(fakeUI,[],sort(data_ica.label));
             fakeUI.Visible =  'off';
-            ft_databrowser(cfg,data_all);
+            ft_databrowser(cfg,data_ica);
             suptitle(Deci.SubjectList{subject_list});
             waitfor(findall(0,'Name','Select Labels'),'BeingDeleted','on');
             
             if isempty(fakeUI.UserData)
                 cfg.component = [];
             else
-                cfg.component = find(ismember(data_musc.label,fakeUI.UserData));
+                cfg.component = find(ismember(data_ica.label,fakeUI.UserData));
             end
             close(fakeUI)
             corr = [];
@@ -85,7 +86,7 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         
         cfg.demean = 'yes';
-        data = ft_rejectcomponent(cfg, data_all);
+        data = ft_rejectcomponent(cfg, data_ica);
         
         
         %% Artifact Reject
@@ -110,23 +111,23 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         
         if Deci.Art.AddComponents
-            cfg =[];
-            cfg.viewmode = 'vertical';
-            
-            scfg.trials = condinfo{3};
-            data_comp = ft_selectdata(scfg,data_all);
-            
-            tcfg.toilim = [abs(nanmax(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(2)];
-            
-            artf = ft_databrowser(cfg,ft_redefinetrial(tcfg,data_comp));
-            
-            datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,data_comp));
-            
-            condinfo{1} = condinfo{1}(logical(datacomp_rej.saminfo),:);
-            condinfo{2} = condinfo{2}(logical(datacomp_rej.saminfo),:);
-            if length(condinfo) > 2
-                condinfo{3} = condinfo{3}(logical(datacomp_rej.saminfo));
-            end
+%             cfg =[];
+%             cfg.viewmode = 'vertical';
+%             
+%             scfg.trials = condinfo{3};
+%             data_comp = ft_selectdata(scfg,data_ica);
+%             
+%             tcfg.toilim = [abs(nanmax(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(2)];
+%             
+%             artf = ft_databrowser(cfg,ft_redefinetrial(tcfg,data_comp));
+%             
+%             datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,data_comp));
+%             
+%             condinfo{1} = condinfo{1}(logical(datacomp_rej.saminfo),:);
+%             condinfo{2} = condinfo{2}(logical(datacomp_rej.saminfo),:);
+%             if length(condinfo) > 2
+%                 condinfo{3} = condinfo{3}(logical(datacomp_rej.saminfo));
+%             end
         end
         
         data.condinfo = condinfo;
