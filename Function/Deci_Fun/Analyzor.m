@@ -247,12 +247,14 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 
                 
                 %% Do CFC Analysis
-                if Deci.Analysis.Connectivity.do
-                        for funs = find(Deci.Analysis.Connectivity.list)
-                            feval(Deci.Analysis.Connectivity.Functions{funs},Deci,info,Fourier,Deci.Analysis.Connectivity.Params{funs}{:});
-                        end
+% CG commented out 11/12/19
 
-                end
+%                 if Deci.Analysis.Connectivity.do
+%                         for funs = find(Deci.Analysis.Connectivity.list)
+%                             feval(Deci.Analysis.Connectivity.Functions{funs},Deci,info,Fourier,Deci.Analysis.Connectivity.Params{funs}{:});
+%                         end
+% 
+%                 end
                 
                 disp(['s:' num2str(subject_list) ' c:' num2str(Cond) ' Lock' num2str(Lock) ' time: ' num2str(etime(clock ,TimerChan))]);
             end

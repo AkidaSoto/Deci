@@ -46,6 +46,7 @@ end
 
 try
 for init = 1:params.Reps
+>>>>>>> a7e8eaa4403c906a1e5345eaacc930e82c6361df
         
         Fit1.LB = [min([params.Value{:}]) min([params.Value{:}]) 0 0 1e-6];
         Fit1.UB = [max([params.Value{:}]) max([params.Value{:}]) 1 1 30];
