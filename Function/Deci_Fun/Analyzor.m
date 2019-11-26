@@ -235,7 +235,6 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             info.Lock = Lock;
                             if isfield(Deci.Analysis.Extra,'Once')
                             for funs = find(~Deci.Analysis.Extra.Once)
-                                
                                 if Deci.Analysis.Extra.list(funs)
                                     feval(Deci.Analysis.Extra.Functions{funs},Deci,info,freqplaceholder,Deci.Analysis.Extra.Params{funs}{:});
                                 end
