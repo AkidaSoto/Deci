@@ -15,7 +15,7 @@ for subject_list = 1:length(Deci.SubjectList)
         load([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list} '.mat']);
         condinfo = data.condinfo;
         preart   = data.preart;
-        ica = cfg;
+        
         
         %% Do ICA
         feedback = 'no';
@@ -117,7 +117,7 @@ for subject_list = 1:length(Deci.SubjectList)
             
             scfg.trials = condinfo{3};
             
-            data_ica     = rmfield(ft_componentanalysis(ica, data),'cfg');
+            data_ica     = rmfield(ft_componentanalysis(cfg, data),'cfg');
             data_comp = ft_selectdata(scfg,data_ica);
             
             tcfg.toilim = [abs(nanmax(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(2)];
