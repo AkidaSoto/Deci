@@ -351,15 +351,15 @@ if Deci.Plot.Stat.do
                     end
                     
                     if Deci.Plot.Freq.Square.do
-                        [squarestat{conds}.mask] = ones(size(squaretdata{:,Deci.Plot.Draw{conds}}.powspctrm(1,:)));
+                        [squarestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, squaretdata{:,Deci.Plot.Draw{conds}});
                     end
                     
                     if Deci.Plot.Freq.Wire.do
-                        [wirestat{conds}.mask] = ones(size(wiretdata{:,Deci.Plot.Draw{conds}}.powspctrm(1,:)));
+                        [wirestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, wiretdata{:,Deci.Plot.Draw{conds}});
                     end
                     
                     if Deci.Plot.Freq.Bar.do
-                        [barstat{conds}.mask] = ones(size(bartdata{Deci.Plot.Draw{conds}}.powspctrm(1,:)));
+                        [barstat{conds}] = ft_freqstatistics(Deci.Plot.Stat, bartdata{Deci.Plot.Draw{conds}});
                     end
                     
                 end
