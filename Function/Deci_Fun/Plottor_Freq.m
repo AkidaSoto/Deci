@@ -347,7 +347,7 @@ if Deci.Plot.Stat.do
                 else
                     
                     if Deci.Plot.Freq.Topo.do
-                        topostat{conds}.mask = ones(size(topotdata{Deci.Plot.Draw{conds}}.powspctrm(1,:)));
+                        topostat{conds}.mask = ones(size(topotdata{Deci.Plot.Draw{conds}}.powspctrm(1,:)))';
                     end
                     
                     if Deci.Plot.Freq.Square.do
@@ -536,8 +536,8 @@ for cond = 1:length(Deci.Plot.Draw)
                     title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
 
                     colorbar('vert');
-                    map = colormap('pink'); %'hot' 'gray'
-                    colormap(map);
+%                     map = colormap('pink'); %'hot' 'gray'
+%                     colormap(map);
                     
                 else
                     close topo
@@ -562,8 +562,8 @@ for cond = 1:length(Deci.Plot.Draw)
                 title([Deci.Plot.Subtitle{cond}{subcond}]);
 
                 colorbar('vert');
-                map = colormap('pink'); %'hot' 'gray'
-                colormap(map);
+%                 map = colormap('pink'); %'hot' 'gray'
+%                 colormap(map);
             end
             
             if Deci.Plot.Freq.Wire.do
