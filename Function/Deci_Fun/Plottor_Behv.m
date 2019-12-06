@@ -282,8 +282,9 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
     
     %ExportExcel
     colnames = [];
-    for cond = 1:size(fullAcc{fig},2)
-        for blk = 1:size(fullAcc{fig},3)
+    for blk = 1:size(fullAcc{fig},3)
+        for cond = 1:size(fullAcc{fig},2)
+            
             colnames{end+1} = [Deci.Plot.Behv.Acc.Subtitle{fig}{cond} ' : Block ' num2str(abs(AccBlock(blk)))];
         end
     end
@@ -306,9 +307,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
     blks = [];
     trls = [];
 
-    
-    
-        
+
     for trl = 1:size(Acc{fig},4)
         for blk = 1:size(Acc{fig},3)
             for cond = 1:size(Acc{fig},2)
@@ -344,8 +343,10 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     
     %ExportExcel
     colnames = [];
-    for cond = 1:size(fullRT{fig},2)
-        for blk = 1:size(fullRT{fig},3)
+    
+    for blk = 1:size(fullRT{fig},3)
+        for cond = 1:size(fullRT{fig},2)
+            
             colnames{end+1} = [Deci.Plot.Behv.RT.Subtitle{fig}{cond} ' : Block ' num2str(abs(RTBlock(blk)))];
         end
     end
