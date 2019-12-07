@@ -162,10 +162,10 @@ for i = 1:length(alltrials)
     begsample(i) = trig_samples(i,1) -round(2 * hdr.Fs);
     endsample(i) = trig_samples(i,2) + round(3 * hdr.Fs);
     offset(i) = 0;
-    
+    trlnum(i) = i;
 end
 
-trl = [begsample' endsample' offset' begsample'-trig_samples];
+trl = [begsample' endsample' offset' trlnum' begsample'-trig_samples];
     
 %     4th column: Sequence block (1) or a random block (2)
 %     5th column: Which sequence or random block?
