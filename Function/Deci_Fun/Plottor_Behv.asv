@@ -161,7 +161,7 @@ for subject_list = 1:length(Deci.SubjectList)
                         
                         subdraws = Deci.Analysis.Conditions([6 8]);
                         maxt2 = max(sum(ismember(eve,[subdraws{:}]),2));
-                        subtrl = [[sum(ismember(eve,[subdraws{:}]),2) ] == maxt];
+                        subtrl = [[sum(ismember(eve,[subdraws{:}]),2) ] == maxt2];
                         
                         eveTotal2(subtrl) = 1;
                         
@@ -582,12 +582,12 @@ if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
             
         end
         
-            for lim = 1:numel(d)
-        d(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],d(:)','UniformOutput',false)));
-    end
+        
     end
     
-
+    for lim = 1:numel(d)
+        d(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],d(:)','UniformOutput',false)));
+    end
     
 end
 
