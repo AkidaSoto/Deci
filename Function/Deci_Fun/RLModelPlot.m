@@ -59,7 +59,7 @@ excelmdldata = mat2cell([exceldata],[size(mdl{model},1)*size(mdl{model},3)], [on
 
 mkdir([Deci.Folder.Plot]);
 
-excelmdldata = table(excelmdldata{:},Deci.SubjectList(subs)', Deci.Analysis.CondTitle(conds)','VariableNames',{'m1_Q0Opt' 'm1_Q02Wor' 'm1_aR' 'm1_aP1' 'm1_b' 'm2_aR' 'm2_aP' 'm2_b' 'm3_a' 'm3_b' 'Sub' 'Cond'});
+excelmdldata = table(excelmdldata{:},Deci.SubjectList(subs)', Deci.Analysis.CondTitle(conds),'VariableNames',{'m1_Q0Opt' 'm1_Q02Wor' 'm1_aR' 'm1_aP1' 'm1_b' 'm2_aR' 'm2_aP' 'm2_b' 'm3_a' 'm3_b' 'Sub' 'Cond'});
 writetable(excelmdldata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Parameters')
 
 
@@ -108,7 +108,7 @@ end
 
 excelPRdata =mat2cell([exceldata],[size(PR{model},1)*size(PR{model},3)], [ones([1 size(exceldata,2)])]);
 
-excelPRdata = table(excelPRdata{:},Deci.SubjectList(subs)', Deci.Analysis.CondTitle(conds)','VariableNames',{'m1_PseudoR' 'm2_PseudoR' 'm3_PseudoR' 'Sub' 'Cond'});
+excelPRdata = table(excelPRdata{:},Deci.SubjectList(subs)', Deci.Analysis.CondTitle(conds),'VariableNames',{'m1_PseudoR' 'm2_PseudoR' 'm3_PseudoR' 'Sub' 'Cond'});
 
 writetable(excelPRdata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Fitness')
 
