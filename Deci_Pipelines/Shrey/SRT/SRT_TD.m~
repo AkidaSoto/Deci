@@ -157,16 +157,13 @@ for i = 1:length(alltrials)
     values = {alltrials{i}.value};
     samples = {alltrials{i}.sample};
     
-    disp(i)
     trig_values(i,:) = [find(ismember(stimonset,values))+20 find(ismember(response,values))+24];
     trig_samples(i,:) = [samples{ismember(values,stimonset)} samples{ismember(values,response)}];
 
     if length(trig_samples(i,:)) <= 1
         trig_samples(i,2) = NaN;
-        trig_values(i,2) = NaN;
         rjct = [rjct; i];
     end
-    
     begsample(i) = trig_samples(i,1) -round(2 * hdr.Fs);
     endsample(i) = trig_samples(i,2) + round(3 * hdr.Fs);
     offset(i) = 0;
