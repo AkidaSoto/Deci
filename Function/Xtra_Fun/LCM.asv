@@ -40,26 +40,25 @@ for j = 1:length(startstopseg)
     % Add in lock for First Stim onset
     
     stim1 = find(ismember(value,[10 11]));
-    value = [value(1:stim1) 9 value(stim1+1:end)];
-    sample = [sample(1:stim1) sample(stim1) sample(stim1+1:end)];
+    
+    value = [value(1:stim1) 99 value(stim2+1:end)];
+    sample = [sample(1:stim1) sample(stim2) sample(stim2+1:end)];
+    
+    value = [9 value];
+    sample = [sample(1) sample];
 
     stim2 = find(ismember(value,[100 101 102]));
+    
     value = [value(1:stim2) 99 value(stim2+1:end)];
     sample = [sample(1:stim2) sample(stim2) sample(stim2+1:end)];
     
     begsample = sample{ismember(value,cfg.DT.Locks(1))} + sstime(1)*hdr.Fs;
-    
-    if isempty(find(ismember(value,cfg.DT.Locks(end))))
-        continue;
-    else
-        endsample = sample{ismember(value,cfg.DT.Locks(end))} + sstime(2)*hdr.Fs;
-    end
+    endsample = sample{ismember(value,cfg.DT.Locks(end))} + sstime(2)*hdr.Fs;
     
     offsets = begsample - [sample{ismember(value,cfg.DT.Locks)}];
     
     trl(end + 1,1:4+length(cfg.DT.Locks)) = nan;
     trl(end ,1:4) = [begsample endsample 0 j];
-    
     trl(end,logical([0 0 0 0 ismember(cfg.DT.Locks,value)])) = offsets;
     
     
@@ -71,8 +70,6 @@ for j = 1:length(startstopseg)
         end
     end
 end
-
-k = 0;
 
 
 
