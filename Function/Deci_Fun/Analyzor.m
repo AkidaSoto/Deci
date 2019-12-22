@@ -72,6 +72,11 @@ end
 data.condinfo = condinfo;
 data.preart = preart;
 
+if Deci.Analysis.HemifieldFlip.do
+    data.condinfo = cellfun(@(a,b) [a;b],FlipData.condinfo,NotFlipData.condinfo,'UniformOutput',false);
+    data.preart = cellfun(@(a,b) [a;b],FlipData.preart,NotFlipData.preart,'UniformOutput',false);
+end
+
 %% Loop through Conditions
 for Cond = 1:length(Deci.Analysis.Conditions)
     
