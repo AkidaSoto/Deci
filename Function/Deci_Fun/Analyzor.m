@@ -152,13 +152,13 @@ for Cond = 1:length(Deci.Analysis.Conditions)
 
 
                 skip = false;
-                if Deci.Analysis.Freq.Skip_if_done && ~Deci.Analysis.Extra.do
-                    if exist([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}])...
-                            && exist([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}])
-                        
-                        skip = true;
-                    end
-                end
+%                 if Deci.Analysis.Freq.Skip_if_done && ~Deci.Analysis.Extra.do
+%                     if exist([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}])...
+%                             && exist([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}])
+%                         
+%                         skip = true;
+%                     end
+%                 end
                 
                 
                 if ~skip
@@ -174,7 +174,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         fcfg.toi = Deci.Analysis.Freq.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Freq.Toi(2);
                         
                         Fourier = rmfield(ft_freqanalysis(fcfg, dat),'cfg');
-                        Fourier.condinfo = dat.condinfo;
+                        %Fourier.condinfo = dat.condinfo;
                         trllength = size(Fourier.fourierspctrm,1);
                     else
                         
@@ -214,7 +214,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         
                         Fourier = rmfield(ft_appendfreq(acfg,tempfreq{:}),'cfg');
                         Fourier.dimord = 'rpt_chan_freq_time';
-                        Fourier.condinfo = dat.condinfo;
+                        %Fourier.condinfo = dat.condinfo;
                         trllength = size(Fourier.fourierspctrm,1);
                     end
                     
