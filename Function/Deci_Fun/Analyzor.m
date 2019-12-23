@@ -5,15 +5,7 @@ data = [];
 %% Load Data
 
 % Load Definition Data if only using Extra.Once
-
 if ~Deci.Analysis.Freq.do && ~Deci.Analysis.CFC.do && [Deci.Analysis.Extra.do && ~isempty(find(Deci.Analysis.Extra.Once))]
-    noneeg_flag = 1;
-    
-else
-    noneeg_flag = 0;
-end
-
-if noneeg_flag
     load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list} '.mat'],'cfg');
     data =cfg;
     data.condinfo{1} = data.trl(:,end-length(Deci.DT.Locks)+1:end);
@@ -26,36 +18,32 @@ else
     load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data');
 end
 
-condinfo = data.condinfo;
-preart = data.preart;
+if isfield(data,'condinfo')  %replacer starting 12/22, lets keep for ~4 months
+    data.postart.locks = data.condinfo{1};
+    data.postart.events = data.condinfo{2};
+    data.postart.trlnum = data.condinfo{3};
+    
+    data.locks = data.preart{1};
+    data.events = data.preart{2};
+    data.trlnum = data.preart{3};
+    
+    
+    data = rmfield(data,'condinfo');
+    data = rmfield(data,'preart');
+end
 
-%preart will be used to anaylzed data and then those trials will be
-%selected from condinfo to only include not-artifact trials
-
+locks = data.locks;
+events = data.events;
+trlnum = data.trlnum;
+postart.locks = data.postart.locks;
+postart.events = data.postart.events;
+postart.trlnum = data.postart.trlnum;
 
 %% Laplace Transformation
 if Deci.Analysis.Laplace
     [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
     ecfg.elec = elec;
     data = ft_scalpcurrentdensity(ecfg, data);
-end
-
-%% HemifieldFlip
-
-if Deci.Analysis.HemifieldFlip.do
-    
-    Hemifields = preart{2}(:,find(mean(ismember(preart{2},Deci.Analysis.HemifieldFlip.Markers),1)));
-    
-    FlipCfg.trials  = ismember(Hemifields,Deci.Analysis.HemifieldFlip.Markers(2));
-    
-    FlipData = ft_selectdata(FlipCfg,data);
-    FlipData = hemifieldflip(FlipData);
-    
-    FlipCfg.trials = ~FlipCfg.trials;
-    
-    NotFlipData = ft_selectdata(FlipCfg,data);
-    
-    data = ft_appenddata([],FlipData,NotFlipData);
 end
 
 if ~strcmpi(Deci.Analysis.Channels,'all')
@@ -68,13 +56,26 @@ if ~isempty(Deci.Analysis.DownSample)
     data = ft_resampledata(struct('resamplefs',Deci.Analysis.DownSample,'detrend','no'),data);
 end
 
+data.locks = locks;
+data.events = events;
+data.trlnum = trlnum;
+data.postart.locks = postart.locks;
+data.postart.events = postart.events;
+data.postart.trlnum = postart.trlnum;
 
-data.condinfo = condinfo;
-data.preart = preart;
-
+%% HemifieldFlip
+    %check to see if postart is pull through selectdata
 if Deci.Analysis.HemifieldFlip.do
-    data.condinfo = cellfun(@(a,b) [a;b],FlipData.condinfo,NotFlipData.condinfo,'UniformOutput',false);
-    data.preart = cellfun(@(a,b) [a;b],FlipData.preart,NotFlipData.preart,'UniformOutput',false);
+    Hemifields = data.events(:,find(mean(ismember(data.events,Deci.Analysis.HemifieldFlip.Markers),1)));
+    
+    FlipCfg.trials  = ismember(Hemifields,Deci.Analysis.HemifieldFlip.Markers(2));
+    FlipData = ft_selectdata(FlipCfg,data);
+    FlipData = hemifieldflip(FlipData);
+    
+    nonFlipCfg.trials = ismember(Hemifields,Deci.Analysis.HemifieldFlip.Markers(1));
+    NotFlipData = ft_selectdata(nonFlipCfg,data);
+    
+    data = ft_appenddata([],FlipData,NotFlipData);
 end
 
 %% Loop through Conditions
@@ -103,21 +104,23 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     
     %% Find Relevant Trials from that Condition info
     maxt = length(find(cellfun(@(c) any(ismember(Deci.Analysis.Conditions{Cond},c)), Deci.DT.Markers)));
-    info.alltrials = find(sum(ismember(preart{2},Deci.Analysis.Conditions{Cond}),2) == maxt);
+    info.alltrials = find(sum(ismember(events,Deci.Analysis.Conditions{Cond}),2) == maxt);
     
-    %ignore all locks that are missing
-    minamountofnans = min(mean(isnan(preart{1}(info.alltrials,:)),2));
-    info.allnonnans = mean(isnan(preart{1}(info.alltrials,:)),2) == minamountofnans;% & ~isnan(mean(condinfo{2},2));
+    %ignore all trials with missing nans
+    if Deci.Analysis.IgnoreNans
+    minamountofnans = min(mean(isnan(locks(info.alltrials,:)),2));
+    info.allnonnans = mean(isnan(locks(info.alltrials,:)),2) == minamountofnans;
+    else
+    info.allnonnans = logical(size(info.alltrials));
+    end
     
     ccfg.trials =  info.alltrials(info.allnonnans);
     
     if Deci.Analysis.ApplyArtReject
-        ccfg.trials = ccfg.trials(find(ismember(preart{3}(info.alltrials(info.allnonnans)),condinfo{3})));
+        ccfg.trials = ccfg.trials(find(ismember(trlnum(info.alltrials(info.allnonnans)),postart.trlnum)));
     end
     
     dataplaceholder = ft_selectdata(ccfg,data);
-    dataplaceholder.condinfo = dataplaceholder.preart; %preart no longer needed
-    dataplaceholder = rmfield(dataplaceholder,'preart');
     
     %% Loop Through Locks
     
@@ -125,7 +128,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
         
         for Lock = 1:length(Deci.Analysis.Locks)
             
-            cfg.offset = preart{1}(ccfg.trials,Deci.Analysis.Locks(Lock));
+            cfg.offset = locks(ccfg.trials,Deci.Analysis.Locks(Lock));
             cfg.toilim = Deci.Analysis.Freq.Toilim;
             dat = ft_datashift2(cfg,dataplaceholder);
             
@@ -150,7 +153,6 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     fcfg = Deci.Analysis.Freq;
                     fcfg.output='fourier';
                     fcfg.pad = 'maxperlen';
-                    fcfg.scc = 0;
                     fcfg.keeptapers = 'yes';
                     fcfg.keeptrials = 'yes';
                     fcfg.toi = Deci.Analysis.Freq.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Freq.Toi(2);
@@ -212,8 +214,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     warning('off', 'MATLAB:MKDIR:DirectoryExists');
                     mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
                     mkdir([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
-                    mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
-                    
+
                     freqplaceholder = freq;
                     
                     if Deci.Analysis.Freq.do
@@ -248,15 +249,12 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         end
                     end
                 end
-                
-                
                 % Do CFC Analysis
 
                 if Deci.Analysis.Connectivity.do
                         for funs = find(Deci.Analysis.Connectivity.list)
                             feval(Deci.Analysis.Connectivity.Functions{funs},Deci,info,Fourier,Deci.Analysis.Connectivity.Params{funs}{:});
                         end
-
                 end
                 
                 disp(['s:' num2str(subject_list) ' c:' num2str(Cond) ' Lock' num2str(Lock) ' time: ' num2str(etime(clock ,TimerChan))]);

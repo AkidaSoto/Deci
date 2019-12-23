@@ -149,9 +149,10 @@ if ~isempty(find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1)) && Deci.PP.
     
     data = ft_selectdata(Reject_cfg,data);
     
-    locks = data.locks;
-    events = data.events;
-    trlnum = data.trlnum;
+    
+     locks = data.locks;
+     events = data.events;
+     trlnum = data.trlnum;
     
     warning(['Found trial(s) containing nan in rawdata for ' Deci.SubjectList{subject_list} '. Revise Data and then use .RejectNans']);
 elseif ~isempty(find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1)) && ~Deci.PP.RejectNans
@@ -161,20 +162,21 @@ end
 disp(['Finished PreProcessor at ' num2str(toc)]);
 disp('----------------------');
  %% Manual Trial Rejection
- 
 if Deci.PP.Manual_Trial_Rejection
     cfg =[];
     cfg.method = 'trial';
     cfg.alim = 100;
-    tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)]; 
+    tcfg.toilim = [abs(nanmax(locks{1},[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks{1},[],2)/1000)+Deci.Art.crittoilim(2)]; 
     data = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data));
     
     cfg = [];
     cfg.trials = data.saminfo;
     
-    artifacts.locks = locks(logical(data.saminfo),:);
-    artifacts.events = events(logical(data.saminfo),:);
-    artifacts.trlnum = trlnum(logical(data.saminfo),:);
+    condinfo{1} = condinfo{1}(logical(data.saminfo),:);
+    condinfo{2} = condinfo{2}(logical(data.saminfo),:);
+    if length(condinfo) > 2
+        condinfo{3} = condinfo{3}(logical(data.saminfo));
+    end
 end
 
 %% ICA
@@ -197,10 +199,8 @@ cfg.numcomponent= 20;
 cfg.unmixing  =data_musc.unmixing;
 cfg.topolabel = data_musc.topolabel;
 
-data.locks = locks;
-data.events = events;
-data.trlnum = trlnum;
-data.artifacts = artifacts;
+data.condinfo = condinfo;
+data.preart = preart;
 
 data = rmfield(data,'cfg');
 

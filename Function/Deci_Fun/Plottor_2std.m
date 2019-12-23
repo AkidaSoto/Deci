@@ -52,13 +52,13 @@ for subject_list = 1:length(Deci.SubjectList)
                         if sum(ismember(Deci.Plot.Extra.Std.Static,[draws{:}])) == 1
                             
                             eve = data.event(logical(sum(ismember(data.event,Deci.Plot.Extra.Std.Static(ismember(Deci.Plot.Extra.Std.Static,[draws{:}]))),2)),:);
-                            eve = eve(find(any(ismember(eve,AccBlock(blk)),2)),:);
                         else
                             eve = data.event;
                         end
                     else
                         eve = data.event;
                     end
+                    eve = eve(find(any(ismember(eve,AccBlock(blk)),2)),:);
                     
                     eveTotal = nan([1 length(find(any(ismember(eve,AccBlock(blk)),2)))]);
                     

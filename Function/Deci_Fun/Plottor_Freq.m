@@ -1,3 +1,4 @@
+
 function Plottor_Freq(Deci)
 
 
@@ -6,38 +7,17 @@ cfg.layout = Deci.Layout.eye;
 cfg.channel = 'all';
 cfg.interactive = 'yes';
 
-
 %% Deci Checks
-
 Dims = {'Topo' 'Square' 'Wire' 'Bar'};
 
 for Dim = 1:length(Dims)
-    
     if Deci.Plot.Freq.(Dims{Dim}).do
         if isequal(Deci.Plot.Freq.(Dims{Dim}).Channel,'Reinhart-All')
-            Deci.Plot.Freq.(Dims{Dim}).Channel = [{'AF3'  } {'AF4'  }...
-                {'AFz'  } {'C1'   } {'C2'   } {'C3'   } {'C4'   } {'C5'   } ...
-                {'C6'   } {'CP1'  } {'CP2'  } {'CP3'  } {'CP4'  } {'CP5'  } {'CP6'  } ...
-                {'CPz'  } {'Cz'   } {'F1'   } {'F2'   } {'F3'   } {'F4'   } {'F5'   } ...
-                {'F6'   } {'F7'   } {'F8'   } {'FC1'  } {'FC2'  } {'FC3'  } {'FC4'  } ...
-                {'FC5'  } {'FC6'  } {'FCz'  } {'FT7'  } {'FT8'  } {'Fz'   } {'O1'   } ...
-                {'O2'   } {'Oz'   } {'P1'   } {'P2'   } {'P3'   } {'P4'   } {'P5'   } ...
-                {'P6'   } {'P7'   } {'P8'   } {'PO3'  } {'PO4'  } {'PO7'  } {'PO8'  } ...
-                {'POz'  } {'Pz'   } {'T7'   } {'T8'   } {'TP10' } {'TP7'  } {'TP8'  } ...
-                {'TP9'  } ] ;
+            Deci.Plot.Freq.(Dims{Dim}).Channel = dc_getchans('noeyes');
         end
         
         if isequal(Deci.Plot.Freq.(Dims{Dim}).Channel,'Reinhart-All_eyes')
-            Deci.Plot.Freq.(Dims{Dim}).Channel = [{'AF3'  } {'AF4'  } {'AF7'  } ...
-                {'AF8'  } {'AFz'  } {'C1'   } {'C2'   } {'C3'   } {'C4'   } {'C5'   } ...
-                {'C6'   } {'CP1'  } {'CP2'  } {'CP3'  } {'CP4'  } {'CP5'  } {'CP6'  } ...
-                {'CPz'  } {'Cz'   } {'F1'   } {'F2'   } {'F3'   } {'F4'   } {'F5'   } ...
-                {'F6'   } {'F7'   } {'F8'   } {'FC1'  } {'FC2'  } {'FC3'  } {'FC4'  } ...
-                {'FC5'  } {'FC6'  } {'FCz'  } {'FT7'  } {'FT8'  } {'Fz'   } {'O1'   } ...
-                {'O2'   } {'Oz'   } {'P1'   } {'P2'   } {'P3'   } {'P4'   } {'P5'   } ...
-                {'P6'   } {'P7'   } {'P8'   } {'PO3'  } {'PO4'  } {'PO7'  } {'PO8'  } ...
-                {'POz'  } {'Pz'   } {'T7'   } {'T8'   } {'TP10' } {'TP7'  } {'TP8'  } ...
-                {'TP9'  } {'RHEOG'} {'BVEOG'}] ;
+            Deci.Plot.Freq.(Dims{Dim}).Channel = dc_getchans('all');
         end
         
         Tois{Dim} = Deci.Plot.Freq.(Dims{Dim}).Toi;
@@ -61,15 +41,12 @@ end
 %% Load
 
 for  subject_list = 1:length(Deci.SubjectList)
-    
     tic;
-    
     for Conditions = 1:length(Deci.Plot.CondTitle)
         
         for Channel = 1:length(Chois)
             
             display(['Channel ' Chois{Channel} ' ' num2str(Channel) ' of ' num2str(length(Chois))])
-            
             freq = [];
             
             switch Deci.Plot.Freq.Type
@@ -77,8 +54,6 @@ for  subject_list = 1:length(Deci.SubjectList)
                     load([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
                 case 'ITPC'
                     load([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
-                case 'TotalPower Mean/Var'
-                    load([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
             end
             
             foi = freq.freq >= round(Fois(1),4) & freq.freq <= round(Fois(2),4);
@@ -86,7 +61,6 @@ for  subject_list = 1:length(Deci.SubjectList)
             
             Chans{Channel} = freq;
             Chans{Channel}.freq =  Chans{Channel}.freq(foi);
-            %Chans{Channel}.time =  Chans{Channel}.time(toi);
             Chans{Channel}.powspctrm  =Chans{Channel}.powspctrm(:,foi,:);
             Chans{Channel}.label = Chois(Channel);
             
@@ -106,7 +80,6 @@ for Conditions = 1:size(Subjects,2)
     for subject_list = 1:size(Subjects,1)
 
         if ~strcmpi(Deci.Plot.BslRef,Deci.Plot.Lock)
-            
             for Channel = 1:length(Chois)
 
                 freq = [];
@@ -143,7 +116,6 @@ for Conditions = 1:size(Subjects,2)
             Bsl{subject_list,Conditions}.powspctrm = repmat(Bsl{subject_list,Conditions}.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
             
         else
-            
             ccfg.latency = Deci.Plot.Freq.Bsl;
             ccfg.avgovertime = 'yes';
             
@@ -155,7 +127,6 @@ for Conditions = 1:size(Subjects,2)
             Bsl{subject_list,Conditions}.powspctrm = repmat(Bsl{subject_list,Conditions}.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
         end
         
-
         switch Deci.Plot.Freq.BslType
             case 'none'
             case 'absolute'
@@ -188,7 +159,6 @@ if ~isempty(Deci.Plot.Math)
 end
 
 %% Data Management
-
 if size(Subjects,1) == 1
     Deci.Plot.GrandAverage = false;  
 end
@@ -209,14 +179,13 @@ for conds = 1:size(Subjects,2)
         
         if Deci.Plot.Freq.Topo.do
             tcfg = [];
-            tcfg.nanmean = 'yes';
+            tcfg.nanmean = Deci.Plot.nanmean;
             
             tcfg.latency = Deci.Plot.Freq.Topo.Toi;
             tcfg.frequency = Deci.Plot.Freq.Topo.Foi;
             tcfg.channel = Deci.Plot.Freq.Topo.Channel;
             
             topodata{subj,conds} = ft_selectdata(tcfg,FreqData{subj,conds});
-            
             
             if strcmpi(Deci.Plot.FreqYScale,'log')
                 topodata{subj,conds}.freq = log(topodata{subj,conds}.freq);
@@ -230,7 +199,7 @@ for conds = 1:size(Subjects,2)
         
         if Deci.Plot.Freq.Square.do
             tcfg = [];
-            tcfg.nanmean = 'yes';
+            tcfg.nanmean = Deci.Plot.nanmean;
             
             tcfg.latency = Deci.Plot.Freq.Square.Toi;
             tcfg.frequency = Deci.Plot.Freq.Square.Foi;
@@ -248,7 +217,7 @@ for conds = 1:size(Subjects,2)
         
         if Deci.Plot.Freq.Wire.do
             tcfg = [];
-            tcfg.nanmean = 'yes';
+            tcfg.nanmean = Deci.Plot.nanmean;
             
             tcfg.latency = Deci.Plot.Freq.Wire.Toi;
             tcfg.frequency = Deci.Plot.Freq.Wire.Foi;
@@ -268,10 +237,7 @@ for conds = 1:size(Subjects,2)
         
         if Deci.Plot.Freq.Bar.do
             tcfg = [];
-            %tcfg.avgoverchan = 'yes';
-            %tcfg.avgoverfreq = 'yes';
-            %tcfg.avgovertime = 'yes';
-            tcfg.nanmean = 'yes';
+            tcfg.nanmean = Deci.Plot.nanmean;
             
             tcfg.latency = Deci.Plot.Freq.Bar.Toi;
             tcfg.frequency = Deci.Plot.Freq.Bar.Foi;
@@ -302,14 +268,11 @@ if Deci.Plot.Stat.do
     for conds = 1:length(Deci.Plot.Draw)
         design = [];
        
-        
-        
         switch Deci.Plot.Stat.Comp
             case 'Conditions'
                 if length(Deci.Plot.Draw{conds}) ~= 1
                     Deci.Plot.Stat.uvar = 2;
-                    
-                    
+
                     for subcond = 1:length(Deci.Plot.Draw{conds})
                         for subj = 1:size(Subjects,1)
                             design(1,subj+size(Subjects,1)*[subcond-1]) =  subcond;
@@ -368,8 +331,7 @@ if Deci.Plot.Stat.do
                 Deci.Plot.Stat.statistic = 'indepsamplesT';
                 
                 Deci.Plot.Stat.design = ones(size(Subjects,1));
-                
-                
+
                 if Deci.Plot.Freq.Topo.do
                     alltopotdata = ft_freqgrandaverage([],topotdata{Deci.Plot.Draw{conds}});
                     alltopotdata.dimord = 'rpt_chan_freq_time';
@@ -402,7 +364,7 @@ end
 %% Plot
 
 if Deci.Plot.GrandAverage
-    Deci.SubjectList = {'Group 1'};
+    Deci.SubjectList = {'Group Average'};
 end
 
 for cond = 1:length(Deci.Plot.Draw)
@@ -421,9 +383,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 
                 ft_singleplotTFR(tacfg,squarestat{cond})
                 title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
-                          
-                ButtonH=uicontrol('Parent', squaret(cond),'Style','pushbutton','String','p Mask','Position',[10 10 100 25],'Visible','on','Callback',@pmask);
-                ButtonH.UserData = @ones;
+                dc_pmask(squaret(cond))
                 
                 colormap('jet'); %'hot' 'gray'
                 ylabel('F score');
@@ -436,36 +396,31 @@ for cond = 1:length(Deci.Plot.Draw)
             tcfg.parameter = 'stat';
             topostat{cond}.mask = double(topostat{cond}.mask);
             topostat{cond}.mask(topostat{cond}.mask == 0) = .2;
-            
+            tcfg.clim = 'maxmin';
+            tcfg.maskparameter ='mask';
+                
             if Deci.Plot.Stat.FPlots
                 topot(cond)  = figure;
                 topot(cond).Visible = 'on';
                 
-                tcfg.clim = 'maxmin';
-                tcfg.maskparameter ='mask';
-                
-                ButtonH=uicontrol('Parent', topot(cond),'Style','pushbutton','String','p Mask','Position',[10 10 100 25],'Visible','on','Callback',@pmask);
-                ButtonH.UserData = @ones;
-                
                 ft_topoplotER(tcfg, topostat{cond});
                 title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
+                dc_pmask(topot(cond))
+                
                 colormap('jet'); %'hot' 'gray'
             end
         end
         
         if Deci.Plot.Freq.Wire.do
-            
             tcfg = cfg;
             tcfg.parameter = 'stat';
             wirestat{cond}.mask = double(wirestat{cond}.mask);
             if Deci.Plot.Stat.FPlots
                 wiret(cond)  = figure;
                 wiret(cond).Visible = 'on';
-                
                 plot(squeeze(wirestat{cond}.time),squeeze(wirestat{cond}.stat))
                 title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
             end
-            
         end
         
         if Deci.Plot.Freq.Bar.do
@@ -486,14 +441,14 @@ for cond = 1:length(Deci.Plot.Draw)
         
     end 
 
+    clear cirky subby
     for subj = 1:size(FreqData,1)
             
         if Deci.Plot.Freq.Square.do
             square(subj) = figure;
             
             if Deci.Plot.Stat.do
-                ButtonH=uicontrol('Parent', square(subj),'Style','pushbutton','String','p Mask','Position',[10 10 100 25],'Visible','on','Callback',@pmask);
-                ButtonH.UserData = @ones;
+                dc_pmask(square)
             end
         end
         
@@ -501,8 +456,7 @@ for cond = 1:length(Deci.Plot.Draw)
             topo(subj)  = figure;
             
             if Deci.Plot.Stat.do
-                ButtonH=uicontrol('Parent', topo(subj),'Style','pushbutton','String','p Mask','Position',[10 10 100 25],'Visible','on','Callback',@pmask);
-                ButtonH.UserData = @ones;
+               dc_pmask(topo)
             end
         end
         
@@ -510,38 +464,23 @@ for cond = 1:length(Deci.Plot.Draw)
             wire(subj)  = figure;
         end
 
-        %freq plots
-        clear b;
         for subcond = 1:length(Deci.Plot.Draw{cond})
-            
             if Deci.Plot.Freq.Topo.do
-                if length(Deci.Plot.Freq.Topo.Channel) ~= 1
-                    
-                    
-                    set(0, 'CurrentFigure', topo(subj))
-                    topo(subj).Visible = 'on';
-                    cirky(subj,subcond)    =  subplot(length(Deci.Plot.Draw{cond}),1,subcond);
-                    
-                    pcfg = cfg;
-                    if Deci.Plot.Stat.do
-                        
-                        pcfg.clim = 'maxmin';
-                        pcfg.maskparameter ='mask';
-                     topodata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(topostat{cond}.mask',[size(topodata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1) 1 length(topodata{subj,Deci.Plot.Draw{cond}(subcond)}.freq) length(topodata{subj,Deci.Plot.Draw{cond}(subcond)}.time)]);
-                    end
-                    
-                    ft_topoplotER(pcfg, topodata{subj,Deci.Plot.Draw{cond}(subcond)});
-                    
-                    %title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond} ' trial count: ' num2str(TotalCount{subj,Deci.Plot.Draw{cond}(subcond)})]);
-                    title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
-
-                    colorbar('vert');
-%                     map = colormap('pink'); %'hot' 'gray'
-%                     colormap(map);
-                    
-                else
-                    close topo
-                end       
+                set(0, 'CurrentFigure', topo(subj))
+                topo(subj).Visible = 'on';
+                cirky(subj,subcond)    =  subplot(length(Deci.Plot.Draw{cond}),1,subcond);
+                
+                pcfg = cfg;
+                if Deci.Plot.Stat.do
+                    pcfg.clim = 'maxmin';
+                    pcfg.maskparameter ='mask';
+                    topodata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(topostat{cond}.mask',[size(topodata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1) 1 length(topodata{subj,Deci.Plot.Draw{cond}(subcond)}.freq) length(topodata{subj,Deci.Plot.Draw{cond}(subcond)}.time)]);
+                end
+                ft_topoplotER(pcfg, topodata{subj,Deci.Plot.Draw{cond}(subcond)});
+                
+                title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
+                colorbar('vert');
+                
             end
             
             if Deci.Plot.Freq.Square.do
@@ -549,10 +488,8 @@ for cond = 1:length(Deci.Plot.Draw)
                 square(subj).Visible = 'on';
                 subby(subj,subcond) = subplot(length(Deci.Plot.Draw{cond}),1,subcond );
                 
-                
                 pcfg = cfg;
                 if Deci.Plot.Stat.do
-                    
                     pcfg.clim = 'maxmin';
                     pcfg.maskparameter ='mask';
                     squaredata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(squarestat{cond}.mask,[length(squaredata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
@@ -560,10 +497,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 
                 ft_singleplotTFR(pcfg,squaredata{subj,Deci.Plot.Draw{cond}(subcond)});
                 title([Deci.Plot.Subtitle{cond}{subcond}]);
-
                 colorbar('vert');
-%                 map = colormap('pink'); %'hot' 'gray'
-%                 colormap(map);
             end
             
             if Deci.Plot.Freq.Wire.do
@@ -573,15 +507,13 @@ for cond = 1:length(Deci.Plot.Draw)
                 top = squeeze(nanmean(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1),2),3)) + squeeze(nanstd(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,2),3),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
                 bot = squeeze(nanmean(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1),2),3)) - squeeze(nanstd(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,2),3),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1));
                 
-                 if Deci.Plot.GrandAverage
-                pgon = polyshape([wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time fliplr(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time)],[top' fliplr(bot')],'Simplify', false);
-                b(subcond) = plot(pgon,'HandleVisibility','off');
-                hold on
-                b(subcond).EdgeAlpha = 0;
-                b(subcond).FaceAlpha = .15;
-                 end
-                
-
+                if Deci.Plot.GrandAverage
+                    pgon = polyshape([wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time fliplr(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time)],[top' fliplr(bot')],'Simplify', false);
+                    b(subcond) = plot(pgon,'HandleVisibility','off');
+                    hold on
+                    b(subcond).EdgeAlpha = 0;
+                    b(subcond).FaceAlpha = .15;
+                end
                 
                 if Deci.Plot.Stat.do
                 wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(wirestat{cond}.mask,[length(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
@@ -594,14 +526,13 @@ for cond = 1:length(Deci.Plot.Draw)
             set(0, 'CurrentFigure', wire(subj) )
             wire(subj).Visible = 'on';
             
-            
             pcfg = cfg;
             pcfg.clim = 'maxmin';
             
             if Deci.Plot.Stat.do
                 pcfg.maskparameter ='mask';
-                
             end
+            
             pcfg.ylim = ylim;
             pcfg.graphcolor = lines;
             pcfg.linewidth = 1;
@@ -609,6 +540,7 @@ for cond = 1:length(Deci.Plot.Draw)
             
             if Deci.Plot.GrandAverage
             arrayfun(@(c) uistack(c,'top'),b);
+            clear b
             end
 
             axis tight
@@ -617,9 +549,7 @@ for cond = 1:length(Deci.Plot.Draw)
             plot([0 0], ylim, 'k--') % vert. l
             
             if Deci.Plot.Stat.do
-                
                 boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
-                
                 for bb = 1:length(boxes)
                     if ~isempty(boxes)
                         boxes(bb).FaceAlpha = .35;
@@ -628,41 +558,19 @@ for cond = 1:length(Deci.Plot.Draw)
                     end
                 end
             end
-            %title([Deci.Plot.Subtitle{cond}{subcond}]);
-            
-            %h = plot(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time,squeeze(mean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.powspctrm,1)));
-            %h.Color = b.FaceColor;
-            %h.LineWidth = 1;
-            
-            
+
             l = legend(Deci.Plot.Subtitle{cond});
             title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' Wire'])
             set(l, 'Interpreter', 'none')
             xlim([wiredata{cond}.time(1) wiredata{cond}.time(end)])
-            %                         if Deci.Plot.Freq.Wire &&subcond == 1
-            %                          ax1 = axes;
-            %                          hold on
-            %                          imagesc(ax1,wirestatdraw{cond}.time,mean(ylim)/2,squeeze(wirestatdraw{cond}.prob <= .05),'alphadata',squeeze(wirestatdraw{cond}.prob <= .05))
-            %                          ax1.Visible = 'off';
-            %
-            %                         end
             xlabel('Time');
         end
         
-        
         if Deci.Plot.Freq.Bar.do
-            
             barfig(subj)  = figure;
-            
-            %             if Deci.Plot.Stat.do
-            %                 ButtonH=uicontrol('Parent', barfig(subj),'Style','pushbutton','String','p Mask','Position',[10 10 100 25],'Visible','on','Callback',@pmask);
-            %                 ButtonH.UserData = 0;
-            %             end
-            
             set(0, 'CurrentFigure', barfig(subj) )
             barfig(subj).Visible = 'on';
-            
-            
+
             CleanBars(mean(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.powspctrm,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1), ...
                 nanstd(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.powspctrm,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),[],1) ...
                 /sqrt(size(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.powspctrm,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1)));
@@ -680,30 +588,9 @@ for cond = 1:length(Deci.Plot.Draw)
             end
         end
         
-%         if Deci.Plot.Stat.do
-%             if Deci.Plot.Freq.Wire
-%                 
-%                 set(0, 'CurrentFigure', wire(subj) )
-%                 wire(subj).Visible = 'on';
-%                 
-%                 wiret = repmat(squeeze(wirestat{cond}.prob)' <= .05 ,[ceil(diff(ylim)) 1]);
-%                 
-%                 h =imagesc(wirestat{cond}.time,min(ylim):max(ylim),wiret);
-%                 h.AlphaData = squeeze(wirestat{cond}.prob)' <= .05;
-%                 hold on
-%                 
-%                 set(gca,'YDir','normal');
-%                 if Deci.Plot.Stat.do
-%                     ButtonH=uicontrol('Parent', wire(subj),'Style','pushbutton','String','p Mask','Position',[10 10 100 25],'Visible','on','Callback',@pmask);
-%                     ButtonH.UserData = @zeros;
-%                 end
-%             end
-%         end
     end
     
     for subj = 1:size(FreqData,1)
-        
-        
         if length(Deci.Plot.Freq.Topo.Channel) ~= 1
             
             if Deci.Plot.Freq.Topo.do
@@ -712,7 +599,6 @@ for cond = 1:length(Deci.Plot.Draw)
                 suptitle(Deci.Plot.Title{cond});
                 colormap(jet)
                 for r = 1:length(cirky(:))
-                    
                     if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
                         cirky(r).CLim = Deci.Plot.Freq.Roi;
                     elseif strcmp(Deci.Plot.Freq.Roi,'maxmin')
@@ -720,19 +606,14 @@ for cond = 1:length(Deci.Plot.Draw)
                     elseif strcmp(Deci.Plot.Freq.Roi,'maxabs')
                         cirky(r).CLim = [-1*max(abs([cirky.CLim])) max(abs([cirky.CLim]))];
                     end
-                    
                 end
-                
-                
-                
+
                 if ~isempty(Deci.Folder.Plot)
-                    mkdir([Deci.Folder.Plot filesep Deci.Plot.Title{cond}]);
+                    %mkdir([Deci.Folder.Plot filesep Deci.Plot.Title{cond}]);
                     %saveas(topo(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_topo'],Deci.Plot.Save.Format);
                 end
                 
             end
-            
-            
         end
         
         if Deci.Plot.Freq.Square.do
@@ -741,7 +622,6 @@ for cond = 1:length(Deci.Plot.Draw)
             suptitle([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond}]);
             colormap(jet)
             for r = 1:length(subby(:))
-                
                 if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
                     subby(r).CLim = Deci.Plot.Freq.Roi;
                 elseif strcmp(Deci.Plot.Freq.Roi,'maxmin')
@@ -758,39 +638,11 @@ for cond = 1:length(Deci.Plot.Draw)
             end
             
             if ~isempty(Deci.Folder.Plot)
-                mkdir([Deci.Folder.Plot filesep Deci.Plot.Title{cond}]);
+                %mkdir([Deci.Folder.Plot filesep Deci.Plot.Title{cond}]);
                 %saveas(square(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_square'],Deci.Plot.Save.Format);
             end
             
         end
-        
-        
     end
-    
 end
-
-    function pmask(PushButton, EventData)
-        
-        Axes = PushButton.Parent.Children.findobj('Type','Axes');
-        Axes = Axes(arrayfun(@(c) ~isempty(c.String), [Axes.Title]));
-        
-        for a = 1:length(Axes)
-            
-            imag = Axes(a).Children.findobj('Type','Image');
-            
-            if isempty(imag)
-                imag =  Axes(a).Children.findobj('Type','Surface');
-                
-            end
-            
-            if isempty(imag.UserData)
-                imag.UserData = logical(~isnan(imag.CData));
-            end
-            
-            placeholder = imag.UserData;
-            imag.UserData = imag.AlphaData;
-            imag.AlphaData = placeholder;
-        end
-    end
-
 end

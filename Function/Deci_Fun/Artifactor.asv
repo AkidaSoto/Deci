@@ -155,9 +155,6 @@ for subject_list = 1:length(Deci.SubjectList)
             data.locks = data.preart{1};
             data.events = data.preart{2};
             data.trlnum = data.preart{3};
-            
-            data = rmfield(data,'condinfo');
-            data = rmfield(data,'preart');
         end
         
         data = rmfield(rmfield(data,'unmixing'),'topolabel');
