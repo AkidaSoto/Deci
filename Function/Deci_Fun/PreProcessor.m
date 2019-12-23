@@ -150,23 +150,6 @@ preart   = condinfo;
 
 disp(['Finished PreProcessor at ' num2str(toc)]);
 disp('----------------------');
- %% Manual Trial Rejection
-if Deci.PP.Manual_Trial_Rejection
-    cfg =[];
-    cfg.method = 'trial';
-    cfg.alim = 100;
-    tcfg.toilim = [abs(nanmax(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(2)]; 
-    data = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data));
-    
-    cfg = [];
-    cfg.trials = data.saminfo;
-    
-    condinfo{1} = condinfo{1}(logical(data.saminfo),:);
-    condinfo{2} = condinfo{2}(logical(data.saminfo),:);
-    if length(condinfo) > 2
-        condinfo{3} = condinfo{3}(logical(data.saminfo));
-    end
-end
 
 %% ICA
 disp(['Starting ICA at ' num2str(toc)]);

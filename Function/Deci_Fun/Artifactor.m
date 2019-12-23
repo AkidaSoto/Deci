@@ -89,6 +89,35 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.demean = 'yes';
         data = ft_rejectcomponent(cfg, data_ica);
         
+        %% Manual Trial Rejection
+        
+        
+        
+        if Deci.Art.Manual_Trial_Rejection
+            cfg =[];
+            cfg.method = 'trial';
+            tcfg.toilim = [abs(nanmax(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(2)];
+
+            cfg.viewmode = 'vertical';
+            artf = ft_databrowser(cfg,ft_redefinetrial(tcfg,data));
+            
+            datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,data));
+            
+            condinfo{1} = condinfo{1}(logical(datacomp_rej.saminfo),:);
+            condinfo{2} = condinfo{2}(logical(datacomp_rej.saminfo),:);
+            if length(condinfo) > 2
+                condinfo{3} = condinfo{3}(logical(datacomp_rej.saminfo));
+            end
+            
+            cfg = [];
+            cfg.trials = condinfo{3};
+            data_copy = ft_selectdata(cfg,data);
+            
+        else
+            
+            data_copy = data;
+        end
+        
         
         %% Artifact Reject
         cfg =[];
@@ -100,7 +129,7 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.channel = 'all';
         
         
-        data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data));
+        data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data_copy));
         
         cfg = [];
         cfg.trials = data_rej.saminfo;
