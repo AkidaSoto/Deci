@@ -38,6 +38,8 @@ end
 
 subs = [];
 conds = [];
+mkdir([Deci.Folder.Plot]);
+
 
 %%
 
@@ -55,13 +57,6 @@ for cond = 1:size(mdl{model},3)
     end
 end
 
-excelmdldata = mat2cell([exceldata],[size(mdl{model},1)*size(mdl{model},3)], [ones([1 size(exceldata,2)])]);
-
-mkdir([Deci.Folder.Plot]);
-
-excelmdldata = table(excelmdldata{:},Deci.SubjectList(subs)', Deci.Analysis.CondTitle(conds)','VariableNames',{'m1_Q0Opt' 'm1_Q02Wor' 'm1_aR' 'm1_aP1' 'm1_b' 'm2_aR' 'm2_aP' 'm2_b' 'm3_a' 'm3_b' 'Sub' 'Cond'});
-writetable(excelmdldata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Parameters')
-
 
 for modl = 1:size(mdl,2)
         data =   squeeze(nanmean(mdl{modl}(:,:,:),1));
@@ -75,52 +70,6 @@ for modl = 1:size(mdl,2)
        
 end
 
-
-%%
-
-exceldata = [];
-
-for PRs = 1:length(PR)
-    tt = squeeze([PR{PRs}]);
-    
-    sub = repmat(1:size(tt,1),[1 size(tt,2)])';
-    cond = repmat(1:size(tt,2),[size(tt,1) 1]);
-    
-    %         [PRstat(PRs,:),tbl,stats,terms] = anovan(tt(:),{sub(:),cond(:)},'varnames',{'Subject','Condition'},'display','off');
-    exceldata = cat(2,exceldata,tt(:));
-end
-
-subs = [];
-conds = [];
-
-exceldata = [];
-
-for model = 1:length(PR)
-    exceldata = [exceldata reshape(permute(PR{model},[1 3 2]),[size(permute(PR{model},[1 3 2]),1)*size(permute(PR{model},[1 3 2]),2) size(permute(PR{model},[1 3 2]),3)])];
-end
-
-for cond = 1:size(PR{model},3)
-    for sub = 1:size(PR{model},1)
-        subs(end+1) =  sub;
-        conds(end+1) = cond;
-    end
-end
-
-excelPRdata =mat2cell([exceldata],[size(PR{model},1)*size(PR{model},3)], [ones([1 size(exceldata,2)])]);
-
-excelPRdata = table(excelPRdata{:},Deci.SubjectList(subs)', Deci.Analysis.CondTitle(conds)','VariableNames',{'m1_PseudoR' 'm2_PseudoR' 'm3_PseudoR' 'Sub' 'Cond'});
-
-writetable(excelPRdata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Fitness')
-
-for mdl = 1:size(PR,2)
-    data =   squeeze(nanmean(PR{mdl}(:,:,:),1) - 1);
-    datastd =  squeeze(nanstd(PR{mdl}(:,:,:)-1,[],1));
-   a = figure; a.Visible = 'on';
-   CleanBars(data',datastd');
-    
-    title(['Model' num2str(mdl) ' Pseudo-R Squared']);
-    legend(Deci.Analysis.CondTitle)
-end
 
 %%
 
@@ -221,15 +170,65 @@ for mdl = 1:size(PredictionError,5)
     
 end
 
+
+MPredictionError = nanmean(MPredictionError,3);
 MPredictionError = reshape(MPredictionError,[size(MPredictionError,1)*size(MPredictionError,2) size(MPredictionError,3)*size(MPredictionError,4)]);
+MPredictionError =mat2cell([MPredictionError],[size(MPredictionError,1)*size(MPredictionError,3)], [ones([1 size(MPredictionError,2)])]);
+
+MExpectedValue = nanmean(MExpectedValue,3);
+MExpectedValue = reshape(MExpectedValue,[size(MExpectedValue,1)*size(MExpectedValue,2) size(MExpectedValue,3)*size(MExpectedValue,4)]);
+MExpectedValue =mat2cell([MExpectedValue],[size(MExpectedValue,1)*size(MExpectedValue,3)], [ones([1 size(MExpectedValue,2)])]);
+
+
+excelmdldata = [mat2cell([exceldata],[size(exceldata,1)*size(exceldata,3)], [ones([1 size(exceldata,2)])]) MPredictionError MExpectedValue];
+excelmdldata = table(excelmdldata{:},Deci.SubjectList(subs)', Deci.Analysis.CondTitle(conds),'VariableNames',{'m1_Q0Opt' 'm1_Q02Wor' 'm1_aR' 'm1_aP1' 'm1_b' 'm2_aR' 'm2_aP' 'm2_b' 'm3_a' 'm3_b' 'm1_PE' 'm2_PE' 'm3_PE' 'm1_EV' 'm2_EV' 'm3_EV' 'Sub' 'Cond'});
+writetable(excelmdldata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Parameters')
+
+%%
+
+exceldata = [];
+
+for PRs = 1:length(PR)
+    tt = squeeze([PR{PRs}]);
+    
+    sub = repmat(1:size(tt,1),[1 size(tt,2)])';
+    cond = repmat(1:size(tt,2),[size(tt,1) 1]);
+    
+    %         [PRstat(PRs,:),tbl,stats,terms] = anovan(tt(:),{sub(:),cond(:)},'varnames',{'Subject','Condition'},'display','off');
+    exceldata = cat(2,exceldata,tt(:));
+end
+
+subs = [];
+conds = [];
+
+exceldata = [];
+
+for model = 1:length(PR)
+    exceldata = [exceldata reshape(permute(PR{model},[1 3 2]),[size(permute(PR{model},[1 3 2]),1)*size(permute(PR{model},[1 3 2]),2) size(permute(PR{model},[1 3 2]),3)])];
+end
+
+for cond = 1:size(PR{model},3)
+    for sub = 1:size(PR{model},1)
+        subs(end+1) =  sub;
+        conds(end+1) = cond;
+    end
+end
 
 excelPRdata =mat2cell([exceldata],[size(PR{model},1)*size(PR{model},3)], [ones([1 size(exceldata,2)])]);
 
-excelPRdata = table(excelPRdata{:},Deci.SubjectList(subs)', Deci.Analysis.CondTitle(conds)','VariableNames',{'m1_PseudoR' 'm2_PseudoR' 'm3_PseudoR' 'Sub' 'Cond'});
+excelPRdata = table(excelPRdata{:},Deci.SubjectList(subs)', Deci.Analysis.CondTitle(conds),'VariableNames',{'m1_PseudoR' 'm2_PseudoR' 'm3_PseudoR' 'Sub' 'Cond'});
 
 writetable(excelPRdata,[Deci.Folder.Plot filesep 'Modeloutputs'],'FileType','spreadsheet','Sheet','Model Fitness')
 
-
+for mdl = 1:size(PR,2)
+    data =   squeeze(nanmean(PR{mdl}(:,:,:),1) - 1);
+    datastd =  squeeze(nanstd(PR{mdl}(:,:,:)-1,[],1));
+   a = figure; a.Visible = 'on';
+   CleanBars(data',datastd');
+    
+    title(['Model' num2str(mdl) ' Pseudo-R Squared']);
+    legend(Deci.Analysis.CondTitle)
+end
 
 
 disp('Finished Model Stat')

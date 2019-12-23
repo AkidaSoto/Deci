@@ -306,45 +306,63 @@ if Deci.Plot.Stat.do
         
         switch Deci.Plot.Stat.Comp
             case 'Conditions'
-                
-                Deci.Plot.Stat.uvar = 2;
-    
-                
-                for subcond = 1:length(Deci.Plot.Draw{conds})
-                    for subj = 1:size(Subjects,1)
-                        design(1,subj+size(Subjects,1)*[subcond-1]) =  subcond;
-                        design(2,subj+size(Subjects,1)*[subcond-1]) = subj;
+                if length(Deci.Plot.Draw{conds}) ~= 1
+                    Deci.Plot.Stat.uvar = 2;
+                    
+                    
+                    for subcond = 1:length(Deci.Plot.Draw{conds})
+                        for subj = 1:size(Subjects,1)
+                            design(1,subj+size(Subjects,1)*[subcond-1]) =  subcond;
+                            design(2,subj+size(Subjects,1)*[subcond-1]) = subj;
+                        end
                     end
-                end
-                
-                Deci.Plot.Stat.design = design;
-                
-                if length(Deci.Plot.Draw{conds}) > 2
-                    Deci.Plot.Stat.tail = 1;
-                    Deci.Plot.Stat.statistic = 'depsamplesFmultivariate';
-                    Deci.Plot.Stat.clustertail      = 1;
+                    
+                    Deci.Plot.Stat.design = design;
+                    
+                    if length(Deci.Plot.Draw{conds}) > 2
+                        Deci.Plot.Stat.tail = 1;
+                        Deci.Plot.Stat.statistic = 'depsamplesFmultivariate';
+                        Deci.Plot.Stat.clustertail      = 1;
+                    else
+                        Deci.Plot.Stat.statistic = 'depsamplesT';
+                        Deci.Plot.Stat.tail = 0;
+                        Deci.Plot.Stat.clustertail      = 0;
+                    end
+                    
+                    if Deci.Plot.Freq.Topo.do
+                        [topostat{conds}] = ft_freqstatistics(Deci.Plot.Stat, topotdata{Deci.Plot.Draw{conds}});
+                    end
+                    
+                    if Deci.Plot.Freq.Square.do
+                        [squarestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, squaretdata{:,Deci.Plot.Draw{conds}});
+                    end
+                    
+                    if Deci.Plot.Freq.Wire.do
+                        [wirestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, wiretdata{:,Deci.Plot.Draw{conds}});
+                    end
+                    
+                    if Deci.Plot.Freq.Bar.do
+                        [barstat{conds}] = ft_freqstatistics(Deci.Plot.Stat, bartdata{Deci.Plot.Draw{conds}});
+                    end
                 else
-                    Deci.Plot.Stat.statistic = 'depsamplesT';
-                    Deci.Plot.Stat.tail = 0;
-                    Deci.Plot.Stat.clustertail      = 0;
+                    
+                    if Deci.Plot.Freq.Topo.do
+                        topostat{conds}.mask = ones(size(topotdata{Deci.Plot.Draw{conds}}.powspctrm(1,:)))';
+                    end
+                    
+                    if Deci.Plot.Freq.Square.do
+                        [squarestat{conds}.mask] = ones(size(squaretdata{:,Deci.Plot.Draw{conds}}.powspctrm(1,:)));
+                    end
+                    
+                    if Deci.Plot.Freq.Wire.do
+                        [wirestat{conds}.mask] = ones(size(wiretdata{:,Deci.Plot.Draw{conds}}.powspctrm(1,:)));
+                    end
+                    
+                    if Deci.Plot.Freq.Bar.do
+                        [barstat{conds}.mask] = ones(size(bartdata{Deci.Plot.Draw{conds}}.powspctrm(1,:)));
+                    end
+                    
                 end
-                
-                if Deci.Plot.Freq.Topo.do
-                    [topostat{conds}] = ft_freqstatistics(Deci.Plot.Stat, topotdata{Deci.Plot.Draw{conds}});
-                end
-                
-                if Deci.Plot.Freq.Square.do
-                    [squarestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, squaretdata{:,Deci.Plot.Draw{conds}});
-                end
-                
-                if Deci.Plot.Freq.Wire.do
-                    [wirestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, wiretdata{:,Deci.Plot.Draw{conds}});
-                end
-                
-                if Deci.Plot.Freq.Bar.do
-                    [barstat{conds}] = ft_freqstatistics(Deci.Plot.Stat, bartdata{Deci.Plot.Draw{conds}});
-                end
-                
             case 'Bsl'
                 Deci.Plot.Stat.tail = 0;
                 Deci.Plot.Stat.statistic = 'indepsamplesT';
@@ -376,7 +394,8 @@ if Deci.Plot.Stat.do
                     [barstat{conds}] = ft_freqstatistics(Deci.Plot.Stat, allbartdata);
                 end
                 
-        end 
+        end
+        
     end
 end
 
@@ -517,8 +536,8 @@ for cond = 1:length(Deci.Plot.Draw)
                     title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
 
                     colorbar('vert');
-                    map = colormap('pink'); %'hot' 'gray'
-                    colormap(map);
+%                     map = colormap('pink'); %'hot' 'gray'
+%                     colormap(map);
                     
                 else
                     close topo
@@ -543,8 +562,8 @@ for cond = 1:length(Deci.Plot.Draw)
                 title([Deci.Plot.Subtitle{cond}{subcond}]);
 
                 colorbar('vert');
-                map = colormap('pink'); %'hot' 'gray'
-                colormap(map);
+%                 map = colormap('pink'); %'hot' 'gray'
+%                 colormap(map);
             end
             
             if Deci.Plot.Freq.Wire.do

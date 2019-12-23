@@ -120,6 +120,12 @@ if Deci.PP.CleanLabels
 
 end
 
+if  ~isempty(data_eeg.label(strcmp(data_eeg.label,'StimTrak')))
+    rm32.channel = data_eeg.label(~strcmp(data_eeg.label,'StimTrak'));
+    data_eeg = ft_selectdata(rm32,data_eeg);
+end
+
+
 % if ~isempty(Deci.PP.DownSample)
 %     data_eeg = ft_resampledata(struct('resamplefs',Deci.PP.DownSample,'detrend','no'),data_eeg);
 % end

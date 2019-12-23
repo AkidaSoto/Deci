@@ -147,9 +147,28 @@ for subject_list = 1:length(Deci.SubjectList)
                     
                     subdraws = Deci.Analysis.Conditions(Deci.Plot.Behv.Acc.Subtotal{fig}{draw});
                     maxt2 = max(sum(ismember(eve,[subdraws{:}]),2));
-                    subtrl = [[sum(ismember(eve,[subdraws{:}]),2) ] == maxt2];
+                    subtrl = [[sum(ismember(eve,[subdraws{:}]),2) ] == maxt];
                     
                     eveTotal(subtrl) = 1;
+                    
+                    if isequal(Deci.Plot.Behv.Acc.Subtotal{fig}{draw},[2 4])
+                        eveTotal2 = nan([1 length(find(any(ismember(eve,AccBlock(blk)),2)))]);
+                        
+                        maxt = max(sum(ismember(eve,[draws{:}]),2));
+                        trl = find([[sum(ismember(eve,[draws{:}]),2)] == maxt]);
+                        
+                        eveTotal2(trl) = 0;
+                        
+                        subdraws = Deci.Analysis.Conditions([6 8]);
+                        maxt2 = max(sum(ismember(eve,[subdraws{:}]),2));
+                        subtrl = [[sum(ismember(eve,[subdraws{:}]),2) ] == maxt];
+                        
+                        eveTotal2(subtrl) = 1;
+                        
+                        if [nanmean(eveTotal) + nanmean(eveTotal2)] ~= 1
+                           k = 0; 
+                        end
+                    end
                                 
                     if size(eveTotal,2) ~= size(Acc{fig},4) && size(Acc{fig},1) ~= 0
                         
@@ -282,8 +301,9 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
     
     %ExportExcel
     colnames = [];
-    for cond = 1:size(fullAcc{fig},2)
-        for blk = 1:size(fullAcc{fig},3)
+    for blk = 1:size(fullAcc{fig},3)
+        for cond = 1:size(fullAcc{fig},2)
+            
             colnames{end+1} = [Deci.Plot.Behv.Acc.Subtitle{fig}{cond} ' : Block ' num2str(abs(AccBlock(blk)))];
         end
     end
@@ -306,9 +326,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
     blks = [];
     trls = [];
 
-    
-    
-        
+
     for trl = 1:size(Acc{fig},4)
         for blk = 1:size(Acc{fig},3)
             for cond = 1:size(Acc{fig},2)
@@ -344,8 +362,10 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     
     %ExportExcel
     colnames = [];
-    for cond = 1:size(fullRT{fig},2)
-        for blk = 1:size(fullRT{fig},3)
+    
+    for blk = 1:size(fullRT{fig},3)
+        for cond = 1:size(fullRT{fig},2)
+            
             colnames{end+1} = [Deci.Plot.Behv.RT.Subtitle{fig}{cond} ' : Block ' num2str(abs(RTBlock(blk)))];
         end
     end
@@ -562,12 +582,12 @@ if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
             
         end
         
-        
-    end
-    
-    for lim = 1:numel(d)
+            for lim = 1:numel(d)
         d(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],d(:)','UniformOutput',false)));
     end
+    end
+    
+
     
 end
 

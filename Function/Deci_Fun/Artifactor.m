@@ -141,25 +141,25 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         
         if Deci.Art.AddComponents
-            cfg =[];
-            cfg.viewmode = 'vertical';
-            
-            scfg.trials = condinfo{3};
-            
-            data_ica     = rmfield(ft_componentanalysis(ica, data),'cfg');
-            data_comp = ft_selectdata(scfg,data_ica);
-            
-            tcfg.toilim = [abs(nanmax(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(2)];
-            
-            artf = ft_databrowser(cfg,ft_redefinetrial(tcfg,data_comp));
-            
-            datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,data_comp));
-            
-            condinfo{1} = condinfo{1}(logical(datacomp_rej.saminfo),:);
-            condinfo{2} = condinfo{2}(logical(datacomp_rej.saminfo),:);
-            if length(condinfo) > 2
-                condinfo{3} = condinfo{3}(logical(datacomp_rej.saminfo));
-            end
+%             cfg =[];
+%             cfg.viewmode = 'vertical';
+%             
+%             scfg.trials = condinfo{3};
+%             
+%             data_ica     = rmfield(ft_componentanalysis(ica, data),'cfg');
+%             data_comp = ft_selectdata(scfg,data_ica);
+%             
+%             tcfg.toilim = [abs(nanmax(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(2)];
+%             
+%             artf = ft_databrowser(cfg,ft_redefinetrial(tcfg,data_comp));
+%             
+%             datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,data_comp));
+%             
+%             condinfo{1} = condinfo{1}(logical(datacomp_rej.saminfo),:);
+%             condinfo{2} = condinfo{2}(logical(datacomp_rej.saminfo),:);
+%             if length(condinfo) > 2
+%                 condinfo{3} = condinfo{3}(logical(datacomp_rej.saminfo));
+%             end
         end
         
         data.condinfo = condinfo;
