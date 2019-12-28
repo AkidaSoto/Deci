@@ -1,27 +1,25 @@
-function ISPC(Deci,info,dat,data,params)
+function ISPC(Deci,info,Fourier,params)
 
 if ismember(Deci.Analysis.CondTitle(info.Cond),Deci.Analysis.Connectivity.cond)
     
     mkdir([Deci.Folder.Analysis filesep 'ISPC' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}]);
     
-    fcfg = Deci.Analysis.Freq;
-    fcfg.output='fourier';
-    fcfg.pad = 'maxperlen';
-    fcfg.scc = 0;
-    fcfg.keeptapers = 'yes';
-    fcfg.keeptrials = 'yes';
-    fcfg.toi = Deci.Analysis.Connectivity.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Connectivity.Toi(2);
-    
-    Fourier = rmfield(ft_freqanalysis(fcfg, dat),'cfg');
-    Fourier.condinfo = dat.condinfo;
+%     fcfg = Deci.Analysis.Freq;
+%     fcfg.output='fourier';
+%     fcfg.pad = 'maxperlen';
+%     fcfg.scc = 0;
+%     fcfg.keeptapers = 'yes';
+%     fcfg.keeptrials = 'yes';
+%     fcfg.toi = Deci.Analysis.Connectivity.Toi(1):round(diff([Fourier.time{1}(1) Fourier.time{1}(2)]),5):Deci.Analysis.Connectivity.Toi(2);
+%     
+%     Fourier = rmfield(ft_freqanalysis(fcfg, dat),'cfg');
+%     Fourier.condinfo = dat.condinfo;
     
     times2save = -.5:.02:1.5;
     time_window = linspace(1.5,3.5,length(Deci.Analysis.Freq.foi));
-    Bsl_time = [-.5 0];
     
     %time in indicies
     times2save_idx = dsearchn(Fourier.time', times2save');
-    Bsl_time_idx = dsearchn(times2save',Bsl_time');
     
     %initialize
     trial_avg_ispc = zeros(length(Deci.Analysis.Freq.foi),length(times2save));

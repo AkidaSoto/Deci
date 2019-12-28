@@ -18,8 +18,6 @@ mkdir([Deci.Folder.Analysis filesep 'Txt_avg_FreqBand_pow' filesep Deci.SubjectL
                 HF{fh} =[8 12.5];
             case 'lowgamma'
                 HF{fh} =[30 60];
-%             case 'highgamma'
-%                 HF{fh} = [55 80];
         end
     end
     

@@ -102,7 +102,8 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     
     
     %% Find Relevant Trials from that Condition info
-    maxt = length(find(cellfun(@(c) any(ismember(Deci.Analysis.Conditions{Cond},c)), Deci.DT.Markers)));
+    maxt = max(sum(ismember(preart{2},Deci.Analysis.Conditions{Cond}),2));    
+%     maxt = length(find(cellfun(@(c) any(ismember(Deci.Analysis.Conditions{Cond},c)), Deci.DT.Markers)));
     info.alltrials = find(sum(ismember(preart{2},Deci.Analysis.Conditions{Cond}),2) == maxt);
     
     %ignore all locks that are missing
@@ -217,6 +218,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     
                     %% Loop Through Channels
                     for i = 1:length(Chan)
+                        
                         dcfg = [];
                         dcfg.channel = Chan(i);
                         freq = ft_selectdata(dcfg,Fourier);
@@ -228,7 +230,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         
                         freqplaceholder = freq;
                         
-                        if Deci.Analysis.Freq.do
+                        if Deci.Analysis.Freq.do 
                             freq = freqplaceholder;
                             freq.dimord = 'chan_freq_time';
                             freq.powspctrm      = permute(abs(mean(freq.fourierspctrm./abs(freq.fourierspctrm),1)),[2 3 4 1]);         % divide by amplitude
@@ -244,7 +246,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             freq.trllength = trllength;
                             save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
                         end
-                        
+                    
                         if isfield(Deci.Analysis.Extra,'do')
                             if Deci.Analysis.Extra.do
                                 info.Channels = Chan;
@@ -268,8 +270,21 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     info.Cond = Cond;
                     info.Lock = Lock;
                     info.subject_list = subject_list;
+                    
+                    fcfg = Deci.Analysis.Freq;
+                    
+                    fcfg.output='fourier';
+                    fcfg.pad = 'maxperlen';
+                    fcfg.scc = 0;
+                    fcfg.keeptapers = 'yes';
+                    fcfg.keeptrials = 'yes';
+                    fcfg.toi = Deci.Analysis.Connectivity.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Connectivity.Toi(2);
+                    
+                    Fourier = rmfield(ft_freqanalysis(fcfg, dat),'cfg');
+                    Fourier.condinfo = dat.condinfo;
+                    
                     for funs = find(Deci.Analysis.Connectivity.list)
-                        feval(Deci.Analysis.Connectivity.Functions{funs},Deci,info,dat,data,Deci.Analysis.Connectivity.Params{funs}{:});
+                        feval(Deci.Analysis.Connectivity.Functions{funs},Deci,info,Fourier,Deci.Analysis.Connectivity.Params{funs}{:});
                     end
                     
                 end
