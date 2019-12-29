@@ -162,8 +162,6 @@ for fig = find(Deci.Plot.Extra.Std.Acc.Figure)
                 xlabel('Block #');
                 %disp(num2str(squeeze(Acc(subj,draw,:,:))*100))
 
-                
-                
             end
         
     end

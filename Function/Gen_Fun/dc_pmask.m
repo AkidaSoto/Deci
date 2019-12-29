@@ -17,13 +17,20 @@ ButtonH.UserData = @ones;
                 
             end
             
-            if isempty(imag.UserData)
-                imag.UserData = logical(~isnan(imag.CData));
+            if ~isempty(imag)
+                if isempty(imag.UserData)
+                    imag.UserData = logical(~isnan(imag.CData));
+                end
+                
+                placeholder = imag.UserData;
+                imag.UserData = imag.AlphaData;
+                imag.AlphaData = placeholder;
+            else
+                imag =  Axes(a).Children.findobj('Type','contour');
+                placeholder = imag.UserData;
+                imag.UserData = imag.ZData;
+                imag.ZData = placeholder;
             end
-            
-            placeholder = imag.UserData;
-            imag.UserData = imag.AlphaData;
-            imag.AlphaData = placeholder;
         end
     end
 end

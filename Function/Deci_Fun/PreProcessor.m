@@ -1,8 +1,8 @@
 function PreProcessor(Deci,subject_list)
 
 disp('----------------------');
-disp(['Starting PreProcessor for ' Deci.SubjectList{subject_list}]);
-tic;
+disp(['Starting PreProcessor for Subject #' num2str(subject_list) ': ' Deci.SubjectList{subject_list}]);
+
 %Load and Set-up
 cfg = [];
 load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}],'cfg');
@@ -45,7 +45,7 @@ if ~isempty(Deci.PP.Imp)
     Imp_cfg.refchannel = Imp;
     Imp_cfg.feedback = feedback;
     evalc('data_eeg = ft_preprocessing(Imp_cfg,data_eeg)');
-    disp('Implicit Rereference');
+    disp('---Implicit Rereference applied---');
 end
 
 % if ~isempty(Deci.PP.Ocu)
@@ -81,7 +81,6 @@ end
 % end
 
 if Deci.PP.CleanLabels
-    
     if ~isempty( data_eeg.label(strcmp(data_eeg.label,'OL')))
         data_eeg.label(strcmp(data_eeg.label,'OL')) = {'PO7'};
     end
@@ -117,14 +116,14 @@ if Deci.PP.CleanLabels
         rm32.channel = data_eeg.label(~strcmp(data_eeg.label,'32'));
         data_eeg = ft_selectdata(rm32,data_eeg);
     end
-
 end
 
 if  ~isempty(data_eeg.label(strcmp(data_eeg.label,'StimTrak')))
     rm32.channel = data_eeg.label(~strcmp(data_eeg.label,'StimTrak'));
     data_eeg = ft_selectdata(rm32,data_eeg);
+    
+    disp('StimTrak Removed')
 end
-
 
 % if ~isempty(Deci.PP.DownSample)
 %     data_eeg = ft_resampledata(struct('resamplefs',Deci.PP.DownSample,'detrend','no'),data_eeg);
@@ -158,8 +157,6 @@ elseif ~isempty(find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1)) && ~Dec
     error(['Found trial(s) containing nan in rawdata for ' Deci.SubjectList{subject_list} '. Revise Data and then use .RejectNans']);
 end
 
-disp(['Finished PreProcessor at ' num2str(toc)]);
-disp('----------------------');
  %% Manual Trial Rejection
  
 if Deci.PP.Manual_Trial_Rejection
@@ -167,23 +164,33 @@ if Deci.PP.Manual_Trial_Rejection
     cfg.method = 'trial';
     cfg.alim = 100;
     tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)]; 
-    data = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data));
+    evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data))');
     
-    cfg = [];
-    cfg.trials = data.saminfo;
+    postart.locks = locks(logical(data_rej.saminfo),:);
+    postart.events = events(logical(data_rej.saminfo),:);
+    postart.trlnum = trlnum(logical(data_rej.saminfo),:);
     
-    artifacts.locks = locks(logical(data.saminfo),:);
-    artifacts.events = events(logical(data.saminfo),:);
-    artifacts.trlnum = trlnum(logical(data.saminfo),:);
+    display(' ')
+    display('---Manual Trial Rejection Applied---')
+    display(['Rejected ' num2str(length(find(~logical(data_rej.saminfo)))) ' trials'])
+    display(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
+    display(['Remaining ' num2str([length(postart.trlnum)/length(trlnum)]*100) '% trials'])
+    display(' ')
+    pause(.05);
+else
+    postart.locks = locks;
+    postart.events = events;
+    postart.trlnum = trlnum;
 end
 
 %% ICA
-disp(['Starting ICA at ' num2str(toc)]);
-
+display(' ')
+disp(['---Starting ICA---']);
+display(' ')
 cfg = [];
 cfg.bpfilter = 'yes';
 cfg.bpfreq = Deci.ICA.bpfreq;
-data_bp = ft_preprocessing(cfg,data);
+evalc('data_bp = ft_preprocessing(cfg,data)');
 
 cfg = [];
 cfg.method  = 'runica';
@@ -200,11 +207,12 @@ cfg.topolabel = data_musc.topolabel;
 data.locks = locks;
 data.events = events;
 data.trlnum = trlnum;
-data.artifacts = artifacts;
+data.postart = postart;
 
 data = rmfield(data,'cfg');
 
 mkdir([Deci.Folder.Preproc])
 save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data','cfg','-v7.3')
 
+disp(['----------------------']);
 end
