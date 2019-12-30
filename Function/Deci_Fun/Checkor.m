@@ -19,7 +19,7 @@ elseif strcmp(Deci.SubjectList,'gui')
     fakeUI = figure;
     fakeUI.UserData = Deci.SubjectList;
     fakeUI.Visible =  'off';
-    select_labels(fakeUI,[],Deci.SubjectList);
+    dc_select_labels(fakeUI,[],Deci.SubjectList);
     waitfor(findall(0,'Name','Select Labels'),'BeingDeleted','on');
     Deci.SubjectList = fakeUI.UserData;
     close(fakeUI);

@@ -65,9 +65,8 @@ for subject_list = 1:length(Deci.SubjectList)
             component{eye} = find(abs(corr(eye,:,1)) >= Deci.ICA.cutoff);
         end
         
-        possiblecorrupt = max(abs(exp(zscore(cfg.unmixing'))),[],1) > 1400;
-        possiblecorrupt = possiblecorrupt | [max(abs(1./exp(zscore(cfg.unmixing'))),[],1) > 1400];
-        
+        possiblecorrupt = max(abs(exp(zscore(cfg.unmixing'))),[],1) > 800;
+
         if ~Deci.ICA.Automatic
             disp('Manual ICA Rejection')
             cfg.component = [1:20];
