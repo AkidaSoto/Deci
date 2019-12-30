@@ -1,14 +1,12 @@
 function PreProcessor(Deci,subject_list)
 
 disp('----------------------');
-disp(['Starting PreProcessor for ' Deci.SubjectList{subject_list}]);
-tic;
+disp(['Starting PreProcessor for Subject #' num2str(subject_list) ': ' Deci.SubjectList{subject_list}]);
+
 %Load and Set-up
 cfg = [];
 load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}],'cfg');
 TrlDefs = cfg;
-
-
 
 feedback = Deci.PP.feedback;
 %% Detrending and Filtering the FullData
@@ -26,7 +24,9 @@ end
 Trialcfg.trl = TrlDefs.trl;
 evalc('data_eeg = ft_redefinetrial(Trialcfg,data_eeg)');
 
-condinfo = {data_eeg.trialinfo TrlDefs.event TrlDefs.trialnum};
+locks = data_eeg.trialinfo;
+events = TrlDefs.event;
+trlnum = TrlDefs.trialnum;
 %%
 if ~isempty(Deci.PP.ScalingFactor)
     disp('Data Scaled');
@@ -45,7 +45,7 @@ if ~isempty(Deci.PP.Imp)
     Imp_cfg.refchannel = Imp;
     Imp_cfg.feedback = feedback;
     evalc('data_eeg = ft_preprocessing(Imp_cfg,data_eeg)');
-    disp('Implicit Rereference');
+    disp('---Implicit Rereference applied---');
 end
 
 % if ~isempty(Deci.PP.Ocu)
@@ -81,7 +81,6 @@ end
 % end
 
 if Deci.PP.CleanLabels
-    
     if ~isempty( data_eeg.label(strcmp(data_eeg.label,'OL')))
         data_eeg.label(strcmp(data_eeg.label,'OL')) = {'PO7'};
     end
@@ -117,14 +116,14 @@ if Deci.PP.CleanLabels
         rm32.channel = data_eeg.label(~strcmp(data_eeg.label,'32'));
         data_eeg = ft_selectdata(rm32,data_eeg);
     end
-
 end
 
 if  ~isempty(data_eeg.label(strcmp(data_eeg.label,'StimTrak')))
     rm32.channel = data_eeg.label(~strcmp(data_eeg.label,'StimTrak'));
     data_eeg = ft_selectdata(rm32,data_eeg);
+    
+    disp('StimTrak Removed')
 end
-
 
 % if ~isempty(Deci.PP.DownSample)
 %     data_eeg = ft_resampledata(struct('resamplefs',Deci.PP.DownSample,'detrend','no'),data_eeg);
@@ -138,7 +137,9 @@ if ~isempty(Deci.PP.More)
 end
 
 data = data_eeg;
-data.condinfo = condinfo;
+data.locks = locks;
+data.events = events;
+data.trlnum = trlnum;
 
 if ~isempty(find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1)) && Deci.PP.RejectNans
     nantrials = find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1);
@@ -146,41 +147,50 @@ if ~isempty(find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1)) && Deci.PP.
     Reject_cfg.trials(nantrials) = false;
     
     data = ft_selectdata(Reject_cfg,data);
-    condinfo = data.condinfo;
+    
+    locks = data.locks;
+    events = data.events;
+    trlnum = data.trlnum;
+    
     warning(['Found trial(s) containing nan in rawdata for ' Deci.SubjectList{subject_list} '. Revise Data and then use .RejectNans']);
 elseif ~isempty(find(cellfun(@(c) any(any(isnan(c))), data.trial) == 1)) && ~Deci.PP.RejectNans
     error(['Found trial(s) containing nan in rawdata for ' Deci.SubjectList{subject_list} '. Revise Data and then use .RejectNans']);
 end
 
-preart   = condinfo;
-
-disp(['Finished PreProcessor at ' num2str(toc)]);
-disp('----------------------');
  %% Manual Trial Rejection
+ 
 if Deci.PP.Manual_Trial_Rejection
     cfg =[];
     cfg.method = 'trial';
     cfg.alim = 100;
-    tcfg.toilim = [abs(nanmax(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(condinfo{1},[],2)/1000)+Deci.Art.crittoilim(2)]; 
-    data = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data));
+    tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)]; 
+    evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data))');
     
-    cfg = [];
-    cfg.trials = data.saminfo;
+    postart.locks = locks(logical(data_rej.saminfo),:);
+    postart.events = events(logical(data_rej.saminfo),:);
+    postart.trlnum = trlnum(logical(data_rej.saminfo),:);
     
-    condinfo{1} = condinfo{1}(logical(data.saminfo),:);
-    condinfo{2} = condinfo{2}(logical(data.saminfo),:);
-    if length(condinfo) > 2
-        condinfo{3} = condinfo{3}(logical(data.saminfo));
-    end
+    display(' ')
+    display('---Manual Trial Rejection Applied---')
+    display(['Rejected ' num2str(length(find(~logical(data_rej.saminfo)))) ' trials'])
+    display(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
+    display(['Remaining ' num2str([length(postart.trlnum)/length(trlnum)]*100) '% trials'])
+    display(' ')
+    pause(.05);
+else
+    postart.locks = locks;
+    postart.events = events;
+    postart.trlnum = trlnum;
 end
 
 %% ICA
-disp(['Starting ICA at ' num2str(toc)]);
-
+display(' ')
+disp(['---Starting ICA---']);
+display(' ')
 cfg = [];
 cfg.bpfilter = 'yes';
 cfg.bpfreq = Deci.ICA.bpfreq;
-data_bp = ft_preprocessing(cfg,data);
+evalc('data_bp = ft_preprocessing(cfg,data)');
 
 cfg = [];
 cfg.method  = 'runica';
@@ -194,12 +204,15 @@ cfg.numcomponent= 20;
 cfg.unmixing  =data_musc.unmixing;
 cfg.topolabel = data_musc.topolabel;
 
-data.condinfo = condinfo;
-data.preart = preart;
+data.locks = locks;
+data.events = events;
+data.trlnum = trlnum;
+data.postart = postart;
 
 data = rmfield(data,'cfg');
 
 mkdir([Deci.Folder.Preproc])
 save([Deci.Folder.Preproc filesep Deci.SubjectList{subject_list}],'data','cfg','-v7.3')
 
+disp(['----------------------']);
 end

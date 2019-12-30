@@ -4,16 +4,7 @@ function [out] = QL3(Deci,info,dat,params)
 %params.Reward  = [51 52];
 %params.Value  = {[20 10] [10 0] [0 -10] [-10 -20]};
 
-
-maxt = max(sum(ismember(dat.preart{2},Deci.Analysis.Conditions{info.Cond}),2));
-info.alltrials = find(sum(ismember(dat.preart{2},Deci.Analysis.Conditions{info.Cond}),2) == maxt);
-
-%ignore all locks that are missing
-minamountofnans = min(mean(isnan(dat.preart{1}(info.alltrials,:)),2));
-info.allnonnans = mean(isnan(dat.preart{1}(info.alltrials,:)),2) == minamountofnans;% & ~isnan(mean(condinfo{2},2));
-
-trialtypes = dat.preart{2}(info.alltrials(info.allnonnans),:);
-
+trialtypes = dat.events;
 
 %Basic Data Maintence for finding block numbers
 if any(any(trialtypes < 0))
@@ -106,12 +97,6 @@ for m = 1:size(Best,1)
     
     Q_all{m} = qblock{m};
     Pe_all{m} = Peblock{m};
-    
-    if Deci.Analysis.ApplyArtReject
-        Q{m} = Q{m}(find(ismember(dat.preart{3}(info.alltrials(info.allnonnans)),dat.condinfo{3})));
-        Pe{m} = Pe{m}(find(ismember(dat.preart{3}(info.alltrials(info.allnonnans)),dat.condinfo{3})));
-    end
-    
 end
 
 
