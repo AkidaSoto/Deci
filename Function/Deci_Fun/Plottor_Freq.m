@@ -64,7 +64,22 @@ for  subject_list = 1:length(Deci.SubjectList)
             Chans{Channel}.freq =  Chans{Channel}.freq(foi);
             Chans{Channel}.powspctrm  =Chans{Channel}.powspctrm(:,foi,:);
             Chans{Channel}.label = Chois(Channel);
+            
+            
         end
+        
+        if isfield(freq,'trllength')
+            trllen(subject_list,Conditions) = freq.trllength;
+        else
+            trllen(subject_list,Conditions) = nan;
+        end
+        
+        if isfield(freq,'lockers')
+            lockers(subject_list,Conditions,:) = freq.lockers;
+        else
+            lockers(subject_list,Conditions,:) = [];
+        end
+        
         acfg.parameter = 'powspctrm';
         acfg.appenddim = 'chan';
         Subjects{subject_list,Conditions} = rmfield(ft_appendfreq(acfg,Chans{:}),'cfg');
@@ -101,6 +116,18 @@ for Conditions = 1:size(Subjects,2)
                 Chans{Channel}.powspctrm  =Chans{Channel}.powspctrm(:,foi,:);
                 Chans{Channel}.label = Chois(Channel);
                 
+            end
+            
+            if isfield(freq,'trllength')
+                trllen(subject_list,Conditions) = freq.trllength;
+            else
+                trllen(subject_list,Conditions) = nan;
+            end
+            
+            if isfield(freq,'lockers')
+                lockers(subject_list,Conditions,:) = freq.lockers;
+            else
+                lockers(subject_list,Conditions,:) = nan;
             end
             
             acfg.parameter = 'powspctrm';
@@ -152,15 +179,15 @@ if ~isempty(Deci.Plot.Math)
     
     display(' ')
     display(['Doing ' num2str(length(Deci.Plot.Math)) ' Maths'] )
-    
+
     for conds = 1:length(Deci.Plot.Math)
         for subj = 1:size(Subjects,1)
             scfg.parameter = 'powspctrm';
             scfg.operation = Deci.Plot.Math{conds};
             evalc('MathData{subj} = ft_math(scfg,Subjects{subj,:})');
         end 
-        Subjects(:,size(Subjects,2)+1) = MathData;
         
+        Subjects(:,size(Subjects,2)+1) = MathData;
     end
 end
 
@@ -168,6 +195,17 @@ end
 if size(Subjects,1) == 1
     Deci.Plot.GrandAverage = false;  
 end
+
+if any(~isnan(trllen))
+    trlstd = nanstd(trllen,[],1);
+    trllen = nanmean(trllen,1);
+end
+
+if any(~isnan(lockers))
+    lockersstd = nanstd(lockers,[],1);
+    lockers = nanmean(lockers,1);
+end
+
 
 for conds = 1:size(Subjects,2)
     
@@ -177,6 +215,7 @@ for conds = 1:size(Subjects,2)
         facfg.keepindividual = 'yes';
         evalc('FreqData{1,conds} = ft_freqgrandaverage(facfg,Subjects{:,conds});');
         FreqData{1,conds} = rmfield(FreqData{1,conds},'cfg');
+        
     else
         Deci.Plot.Stat.do = false;
         FreqData(:,conds) = Subjects(:,conds);
@@ -386,6 +425,7 @@ for cond = 1:length(Deci.Plot.Draw)
             squarestat{cond}.mask = double(squarestat{cond}.mask);
             squarestat{cond}.mask(squarestat{cond}.mask == 0) = .2;
             tacfg.maskparameter = 'mask';
+            tacfg.colormap = Deci.Plot.ColorMap;
             
             if Deci.Plot.Stat.FPlots
                 squaret(cond) = figure;
@@ -395,29 +435,27 @@ for cond = 1:length(Deci.Plot.Draw)
                 title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
                 dc_pmask(squaret(cond))
                 
-                colormap('jet'); %'hot' 'gray'
                 ylabel('F score');
                 xlabel('time');
             end
         end
         
         if Deci.Plot.Freq.Topo.do
-            tcfg = cfg;
-            tcfg.parameter = 'stat';
+            tacfg = cfg;
+            tacfg.parameter = 'stat';
             topostat{cond}.mask = double(topostat{cond}.mask);
             topostat{cond}.mask(topostat{cond}.mask == 0) = .2;
-            tcfg.clim = 'maxmin';
-            tcfg.maskparameter ='mask';
-                
+            tacfg.clim = 'maxmin';
+            tacfg.maskparameter ='mask';
+            tacfg.colormap = Deci.Plot.ColorMap;
+            
             if Deci.Plot.Stat.FPlots
                 topot(cond)  = figure;
                 topot(cond).Visible = 'on';
                 
-                ft_topoplotER(tcfg, topostat{cond});
+                ft_topoplotTFR(tcfg, topostat{cond});
                 title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
                 dc_pmask(topot(cond))
-                
-                colormap('jet'); %'hot' 'gray'
             end
         end
         
@@ -442,10 +480,8 @@ for cond = 1:length(Deci.Plot.Draw)
             if Deci.Plot.Stat.FPlots
                 bart(cond)  = figure;
                 bart(cond).Visible = 'on';
-                
                 bar(barstat{cond}.stat)
                 title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
-                colormap('jet'); %'hot' 'gray'
             end
         end
         
@@ -491,7 +527,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 pcfg.comment = 'no';
                 pcfg.style = 'fill';
                 pcfg.markersymbol = '.';
-                pcfg.colormap = 'jet';
+                pcfg.colormap = Deci.Plot.ColorMap;
                 pcfg.colorbar = 'yes';
                 pcfg.contournum = 15;
                 ft_topoplotER(pcfg, topodata{subj,Deci.Plot.Draw{cond}(subcond)});
@@ -514,9 +550,56 @@ for cond = 1:length(Deci.Plot.Draw)
                 end
                 
                 pcfg.imagetype = 'contourf';
+                pcfg.colormap = Deci.Plot.ColorMap;
                 evalc('ft_singleplotTFR(pcfg,squaredata{subj,Deci.Plot.Draw{cond}(subcond)})');
+                axis tight
+                
+                
+                if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
+                    xlims = xlim;
+                    ylims = ylim;
+                    
+                    for locks = 1:length([lockers(subj,Deci.Plot.Draw{cond}(subcond),:)])
+                        hold on
+                        
+                        locktime = [lockers(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                        lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                        
+                        if locktime > xlims(1) && locktime < xlims(2)
+                           plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
+                            
+                            if Deci.Plot.GrandAverage
+                                
+                                if [locktime - lockstd] < xlims(1)
+                                    lockpstd(1) = xlims(1);
+                                else
+                                    lockpstd(1) = [locktime - lockstd];
+                                end
+                                
+                                if [locktime + lockstd] > xlims(2)
+                                    lockpstd(2) = xlims(2);
+                                else
+                                    lockpstd(2) = [locktime + lockstd];
+                                end
+                                
+                                lockpgon = polyshape([lockpstd fliplr(lockpstd)],sort([ylims ylims]),'Simplify', false);
+                                lockb = plot(lockpgon,'HandleVisibility','off');
+                                hold on
+                                lockb.EdgeAlpha = 0;
+                                lockb.FaceAlpha = .30;
+                                lockb.FaceColor = plotlock.Color;
+                                
+                                arrayfun(@(c) uistack(c,'top'),lockb);
+                                clear lockb
+                                
+                            end
+                        end
+                        
+                    end
+                end
+                
                 title([Deci.Plot.Subtitle{cond}{subcond}]);
-                colorbar('vert');
+                ylim(ylims)
             end
             
             if Deci.Plot.Freq.Wire.do
@@ -537,6 +620,8 @@ for cond = 1:length(Deci.Plot.Draw)
                 if Deci.Plot.Stat.do
                 wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(wirestat{cond}.mask,[length(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
                 end
+                
+                
             end
             
         end
@@ -583,6 +668,54 @@ for cond = 1:length(Deci.Plot.Draw)
             set(l, 'Interpreter', 'none')
             xlim([wiredata{cond}.time(1) wiredata{cond}.time(end)])
             xlabel('Time');
+            
+            
+            for subcond = 1:length(Deci.Plot.Draw{cond})
+                if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
+                    xlims = xlim;
+                    ylims = ylim;
+                    
+                    for locks = 1:length([lockers(subj,Deci.Plot.Draw{cond}(subcond),:)])
+                        hold on
+                        
+                        locktime = [lockers(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                        lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                        
+                        if locktime > xlims(1) && locktime < xlims(2)
+                            plotlock = plot([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
+                            plotlock.Color(4) = .2;
+                            
+                            if Deci.Plot.GrandAverage
+                                
+                                if [locktime - lockstd] < xlims(1)
+                                    lockpstd(1) = xlims(1);
+                                else
+                                    lockpstd(1) = [locktime - lockstd];
+                                end
+                                
+                                if [locktime + lockstd] > xlims(2)
+                                    lockpstd(2) = xlims(2);
+                                else
+                                    lockpstd(2) = [locktime + lockstd];
+                                end
+                                
+                                lockpgon = polyshape([lockpstd fliplr(lockpstd)],sort([ylims ylims]),'Simplify', false);
+                                lockb = plot(lockpgon,'HandleVisibility','off');
+                                hold on
+                                lockb.EdgeAlpha = 0;
+                                lockb.FaceAlpha = .15;
+                                lockb.FaceColor = plotlock.Color;
+                                
+                                arrayfun(@(c) uistack(c,'top'),lockb);
+                                clear lockb
+                                
+                            end
+                        end
+                        ylim(ylims)
+                    end
+                end
+            end
+            
         end
         
         if Deci.Plot.Freq.Bar.do
@@ -614,7 +747,6 @@ for cond = 1:length(Deci.Plot.Draw)
             
             if Deci.Plot.Freq.Topo.do
                 set(0, 'CurrentFigure', topo(subj) )
-                topo(subj).Visible = 'on';
                 suptitle(Deci.Plot.Title{cond});
                 for r = 1:length(cirky(:))
                     if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
@@ -636,9 +768,7 @@ for cond = 1:length(Deci.Plot.Draw)
         
         if Deci.Plot.Freq.Square.do
             set(0, 'CurrentFigure', square(subj))
-            square(subj).Visible = 'on';
             suptitle([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond}]);
-            colormap(jet)
             for r = 1:length(subby(:))
                 if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
                     subby(r).CLim = Deci.Plot.Freq.Roi;
