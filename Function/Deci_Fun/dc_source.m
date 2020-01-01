@@ -17,7 +17,6 @@ elec.chanunit = elec.chanunit(eleccheck);
 elec.elecpos = elec.elecpos(eleccheck,:);
 elec.label = elec.label(eleccheck);
 
-
 %Load HeadModel
 load('standard_bem.mat','vol')
 
@@ -35,9 +34,13 @@ lcfg.grad            = elec;
 lcfg.channel          =  Fourier.label;
 lcfg.grid = grid;
 lcfg.headmodel    = vol;
-lf = ft_prepare_leadfield(lcfg,fourier);
+lcfg.senstype = 'EEG';
+lf = ft_prepare_leadfield(lcfg,Fourier);
 
 % create cfg
+cfg.type = 'eloreta';
+cfg.lamda = '5%';
+
 sacfg              = [];
 sacfg.method       = lower(cfg.type);
 sacfg.headmodel    = vol;
@@ -49,7 +52,9 @@ sacfg.(lower(cfg.type)).fixedori     = 'yes';
 sacfg.grid         = lf;
 
 %% Set Localize
-cfg.latency = Fourier.time >= param.toi(1) & Fourier.time <= param.toi(2);
+param.toi = [-.2 0];
+
+cfg.latency = [-.2 0];
 
 Fourier = ft_selectdata(cfg,Fourier);
 
