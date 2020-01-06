@@ -118,18 +118,6 @@ for Conditions = 1:size(Subjects,2)
                 
             end
             
-            if isfield(freq,'trllength')
-                trllen(subject_list,Conditions) = freq.trllength;
-            else
-                trllen(subject_list,Conditions) = nan;
-            end
-            
-            if isfield(freq,'lockers')
-                lockers(subject_list,Conditions,:) = freq.lockers;
-            else
-                lockers(subject_list,Conditions,:) = nan;
-            end
-            
             acfg.parameter = 'powspctrm';
             acfg.appenddim = 'chan';
             Bsl{subject_list,Conditions} = rmfield(ft_appendfreq(acfg,Chans{:}),'cfg');
@@ -193,19 +181,19 @@ end
 
 %% Data Management
 if size(Subjects,1) == 1
-    Deci.Plot.GrandAverage = false;  
+    Deci.Plot.GrandAverage = false; 
+    
+else
+    if any(~isnan(trllen))
+        trlstd = nanstd(trllen,[],1);
+        trllen = nanmean(trllen,1);
+    end
+    
+    if any(~isnan(lockers))
+        lockersstd = nanstd(lockers,[],1);
+        lockers = nanmean(lockers,1);
+    end
 end
-
-if any(~isnan(trllen))
-    trlstd = nanstd(trllen,[],1);
-    trllen = nanmean(trllen,1);
-end
-
-if any(~isnan(lockers))
-    lockersstd = nanstd(lockers,[],1);
-    lockers = nanmean(lockers,1);
-end
-
 
 for conds = 1:size(Subjects,2)
     
@@ -532,7 +520,13 @@ for cond = 1:length(Deci.Plot.Draw)
                 pcfg.contournum = 15;
                 ft_topoplotER(pcfg, topodata{subj,Deci.Plot.Draw{cond}(subcond)});
                 
+                if Deci.Plot.Draw{cond}(subcond) <= size(trllen,2)
+                title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')']);
+                    
+                else
                 title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
+                end
+                
                 colorbar('vert');
                 
             end
@@ -596,10 +590,14 @@ for cond = 1:length(Deci.Plot.Draw)
                         end
                         
                     end
+                     ylim(ylims)
+                     title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')']);
+                else
+                    title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]); 
                 end
                 
-                title([Deci.Plot.Subtitle{cond}{subcond}]);
-                ylim(ylims)
+                
+               
             end
             
             if Deci.Plot.Freq.Wire.do
@@ -637,7 +635,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 pcfg.maskparameter ='mask';
             end
             
-            pcfg.ylim = ylim;
+            %pcfg.ylim = ylim;
             pcfg.graphcolor = lines;
             pcfg.linewidth = 1;
             ft_singleplotER(pcfg,wiredata{subj,Deci.Plot.Draw{cond}});
@@ -663,9 +661,13 @@ for cond = 1:length(Deci.Plot.Draw)
                 end
             end
 
-            l = legend(Deci.Plot.Subtitle{cond});
-            title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' Wire'])
-            set(l, 'Interpreter', 'none')
+            if max(Deci.Plot.Draw{cond}) <= size(trllen,2)
+                legend(arrayfun(@(a,b) [ Deci.Plot.Freq.Type ' ' a{1} ' (' num2str(b) ')'] ,Deci.Plot.Subtitle{cond},trllen(subj,Deci.Plot.Draw{cond}),'UniformOutput',false));
+            else
+                legend([Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
+            end
+            
+            set(legend, 'Interpreter', 'none')
             xlim([wiredata{cond}.time(1) wiredata{cond}.time(end)])
             xlabel('Time');
             
