@@ -105,7 +105,7 @@ for Conn = 1:length(params.List)
             conn.dimord = 'rpt_freq_time';
             conn.chanlow = Fourier.label(chanlow);
             conn.chanhigh = Fourier.label(chanhigh);
-            conn.time = datalow.time(toi);
+            conn.time = datalow.time;
             conn.freqlow = mean(LF,1);
             
             if params.rmvtrls
@@ -152,7 +152,7 @@ for Conn = 1:length(params.List)
             conn.dimord = 'rpt_freqlow_freqhigh_time';
             conn.chanlow = Fourier.label(chanlow);
             conn.chanhigh = Fourier.label(chanhigh);
-            conn.time = datalow.time(toi);
+            conn.time = Fourier.time(toi);
             conn.freqlow = mean(LF,1);
             conn.freqhigh = mean(HF,1);
             if params.rmvtrls
@@ -190,7 +190,7 @@ for Conn = 1:length(params.List)
             conn.dimord = 'rpt_freqlow_freqhigh_time';
             conn.chanlow = Fourier.label(chanlow);
             conn.chanhigh = Fourier.label(chanhigh);
-            conn.time = datalow.time(toi);
+            conn.time = datalow.time;
             conn.freqlow = mean(LF,1);
             conn.freqhigh = mean(HF,1);
             if params.rmvtrls
@@ -239,7 +239,7 @@ for Conn = 1:length(params.List)
             conn.dimord = 'freqlow_freqhigh_time';
             conn.chanlow = Fourier.label(chanlow);
             conn.chanhigh = Fourier.label(chanhigh);
-            conn.time = datalow.time(toi);
+            conn.time = Fourier.time(toi);
             conn.freqlow = mean(LF,1);
             conn.freqhigh = mean(HF,1);
             
@@ -276,7 +276,7 @@ for Conn = 1:length(params.List)
             conn.dimord = 'freqlow_freqhigh_time';
             conn.chanlow = Fourier.label(chanlow);
             conn.chanhigh = Fourier.label(chanhigh);
-            conn.time = datalow.time(toi);
+            conn.time = Fourier.time(toi);
             conn.freqlow = mean(LF,1);
             conn.freqhigh = mean(HF,1);
             
@@ -318,7 +318,7 @@ for Conn = 1:length(params.List)
             conn.dimord = 'rpt_freqlow_freqhigh';
             conn.chanlow = Fourier.label(chanlow);
             conn.chanhigh = Fourier.label(chanhigh);
-            conn.time = datalow.time(toi);
+            conn.time = Fourier.time(toi);
             conn.freqlow = mean(LF,1);
             conn.freqhigh = mean(HF,1);
             
