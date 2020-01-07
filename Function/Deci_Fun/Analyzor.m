@@ -167,7 +167,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     end
     %% Loop Through Locks
     
-    if Deci.Analysis.Freq.do || Deci.Analysis.CFC.do || Deci.Analysis.ERP.do
+    if Deci.Analysis.Freq.do || Deci.Analysis.Connectivity.do || Deci.Analysis.ERP.do
         
         for Lock = 1:length(Deci.Analysis.Locks)
             display(' ')
@@ -183,6 +183,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
               lockers(lockstd)  =  mean(dat.trialinfo(:,Lock) - dat.trialinfo(:,lockstd));
             end
             info.lockers = lockers;
+            
 
             %% Do ERP Analysis
             if Deci.Analysis.ERP.do
@@ -251,6 +252,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     trllength = size(Fourier.fourierspctrm,1);
                 end
                 
+                info.trllen = trllength;
                 Chan = Fourier.label;
                 
                 %% Loop Through Channels
@@ -302,6 +304,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         feval(Deci.Analysis.Connectivity.Functions{funs},Deci,info,Fourier,Deci.Analysis.Connectivity.Params{funs}{:});
                     end
                 end
+                clear Fourier
         end
     end
 end

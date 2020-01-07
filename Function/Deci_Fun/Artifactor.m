@@ -65,8 +65,8 @@ for subject_list = 1:length(Deci.SubjectList)
             component{eye} = find(abs(corr(eye,:,1)) >= Deci.ICA.cutoff);
         end
         
-        possiblecorrupt = max(abs(exp(zscore(cfg.unmixing'))),[],1) > 1400;
-        possiblecorrupt = possiblecorrupt | [max(abs(1./exp(zscore(cfg.unmixing'))),[],1) > 1400];
+        possiblecorrupt = max(abs(exp(zscore(cfg.unmixing'))),[],1) > 1100;
+        possiblecorrupt = possiblecorrupt | [max(abs(1./exp(zscore(cfg.unmixing'))),[],1) > 1100];
         
         if ~Deci.ICA.Automatic
             disp('Manual ICA Rejection')
@@ -74,13 +74,14 @@ for subject_list = 1:length(Deci.SubjectList)
             cfg.viewmode = 'component';
             cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
             
-            cfg.channelcolormap = zeros(3,3);
-            cfg.channelcolormap(1,1) = 1;
-            cfg.channelcolormap(2,3) = 1;
+            cfg.channelcolormap = zeros(4,3);
+            cfg.channelcolormap(3,:) = [1 0 0];
+            cfg.channelcolormap(2,:) = [0 0 1];
+            cfg.channelcolormap(1,:) = [1 0 1];
             
-            cfg.colorgroups = ones(20,1)+2;
-            cfg.colorgroups(unique([component{:}]),1) = 1;
-            cfg.colorgroups(possiblecorrupt,1) = 2;
+            cfg.colorgroups = ones(20,1)+3;
+            cfg.colorgroups(unique([component{:}]),1) = cfg.colorgroups(unique([component{:}]),1) - 1;
+            cfg.colorgroups(possiblecorrupt,1) = cfg.colorgroups(possiblecorrupt,1) - 2;
             
             disp(['Found ' num2str(length(find(cfg.colorgroups == 1))) ' eye-correlated components']);
             
