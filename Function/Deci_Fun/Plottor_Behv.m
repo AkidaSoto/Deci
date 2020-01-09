@@ -8,26 +8,36 @@ for subject_list = 1:length(Deci.SubjectList)
     switch Deci.Plot.Behv.Source
         case 'PostArt'
             load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info']);
-            data.trialinfo = data.condinfo{1};
-            data.event = data.condinfo{2};
-            data.trialnum = data.condinfo{3};
             
-            data.full = data.preart(2:3);
+            if isfield(data,'condinfo')  %replacer starting 12/22, lets keep for ~4 months
+                data.postart.locks = data.condinfo{1};
+                data.postart.events = data.condinfo{2};
+                data.postart.trlnum = data.condinfo{3};
+                
+                data.locks = data.preart{1};
+                data.events = data.preart{2};
+                data.trlnum = data.preart{3};
+                
+                data = rmfield(data,'condinfo');
+                data = rmfield(data,'preart');
+            end
+            
+            
+            data.trialinfo = data.postart.locks;
+            data.event = data.postart.events;
+            data.trialnum = data.postart.trlnum;
             
         case 'Definition'
             load([Deci.Folder.Version filesep 'Definition' filesep Deci.SubjectList{subject_list}]);
             data = cfg;
             data.trialinfo = data.trl(:,end-length(Deci.DT.Locks)+1:end);
-            
-            data.full{1} = data.event;
-            data.full{2} = data.trialnum;
     end
     
     
     for fig = find(Deci.Plot.Behv.RT.Figure)
         
         if exist('RT') == 0 || length(RT) < fig
-           RT{fig} = []; 
+            RT{fig} = [];
         end
         
         
@@ -54,14 +64,14 @@ for subject_list = 1:length(Deci.SubjectList)
                     
                     
                     draws = Deci.Analysis.Conditions(Deci.Plot.Behv.RT.Draw{fig}{draw});
-                                        
+                    
                     if isfield(Deci.Plot.Behv,'Static')
-                       
+                        
                         if sum(ismember(Deci.Plot.Behv.Static,[draws{:}])) == 1
                             
-                           eve = RTevents(logical(sum(ismember(RTevents,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
+                            eve = RTevents(logical(sum(ismember(RTevents,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
                         else
-                           eve = RTevents;
+                            eve = RTevents;
                         end
                     else
                         eve = RTevents;
@@ -80,7 +90,7 @@ for subject_list = 1:length(Deci.SubjectList)
                     if size(eveTotal,2) ~= size(RT{fig},4) && size(RT{fig},1) ~= 0
                         
                         if size(eveTotal,2) > size(RT{fig},4)
-                            RT{fig} = cat(4, RT{fig}, nan(size(RT{fig},1),size(RT{fig},2),size(RT{fig},3),size(eveTotal,2)-size(RT{fig},4)));   
+                            RT{fig} = cat(4, RT{fig}, nan(size(RT{fig},1),size(RT{fig},2),size(RT{fig},3),size(eveTotal,2)-size(RT{fig},4)));
                             RT{fig}(subject_list,draw,blk,:) = eveTotal;
                         else
                             eveTotal = [eveTotal nan([1 size(RT{fig},4)-size(eveTotal,2)])];
@@ -90,7 +100,7 @@ for subject_list = 1:length(Deci.SubjectList)
                     else
                         RT{fig}(subject_list,draw,blk,:) = eveTotal;
                     end
-                        
+                    
                 end
             end
             
@@ -105,7 +115,7 @@ for subject_list = 1:length(Deci.SubjectList)
         if exist('Acc') == 0 || length(Acc) < fig
             Acc{fig} = [];
         end
-
+        
         if ~isempty(Deci.Plot.Behv.Acc)
             Exist(Deci.Plot.Behv.Acc,'Total');
             Exist(Deci.Plot.Behv.Acc,'Subtotal');
@@ -120,7 +130,7 @@ for subject_list = 1:length(Deci.SubjectList)
                 AccBlock= unique(Accevents(:,find(Accevents(1,:) < 1)),'stable');
             elseif isempty(Deci.Plot.Behv.Acc.Block)
                 AccBlock = {-1};
-            end     
+            end
             
             for blk = 1:length(AccBlock)
                 for draw = 1:length(Deci.Plot.Behv.Acc.Total{fig})
@@ -128,12 +138,12 @@ for subject_list = 1:length(Deci.SubjectList)
                     draws = Deci.Analysis.Conditions(Deci.Plot.Behv.Acc.Total{fig}{draw});
                     
                     if isfield(Deci.Plot.Behv,'Static')
-                       
+                        
                         if sum(ismember(Deci.Plot.Behv.Static,[draws{:}])) == 1
                             
-                           eve = Accevents(logical(sum(ismember(Accevents,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
+                            eve = Accevents(logical(sum(ismember(Accevents,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
                         else
-                           eve = Accevents;
+                            eve = Accevents;
                         end
                     else
                         eve = Accevents;
@@ -143,7 +153,7 @@ for subject_list = 1:length(Deci.SubjectList)
                     eveTotal = nan([1 length(find(any(ismember(eve,AccBlock(blk)),2)))]);
                     
                     maxt = length(find(cellfun(@(c) any(ismember([draws{:}],c)), Deci.DT.Markers)));
-                    trl = find([[sum(ismember(eve,[draws{:}]),2)] == maxt]);
+                    trl = [[sum(ismember(eve,[draws{:}]),2)] == maxt];
                     
                     eveTotal(trl) = 0;
                     
@@ -211,7 +221,7 @@ end
 for fig = find(Deci.Plot.Behv.Acc.Figure)
     
     clear fAcc
-
+    
     if ~isempty(Deci.Plot.Behv.Acc) && ~isempty(find(Deci.Plot.Behv.Acc.Figure))
         fullAcc{fig} = Acc{fig};
         
@@ -240,9 +250,9 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
 end
 
 for fig = find(Deci.Plot.Behv.RT.Figure)
-        clear fRT
+    clear fRT
     if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
-
+        
         fullRT{fig} = RT{fig};
         
         if Deci.Plot.Behv.RT.Collapse.Trial
@@ -274,142 +284,145 @@ end
 Deci.Plot.Behv = Exist(Deci.Plot.Behv,'WriteExcel',false);
 
 if Deci.Plot.Behv.WriteExcel
-
-for fig = find(Deci.Plot.Behv.Acc.Figure)
     
-    
-    %ExportExcel
-    colnames = [];
-    for blk = 1:size(fullAcc{fig},3)
-        for cond = 1:size(fullAcc{fig},2)
-            
-            colnames{end+1} = [Deci.Plot.Behv.Acc.Subtitle{fig}{cond} ' : Block ' num2str(abs(AccBlock(blk)))];
-        end
-    end
-
-    exceldata = reshape(nanmean(fullAcc{fig},4),[size(fullAcc{fig},1) prod(size(fullAcc{fig},[2 3]))]);
-    
-    exceldata = horzcat(Deci.SubjectList',num2cell(exceldata));
-    exceldata = vertcat([{'Accuracy'} colnames],exceldata);
-    
-    if exist([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ]) == 2
-        writematrix([],[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','TempSheet');
-        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Full');
-    end
-    
-    writecell(exceldata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Full');
-    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
-    
-    subs= [];
-    conds = [];
-    blks = [];
-    trls = [];
-
-
-    for trl = 1:size(Acc{fig},4)
-        for blk = 1:size(Acc{fig},3)
-            for cond = 1:size(Acc{fig},2)
-                for sub = 1:size(Acc{fig},1)
-                    subs(end+1) =  sub;
-                    conds(end+1) = cond;
-                    blks(end+1) = blk;
-                    trls(end+1) = trl;
-                end
-            end
-        end
-    end
-    
-    
-    sAcc = size(Acc{fig});
-    
-    fAcc = reshape(Acc{fig},[prod([sAcc]) 1]);
-    fAccsem = reshape(Accsem{fig},[prod([sAcc]) 1]);
-    
-    
-    
-    if exist([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ]) == 2
-        writematrix([],[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','TempSheet');
-        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Summary');
-    end
-
-    excelAccdata = table(Sub.Acc(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(AccBlock(blks)),trls',fAcc,fAccsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'Accuracy' 'SEM'});
-    writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Summary');
-    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
-end
-
-for fig = find(Deci.Plot.Behv.RT.Figure)
-    
-    %ExportExcel
-    colnames = [];
-    
-    for blk = 1:size(fullRT{fig},3)
-        for cond = 1:size(fullRT{fig},2)
-            
-            colnames{end+1} = [Deci.Plot.Behv.RT.Subtitle{fig}{cond} ' : Block ' num2str(abs(RTBlock(blk)))];
-        end
-    end
-
-    exceldata = reshape(nanmean(fullRT{fig},4),[size(fullRT{fig},1) prod(size(fullRT{fig},[2 3]))]);
-    
-    exceldata = horzcat(Deci.SubjectList',num2cell(exceldata));
-    exceldata = vertcat([{'Reaction Time'} colnames],exceldata);
-    
-    if exist([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ]) == 2
-        writematrix([],[Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','TempSheet');
-        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'RT_Full');
-    end
-    
-    writecell(exceldata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Full');
-    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'TempSheet');
-    
-    
-    
-    subs= [];
-    conds = [];
-    blks = [];
-    trls = [];
-    
-    
+    for fig = find(Deci.Plot.Behv.Acc.Figure)
         
-    for trl = 1:size(RT{fig},4)
-        for blk = 1:size(RT{fig},3)
-            for cond = 1:size(RT{fig},2)
-                for sub = 1:size(RT{fig},1)
-                    subs(end+1) =  sub;
-                    conds(end+1) = cond;
-                    blks(end+1) = blk;
-                    trls(end+1) = trl;
+        
+        %ExportExcel
+        colnames = [];
+        for blk = 1:size(fullAcc{fig},3)
+            for cond = 1:size(fullAcc{fig},2)
+                
+                colnames{end+1} = [Deci.Plot.Behv.Acc.Subtitle{fig}{cond} ' : Block ' num2str(abs(AccBlock(blk)))];
+            end
+        end
+        
+        exceldata = reshape(nanmean(fullAcc{fig},4),[size(fullAcc{fig},1) prod([size(fullAcc{fig},2) size(fullAcc{fig},3)])]);
+        
+        exceldata = horzcat(Deci.SubjectList',num2cell(exceldata));
+        exceldata = vertcat([{'Accuracy'} colnames],exceldata);
+        
+        if exist([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ]) == 2
+            writematrix([],[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','TempSheet');
+            %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Full');
+        end
+        
+        writecell(exceldata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Full');
+        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
+        
+        subs= [];
+        conds = [];
+        blks = [];
+        trls = [];
+        
+        
+        for trl = 1:size(Acc{fig},4)
+            for blk = 1:size(Acc{fig},3)
+                for cond = 1:size(Acc{fig},2)
+                    for sub = 1:size(Acc{fig},1)
+                        subs(end+1) =  sub;
+                        conds(end+1) = cond;
+                        blks(end+1) = blk;
+                        trls(end+1) = trl;
+                    end
                 end
             end
         end
+        
+        
+        sAcc = size(Acc{fig});
+        
+        fAcc = reshape(Acc{fig},[prod([sAcc]) 1]);
+        fAccsem = reshape(Accsem{fig},[prod([sAcc]) 1]);
+        
+        
+        
+        if exist([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ]) == 2
+            writematrix([],[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','TempSheet');
+            %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Summary');
+        end
+        
+        excelAccdata = table(Sub.Acc(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(AccBlock(blks)),trls',fAcc,fAccsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'Accuracy' 'SEM'});
+        writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Summary');
+        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
     end
     
-    sRT = size(RT{fig});
-    
-    fRT = reshape(RT{fig},[prod([sRT]) 1]);
-    fRTsem = reshape(RTsem{fig},[prod([sRT]) 1]);
-    
-    if exist([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ]) == 2
-        writematrix([],[Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','TempSheet');
-        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'RT_Summary');
+    for fig = find(Deci.Plot.Behv.RT.Figure)
+        
+        %ExportExcel
+        colnames = [];
+        
+        for blk = 1:size(fullRT{fig},3)
+            for cond = 1:size(fullRT{fig},2)
+                
+                colnames{end+1} = [Deci.Plot.Behv.RT.Subtitle{fig}{cond} ' : Block ' num2str(abs(RTBlock(blk)))];
+            end
+        end
+        
+        exceldata = reshape(nanmean(fullRT{fig},4),[size(fullRT{fig},1) prod([size(fullRT{fig},2) size(fullRT{fig},3)])]);
+        
+        exceldata = horzcat(Deci.SubjectList',num2cell(exceldata));
+        exceldata = vertcat([{'Reaction Time'} colnames],exceldata);
+        
+        if exist([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ]) == 2
+            writematrix([],[Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','TempSheet');
+            %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'RT_Full');
+        end
+        
+        writecell(exceldata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Full');
+        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'TempSheet');
+        
+        
+        
+        subs= [];
+        conds = [];
+        blks = [];
+        trls = [];
+        
+        
+        
+        for trl = 1:size(RT{fig},4)
+            for blk = 1:size(RT{fig},3)
+                for cond = 1:size(RT{fig},2)
+                    for sub = 1:size(RT{fig},1)
+                        subs(end+1) =  sub;
+                        conds(end+1) = cond;
+                        blks(end+1) = blk;
+                        trls(end+1) = trl;
+                    end
+                end
+            end
+        end
+        
+        sRT = size(RT{fig});
+        
+        fRT = reshape(RT{fig},[prod([sRT]) 1]);
+        fRTsem = reshape(RTsem{fig},[prod([sRT]) 1]);
+        
+        if exist([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ]) == 2
+            writematrix([],[Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','TempSheet');
+            %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'RT_Summary');
+        end
+        
+        excelAccdata = table(Sub.RT(subs)',Deci.Plot.Behv.RT.Subtitle{fig}(conds)',abs(RTBlock(blks)),trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
+        writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Summary');
+        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'TempSheet');
+        
+        
     end
-    
-    excelAccdata = table(Sub.RT(subs)',Deci.Plot.Behv.RT.Subtitle{fig}(conds)',abs(RTBlock(blks)),trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
-    writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Summary');
-    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'TempSheet');
-    
-    
-end
 end
 
 %% plot
 
 if ~isempty(Deci.Plot.Behv.Acc)
     for fig = find(Deci.Plot.Behv.Acc.Figure)
+        
+        fignum = 1;
+        
         for subj = 1:size(Acc{fig},1)
             
-            a(fig,subj) = figure;
-            a(fig,subj).Visible = 'on';
+            a(fignum,subj) = figure;
+            a(fignum,subj).Visible = 'on';
             
             
             for draw = 1:size(Acc{fig},2)
@@ -442,7 +455,7 @@ if ~isempty(Deci.Plot.Behv.Acc)
                     elseif ~Deci.Plot.Behv.Acc.Collapse.Trial && length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==1
                         h.Parent.XLabel.String = 'Trial #';
                     end
-                           
+                    
                     h.Parent.YLabel.String = 'Percent (%)';
                     legend(h.Parent,[ Deci.Plot.Behv.Acc.Subtitle{fig}]);
                     
@@ -477,16 +490,16 @@ if ~isempty(Deci.Plot.Behv.Acc)
                 suptitle([Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{fig}]);
             end
             
-            
+            fignum = fignum + 1;
         end
-      
+        
         for lim = 1:numel(a)
             a(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],a(:)','UniformOutput',false)));
         end
         
     end
     
-
+    
     
 end
 
@@ -494,11 +507,14 @@ end
 if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
     
     for fig = find(Deci.Plot.Behv.RT.Figure)
+        
+        fignum = 1;
+        
         for subj = 1:size(RT{fig},1)
             
             
-            d(fig,subj) = figure;
-            d(fig,subj).Visible = 'on';
+            d(fignum,subj) = figure;
+            d(fignum,subj).Visible = 'on';
             
             
             for draw = 1:size(RT{fig},2)
@@ -512,7 +528,7 @@ if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
                     
                     top = top(~isnan(top));
                     bot = bot(~isnan(bot));
-               
+                    
                     pgon = polyshape([1:length(find(~isnan(RT{fig}(subj,draw,:,:)))) length(find(~isnan(RT{fig}(subj,draw,:,:)))):-1:1],[top' fliplr(bot')],'Simplify', false);
                     b = plot(pgon,'HandleVisibility','off');
                     hold on
@@ -563,12 +579,12 @@ if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
             
         end
         
-            for lim = 1:numel(d)
-        d(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],d(:)','UniformOutput',false)));
-    end
+        for lim = 1:numel(d)
+            d(lim).Children(end).YLim = minmax(cell2mat(arrayfun(@(c) [c.Children(end).YLim],d(:)','UniformOutput',false)));
+        end
     end
     
-
+    fignum = fignum + 1;
     
 end
 
