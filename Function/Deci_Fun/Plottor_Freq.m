@@ -96,18 +96,25 @@ display(['Using Ref: ' Deci.Plot.BslRef ' at times ' strrep(regexprep(num2str(De
 for Conditions = 1:size(Subjects,2)
     for subject_list = 1:size(Subjects,1)
 
-        if ~strcmpi(Deci.Plot.BslRef,Deci.Plot.Lock)
+        if ~strcmpi(Deci.Plot.BslRef,Deci.Plot.Lock) || ~isempty(Deci.Plot.LockCond)
+            
+            if ~isempty(Deci.Plot.LockCond)
+            BslCond =    Deci.Plot.CondTitle{Deci.Plot.LockCond(Conditions)};    
+            else
+            BslCond =    Deci.Plot.CondTitle{Conditions};
+            end
+            
             for Channel = 1:length(Chois)
 
                 freq = [];
                     
                 switch Deci.Plot.Freq.Type
                     case 'TotalPower'
-                        load([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
+                        load([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep Chois{Channel} '.mat'],'freq');
                     case 'ITPC'
-                        load([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
+                        load([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep Chois{Channel} '.mat'],'freq');
                     case 'TotalPower Mean/Var'
-                        load([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
+                        load([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep Chois{Channel} '.mat'],'freq');
                 end
                 
                 foi = freq.freq >= round(Fois(1),4) & freq.freq <= round(Fois(2),4);

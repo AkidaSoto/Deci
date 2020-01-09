@@ -48,6 +48,11 @@ start(PComTime)
                         initFinished = ismember({PCom.State},{'finished'});  
                     end
                     
+                    if any(~arrayfun(@(c) c.Parent.Parent.Connected,PCom))
+                        disp('PCom has old Jobs from deleted pools, will clean them up now')
+                        PCom = PCom(arrayfun(@(c) c.Parent.Parent.Connected,PCom));
+                    end
+                    
                     if ~isempty([PCom.Error])
                         if PComP.Visual
                             disp('Error!!!');
