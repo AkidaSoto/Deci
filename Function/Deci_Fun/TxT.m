@@ -4,9 +4,12 @@ k = 0;
 
 
 if ismember(info.Channels{info.ChanNum},params.Channels)
-
-mkdir([Deci.Folder.Analysis filesep 'Txt_avg_FreqBand_pow' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep info.Channels{info.ChanNum}]);
-
+    
+    if Deci.Analysis.Laplace
+        mkdir([Deci.Folder.Analysis filesep 'Txt_avg_FreqBand_pow' filesep 'Laplacian' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep info.Channels{info.ChanNum}]);
+    else
+        mkdir([Deci.Folder.Analysis filesep 'Txt_avg_FreqBand_pow' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep info.Channels{info.ChanNum}]);
+    end
     
     for fh = 1:length(params.freq)
         switch params.freq{fh}
@@ -18,8 +21,6 @@ mkdir([Deci.Folder.Analysis filesep 'Txt_avg_FreqBand_pow' filesep Deci.SubjectL
                 HF{fh} =[8 12.5];
             case 'lowgamma'
                 HF{fh} =[30 60];
-%             case 'highgamma'
-%                 HF{fh} = [55 80];
         end
     end
     
@@ -35,7 +36,12 @@ mkdir([Deci.Folder.Analysis filesep 'Txt_avg_FreqBand_pow' filesep Deci.SubjectL
         frequency = rmfield(frequency,'powspctrm');
         frequency = rmfield(frequency,'cumtapcnt');
         
-        save([Deci.Folder.Analysis filesep 'Txt_avg_FreqBand_pow' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep info.Channels{info.ChanNum} filesep params.freq{f}],'frequency','-v7.3');
+        if Deci.Analysis.Laplace
+            save([Deci.Folder.Analysis filesep 'Txt_avg_FreqBand_pow' filesep 'Laplacian' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep info.Channels{info.ChanNum} filesep params.freq{f}],'frequency','-v7.3');
+        else
+            save([Deci.Folder.Analysis filesep 'Txt_avg_FreqBand_pow' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep info.Channels{info.ChanNum} filesep params.freq{f}],'frequency','-v7.3');
+        end
+        
     end
 end
 end

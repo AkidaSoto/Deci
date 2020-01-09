@@ -1,4 +1,4 @@
-function Analyzor(Deci,subject_list)
+function Analyzor_CG(Deci,subject_list)
 
 data = [];
 
@@ -35,9 +35,26 @@ preart = data.preart;
 
 %% Laplace Transformation
 if Deci.Analysis.Laplace
-    [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
-    ecfg.elec = elec;
+    %     [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
+    %     ecfg.elec = elec;
+    %     data = ft_scalpcurrentdensity(ecfg, data);
+    
+    dirlist = dir('C:\Users\CTGill\Documents\GitHub\fieldtrip\template\electrode\*');
+    filename = {dirlist(~[dirlist.isdir]).name}';
+    
+    % %Fieldtrip version of surface Laplacian
+    ecfg.elec = ft_read_sens(filename{12}); %This gives the standard 10-20 configuration
     data = ft_scalpcurrentdensity(ecfg, data);
+    
+    % % Surface Laplacian based on Mike X Cohen
+    % elec_positions = ft_read_sens(filename{12}); %This gives the standard 10-20 configuration
+    % data = Surface_Lap(data,elec_positions);
+    
+    data.condinfo = condinfo;
+    data.preart = preart;
+    
+    data.condinfo = condinfo;
+    data.preart = preart;
 end
 
 %% HemifieldFlip
@@ -63,6 +80,7 @@ if ~strcmpi(Deci.Analysis.Channels,'all')
     cfg.channel = Deci.Analysis.Channels;
     data = ft_selectdata(cfg,data);
 end
+
 %% Downsample
 if ~isempty(Deci.Analysis.DownSample)
     data = ft_resampledata(struct('resamplefs',Deci.Analysis.DownSample,'detrend','no'),data);
@@ -102,8 +120,8 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     
     
     %% Find Relevant Trials from that Condition info
-    maxt = max(sum(ismember(preart{2},Deci.Analysis.Conditions{Cond}),2));    
-%     maxt = length(find(cellfun(@(c) any(ismember(Deci.Analysis.Conditions{Cond},c)), Deci.DT.Markers)));
+    maxt = max(sum(ismember(preart{2},Deci.Analysis.Conditions{Cond}),2));
+    %     maxt = length(find(cellfun(@(c) any(ismember(Deci.Analysis.Conditions{Cond},c)), Deci.DT.Markers)));
     info.alltrials = find(sum(ismember(preart{2},Deci.Analysis.Conditions{Cond}),2) == maxt);
     
     %ignore all locks that are missing
@@ -131,17 +149,17 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             dat = ft_datashift2(cfg,dataplaceholder);
             
             %% Do ERP Analysis
-            if Deci.Analysis.ERP.do
-                mkdir([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
-                ecfg.latency = Deci.Analysis.ERP.Toi;
-                
-                for chan = 1:length(dat.label)
-                    ecfg.channel = dat.label(chan);
-                    erp = ft_selectdata(ecfg,dat);
-                    save([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep dat.label{chan}],'erp');
-                end
-                clear erp
-            end
+            %             if Deci.Analysis.ERP.do
+            %                 mkdir([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+            %                 ecfg.latency = Deci.Analysis.ERP.Toi;
+            %
+            %                 for chan = 1:length(dat.label)
+            %                     ecfg.channel = dat.label(chan);
+            %                     erp = ft_selectdata(ecfg,dat);
+            %                     save([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep dat.label{chan}],'erp');
+            %                 end
+            %                 clear erp
+            %             end
             
             
             %% Do Freq Analyses
@@ -224,29 +242,32 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         freq = ft_selectdata(dcfg,Fourier);
                         
                         warning('off', 'MATLAB:MKDIR:DirectoryExists');
-                        mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
-                        mkdir([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
-                        mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        
+                        mkdir([Deci.Folder.Analysis filesep 'Laplacian' filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        mkdir([Deci.Folder.Analysis filesep 'Laplacian' filesep 'Freq_ITPC' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        mkdir([Deci.Folder.Analysis filesep 'Laplacian' filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        
                         
                         freqplaceholder = freq;
                         
-                        if Deci.Analysis.Freq.do 
+                        if Deci.Analysis.Freq.do
                             freq = freqplaceholder;
                             freq.dimord = 'chan_freq_time';
                             freq.powspctrm      = permute(abs(mean(freq.fourierspctrm./abs(freq.fourierspctrm),1)),[2 3 4 1]);         % divide by amplitude
                             freq  = rmfield(freq,'fourierspctrm');
                             freq.trllength = trllength;
-                            save([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
                             
+                            save([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
                             
                             freq = freqplaceholder;
                             freq.powspctrm = permute(mean(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1]);
                             freq.dimord = 'chan_freq_time';
                             freq  = rmfield(freq,'fourierspctrm');
                             freq.trllength = trllength;
+                                                    
                             save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
                         end
-                    
+                        
                         if isfield(Deci.Analysis.Extra,'do')
                             if Deci.Analysis.Extra.do
                                 info.Channels = Chan;
