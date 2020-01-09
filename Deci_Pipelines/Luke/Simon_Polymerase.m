@@ -1,4 +1,4 @@
-function [trl,trialinfo] = EEG_Polymerase(cfg)
+function [trl,trialinfo] = Simon_Polymerase(cfg)
 
 %EEG_Polymerase will create
 %trl: Relevant times, [TrialStart-Toi(1) TrialEnd+Toi(2) 0 trialnumber Lock1 Lock2 ....]
@@ -42,7 +42,18 @@ for j = 1:length(startstopseg)
     value = {event(startstopseg(1,j):startstopseg(2,j)).value};
     value = cellfun(@str2num,value);
     sample = {event(startstopseg(1,j):startstopseg(2,j)).sample};
-    
+     
+    if length(find(ismember([16 45 15],value))) == 2 || length(find(ismember([46 19 14],value))) == 2
+        
+        stim1 = find(ismember(value,[16 45 46 19]));
+        value = [value(1:stim1) 300 value(stim1+1:end)];
+        sample = [sample(1:stim1) sample(stim1) sample(stim1+1:end)];
+        
+    elseif length(find(ismember([16 45 14],value))) == 2 || length(find(ismember([46 19 15],value))) == 2
+        stim1 = find(ismember(value,[16 45 46 19]));
+        value = [value(1:stim1) 400 value(stim1+1:end)];
+        sample = [sample(1:stim1) sample(stim1) sample(stim1+1:end)];
+    end
     
     begsample = sample{ismember(value,cfg.DT.Locks(1))} + sstime(1)*hdr.Fs;
     endsample = sample{ismember(value,cfg.DT.Locks(end))} + sstime(2)*hdr.Fs;
@@ -103,6 +114,8 @@ if ~isempty(cfg.DT.Block)
         end
     end
 end
+
+
 
 if isfield(cfg.DT,'Displace')
     
