@@ -27,7 +27,7 @@ for Conn = 1:length(params.List)
         case 'highgamma'
             LF = [55 80];
     end
-
+    
     switch freqhigh
         case 'theta'
             HF= [4 8];
@@ -60,8 +60,8 @@ for Conn = 1:length(params.List)
     datalow.dimord = 'rpt_chan_freq_time';
     
     %hcfg.latency = params.toi;
-    hcfg.frequency = LF;
-    hcfg.channel = chanl;
+    hcfg.frequency = HF;
+    hcfg.channel = chanh;
     evalc('datahigh = ft_selectdata(hcfg,Fourier)');
     freqs = datahigh.freq;
     
@@ -333,6 +333,5 @@ for Conn = 1:length(params.List)
     
     
 end
-
 
 end
