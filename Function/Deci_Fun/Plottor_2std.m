@@ -7,18 +7,29 @@ for subject_list = 1:length(Deci.SubjectList)
     switch Deci.Plot.Extra.Std.Source
         case 'PostArt'
             load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info']);
-            data.trialinfo = data.condinfo{1};
-            data.event = data.condinfo{2};
-            data.trialnum = data.condinfo{3};
+            if isfield(data,'condinfo')  %replacer starting 12/22, lets keep for ~4 months
+                
+                data.postart.locks = data.condinfo{1};
+                data.postart.events = data.condinfo{2};
+                data.postart.trlnum = data.condinfo{3};
+                
+                data.locks = data.preart{1};
+                data.events = data.preart{2};
+                data.trlnum = data.preart{3};
+                
+                data = rmfield(data,'condinfo');
+                data = rmfield(data,'preart');
+            end
             
-            data.full = data.preart(2:3);
+            
+            data.trialinfo = data.postart.locks;
+            data.event = data.postart.events;
+            data.trialnum = data.postart.trlnum;
             
         case 'Definition'
             load([Deci.Folder.Version filesep 'Definition' filesep Deci.SubjectList{subject_list}]);
             data = cfg;
             data.trialinfo = data.trl(:,end-length(Deci.DT.Locks)+1:end);
-            data.full{1} = data.event;
-            data.full{2} = data.trialnum;
     end
     
     

@@ -96,18 +96,25 @@ display(['Using Ref: ' Deci.Plot.BslRef ' at times ' strrep(regexprep(num2str(De
 for Conditions = 1:size(Subjects,2)
     for subject_list = 1:size(Subjects,1)
 
-        if ~strcmpi(Deci.Plot.BslRef,Deci.Plot.Lock)
+        if ~strcmpi(Deci.Plot.BslRef,Deci.Plot.Lock) || ~isempty(Deci.Plot.LockCond)
+            
+            if ~isempty(Deci.Plot.LockCond)
+            BslCond =    Deci.Plot.CondTitle{Deci.Plot.LockCond(Conditions)};    
+            else
+            BslCond =    Deci.Plot.CondTitle{Conditions};
+            end
+            
             for Channel = 1:length(Chois)
 
                 freq = [];
                     
                 switch Deci.Plot.Freq.Type
                     case 'TotalPower'
-                        load([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
+                        load([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep Chois{Channel} '.mat'],'freq');
                     case 'ITPC'
-                        load([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
+                        load([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep Chois{Channel} '.mat'],'freq');
                     case 'TotalPower Mean/Var'
-                        load([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'freq');
+                        load([Deci.Folder.Analysis filesep 'Freq_TotalPowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep Chois{Channel} '.mat'],'freq');
                 end
                 
                 foi = freq.freq >= round(Fois(1),4) & freq.freq <= round(Fois(2),4);
@@ -151,7 +158,7 @@ for Conditions = 1:size(Subjects,2)
             case 'relative'
                 Subjects{subject_list,Conditions}.powspctrm=  Subjects{subject_list,Conditions}.powspctrm ./ Bsl{subject_list,Conditions}.powspctrm;
             case 'relchange'
-                Subjects{subject_list,Conditions}.powspctrm = ( Subjects{subject_list,Conditions}.powspctrm - Bsl{subject_list,Conditions}.powspctrm) ./ Bsl{subject_list,Conditions}.powspctrm;
+                Subjects{subject_list,Conditions}.poswpctrm = ( Subjects{subject_list,Conditions}.powspctrm - Bsl{subject_list,Conditions}.powspctrm) ./ Bsl{subject_list,Conditions}.powspctrm;
             case 'db'
                 Subjects{subject_list,Conditions}.powspctrm = 10*log10( Subjects{subject_list,Conditions}.powspctrm ./ Bsl{subject_list,Conditions}.powspctrm);
         end
@@ -181,9 +188,10 @@ end
 
 %% Data Management
 if size(Subjects,1) == 1
-    Deci.Plot.GrandAverage = false; 
-    
-else
+    Deci.Plot.GrandAverage = false;
+end
+
+if Deci.Plot.GrandAverage
     if any(~isnan(trllen))
         trlstd = nanstd(trllen,[],1);
         trllen = nanmean(trllen,1);
@@ -557,13 +565,17 @@ for cond = 1:length(Deci.Plot.Draw)
                         hold on
                         
                         locktime = [lockers(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
-                        lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
                         
-                        if locktime > xlims(1) && locktime < xlims(2)
-                           plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
-                            
-                            if Deci.Plot.GrandAverage
+                        
+                        
+                        
+                        
+                        if Deci.Plot.GrandAverage
+                            if locktime > xlims(1) && locktime < xlims(2)
+                                lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                                plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
                                 
+  
                                 if [locktime - lockstd] < xlims(1)
                                     lockpstd(1) = xlims(1);
                                 else
@@ -586,6 +598,11 @@ for cond = 1:length(Deci.Plot.Draw)
                                 arrayfun(@(c) uistack(c,'top'),lockb);
                                 clear lockb
                                 
+                            end
+                            
+                        else
+                            if locktime > xlims(1) && locktime < xlims(2)
+                                plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
                             end
                         end
                         
@@ -753,10 +770,20 @@ for cond = 1:length(Deci.Plot.Draw)
                 for r = 1:length(cirky(:))
                     if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
                         cirky(r).CLim = Deci.Plot.Freq.Roi;
-                    elseif strcmp(Deci.Plot.Freq.Roi,'maxmin')
-                        cirky(r).CLim = [min([cirky.CLim]) max([cirky.CLim])];
+                    elseif strcmp(Deci.Plot.Freq.Roi,'maxmin') 
+                        if ~ isempty(cirky(r).Children.UserData)
+                            cirky(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),cirky)) max(arrayfun(@(c) max(c.Children.UserData(:)),cirky))];
+                        else
+                            cirky(r).CLim= [min(arrayfun(@(c) min(c.Children.ZData(:)),cirky)) max(arrayfun(@(c) max(c.Children.ZData(:)),cirky))];
+                        end
+                        %cirky(r).Children.LevelList = [linspace(cirky(r).CLim(1),cirky(r).CLim(2),12)];
                     elseif strcmp(Deci.Plot.Freq.Roi,'maxabs')
-                        cirky(r).CLim = [-1*max(abs([cirky.CLim])) max(abs([cirky.CLim]))];
+                        if ~isempty(cirky(r).Children.findobj('Type','Contour').UserData)
+                            cirky(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),cirky)) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),cirky))];
+                        else
+                            cirky(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').ZData(:))),cirky)) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').ZData(:))),cirky))];
+                        end
+                        %cirky(r).Children.findobj('Type','Contour').LevelList = [linspace(cirky(r).CLim(1),cirky(r).CLim(2),12)];
                     end
                 end
 
@@ -775,9 +802,25 @@ for cond = 1:length(Deci.Plot.Draw)
                 if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
                     subby(r).CLim = Deci.Plot.Freq.Roi;
                 elseif strcmp(Deci.Plot.Freq.Roi,'maxmin')
-                    subby(r).CLim = [min([subby.CLim]) max([subby.CLim])];
+                    if ~ isempty(subby(r).Children.UserData)
+                    subby(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),subby)) max(arrayfun(@(c) max(c.Children.UserData(:)),subby))];
+                    else
+                    subby(r).CLim = [min(arrayfun(@(c) min(c.Children.ZData(:)),subby)) max(arrayfun(@(c) max(c.Children.ZData(:)),subby))];       
+                    end
+                    
+                    %subby(r).Children.LevelList = [linspace(subby(r).CLim(1),subby(r).CLim(2),12)];
+                    
                 elseif strcmp(Deci.Plot.Freq.Roi,'maxabs')
-                    subby(r).CLim = [-1*max(abs([subby.CLim])) max(abs([subby.CLim]))];
+                    if ~ isempty(subby(r).Children.UserData)
+                    subby(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby)) max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby))];
+                    else
+                    subby(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby)) max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby))];    
+                    
+                    end
+                    %(r).Children.LevelListMode = 'auto';
+                    
+                    %subby(r).Children.LevelList = [linspace(subby(r).CLim(1),subby(r).CLim(2),12)];
+                    
                 end
             end
             

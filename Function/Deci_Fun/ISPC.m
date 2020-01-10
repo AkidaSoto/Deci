@@ -1,35 +1,26 @@
-function ISPC(Deci,info,dat,data,params)
+function ISPC(Deci,info,Fourier,params)
 
 if ismember(Deci.Analysis.CondTitle(info.Cond),Deci.Analysis.Connectivity.cond)
     
-    mkdir([Deci.Folder.Analysis filesep 'ISPC' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}]);
-    
-    fcfg = Deci.Analysis.Freq;
-    fcfg.output='fourier';
-    fcfg.pad = 'maxperlen';
-    fcfg.scc = 0;
-    fcfg.keeptapers = 'yes';
-    fcfg.keeptrials = 'yes';
-    fcfg.toi = Deci.Analysis.Connectivity.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Connectivity.Toi(2);
-    
-    Fourier = rmfield(ft_freqanalysis(fcfg, dat),'cfg');
-    Fourier.condinfo = dat.condinfo;
+    if Deci.Analysis.Laplace
+        mkdir([Deci.Folder.Analysis filesep 'ISPC' filesep 'Laplacian' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}]);
+    else
+        mkdir([Deci.Folder.Analysis filesep 'ISPC' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}]);
+    end
     
     times2save = -.5:.02:1.5;
     time_window = linspace(1.5,3.5,length(Deci.Analysis.Freq.foi));
-    Bsl_time = [-.5 0];
     
     %time in indicies
     times2save_idx = dsearchn(Fourier.time', times2save');
-    Bsl_time_idx = dsearchn(times2save',Bsl_time');
     
     %initialize
-    trial_avg_ispc = zeros(length(Deci.Analysis.Freq.foi),length(times2save));
-    ps = zeros(length(Deci.Analysis.Freq.foi),length(times2save));
+    %trial_avg_ispc = zeros(length(Deci.Analysis.Freq.foi),length(times2save));
+    %ps = zeros(length(Deci.Analysis.Freq.foi),length(times2save));
     
     chan_idx = zeros(1,2);
-    chan_idx(1) = find(strcmpi(Deci.Analysis.Connectivity.chan1,Fourier.label));
-    chan_idx(2) = find(strcmpi(Deci.Analysis.Connectivity.chan2,Fourier.label));
+    chan_idx(1) = find(strcmpi(Deci.Analysis.Connectivity.ISPC.chan1,Fourier.label));
+    chan_idx(2) = find(strcmpi(Deci.Analysis.Connectivity.ISPC.chan2,Fourier.label));
     
     
     %fourier spectrum for each channel
@@ -44,11 +35,11 @@ if ismember(Deci.Analysis.CondTitle(info.Cond),Deci.Analysis.Connectivity.cond)
     phase_angle_diffs = phase_1 - phase_2;
     
     
-    phase_sync=[];
-    for fi = 1:length(Fourier.freq)
+    phase_sync = zeros(length(Deci.Analysis.Freq.foi),size(data1_spctrm,1),length(times2save));
+    for fi = 1:length(Deci.Analysis.Freq.foi)
         
         %compute time window in indicies for this freq
-        time_window_idx = round((1000/Fourier.freq(fi))*time_window(fi)/(1000/Deci.Analysis.DownSample));
+        time_window_idx = round((1000/Deci.Analysis.Freq.foi(fi))*time_window(fi)/(1000/Deci.Analysis.DownSample));
         
         for ti = 1:length(times2save)
             
@@ -66,14 +57,20 @@ if ismember(Deci.Analysis.CondTitle(info.Cond),Deci.Analysis.Connectivity.cond)
     
     ISPC_data.phase_sync = phase_sync;
     ISPC_data.dimord = 'freq_time_trial';
-    ISPC_data.chan1 = Deci.Analysis.Connectivity.chan1;
-    ISPC_data.chan2 = Deci.Analysis.Connectivity.chan2;
+    ISPC_data.chan1 = Deci.Analysis.Connectivity.ISPC.chan1;
+    ISPC_data.chan2 = Deci.Analysis.Connectivity.ISPC.chan2;
     ISPC_data.time = times2save;
-    ISPC_data.freq = Fourier.freq;
+    ISPC_data.freq = Deci.Analysis.Freq.foi;
     ISPC_data.label = Fourier.label;
-    ISPC_data.times2save = times2save;
+    %ISPC_data.times2save = times2save;
     %ISPC_data.avg_across_trials = trial_avg_ispc;
     
-    save([Deci.Folder.Analysis filesep 'ISPC' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep [Deci.Analysis.Connectivity.chan1{1} '_' Deci.Analysis.Connectivity.chan2{1}]],'ISPC_data','-v7.3');
+    if Deci.Analysis.Laplace
+        save([Deci.Folder.Analysis filesep 'ISPC' filesep 'Laplacian' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep [Deci.Analysis.Connectivity.ISPC.chan1{1} '_' Deci.Analysis.Connectivity.ISPC.chan2{1}]],'ISPC_data','-v7.3');
+    else
+        save([Deci.Folder.Analysis filesep 'ISPC' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep [Deci.Analysis.Connectivity.ISPC.chan1{1} '_' Deci.Analysis.Connectivity.ISPC.chan2{1}]],'ISPC_data','-v7.3');
+    end
+    
+    clear ISPC_data phase_sync data1_spctrm phase_1 data2_spctrm phase_2 phase_angle_diffs %testing 1/8/20
 end
 end
