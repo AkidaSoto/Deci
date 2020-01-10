@@ -208,8 +208,8 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     fcfg.keeptapers = 'yes';
                     fcfg.keeptrials = 'yes';
                     fcfg.toi = Deci.Analysis.Freq.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Freq.Toi(2);
-                    fcfg.gpu = 1;
-                    fcfg.cpu = 0;
+                    fcfg.gpu = Deci.GCom;
+                    fcfg.cpu = Deci.DCom;
                     
                     Fourier = rmfield(dc_freqanalysis(fcfg, dat),'cfg');
                     trllength = size(Fourier.fourierspctrm,1);
