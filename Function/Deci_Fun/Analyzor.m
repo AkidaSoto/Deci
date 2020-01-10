@@ -208,8 +208,10 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     fcfg.keeptapers = 'yes';
                     fcfg.keeptrials = 'yes';
                     fcfg.toi = Deci.Analysis.Freq.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Freq.Toi(2);
+                    fcfg.gpu = Deci.GCom;
+                    fcfg.cpu = Deci.DCom;
                     
-                    Fourier = rmfield(ft_freqanalysis(fcfg, dat),'cfg');
+                    Fourier = rmfield(dc_freqanalysis(fcfg, dat),'cfg');
                     trllength = size(Fourier.fourierspctrm,1);
                 else
                     display('Applying Hilbert Transformation')
