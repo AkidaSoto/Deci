@@ -42,7 +42,12 @@ postart.trlnum = data.postart.trlnum;
 
 %% Laplace Transformation
 if Deci.Analysis.Laplace
+    if isempty(Deci.Analysis.LaplaceFile)
+        
     [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
+    else
+        elec = ft_read_sens(Deci.Analysis.LaplaceFile);
+    end
     ecfg.elec = elec;
     evalc('data = ft_scalpcurrentdensity(ecfg, data)');
     

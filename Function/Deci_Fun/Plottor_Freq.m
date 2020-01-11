@@ -355,19 +355,19 @@ if Deci.Plot.Stat.do
                 else
                     
                     if Deci.Plot.Freq.Topo.do
-                        topostat{conds}.mask = ones(size(topotdata{Deci.Plot.Draw{conds}}.powspctrm(1,:)))';
+                        topostat{conds}.mask = permute(ones(size(topotdata{Deci.Plot.Draw{conds}}.powspctrm(1,:,:,:))),[2 3 4 1]);
                     end
                     
                     if Deci.Plot.Freq.Square.do
-                        [squarestat{conds}.mask] = ones(size(squaretdata{:,Deci.Plot.Draw{conds}}.powspctrm(1,:)));
+                        [squarestat{conds}.mask] = permute(ones(size(squaretdata{:,Deci.Plot.Draw{conds}}.powspctrm(1,:,:,:))),[2 3 4 1]);
                     end
                     
                     if Deci.Plot.Freq.Wire.do
-                        [wirestat{conds}.mask] = ones(size(wiretdata{:,Deci.Plot.Draw{conds}}.powspctrm(1,:)));
+                        [wirestat{conds}.mask] = permute(ones(size(wiretdata{:,Deci.Plot.Draw{conds}}.powspctrm(1,:,:,:))),[2 3 4 1]);
                     end
                     
                     if Deci.Plot.Freq.Bar.do
-                        [barstat{conds}.mask] = ones(size(bartdata{Deci.Plot.Draw{conds}}.powspctrm(1,:)));
+                        [barstat{conds}.mask] = permute(ones(size(bartdata{Deci.Plot.Draw{conds}}.powspctrm(1,:,:,:))),[2 3 4 1]);
                     end
                     
                 end
@@ -772,16 +772,16 @@ for cond = 1:length(Deci.Plot.Draw)
                         cirky(r).CLim = Deci.Plot.Freq.Roi;
                     elseif strcmp(Deci.Plot.Freq.Roi,'maxmin') 
                         if ~ isempty(cirky(r).Children.UserData)
-                            cirky(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),cirky)) max(arrayfun(@(c) max(c.Children.UserData(:)),cirky))];
+                            cirky(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),cirky(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),cirky(:)))];
                         else
-                            cirky(r).CLim= [min(arrayfun(@(c) min(c.Children.ZData(:)),cirky)) max(arrayfun(@(c) max(c.Children.ZData(:)),cirky))];
+                            cirky(r).CLim= [min(arrayfun(@(c) min(c.Children.ZData(:)),cirky(:))) max(arrayfun(@(c) max(c.Children.ZData(:)),cirky(:)))];
                         end
                         %cirky(r).Children.LevelList = [linspace(cirky(r).CLim(1),cirky(r).CLim(2),12)];
                     elseif strcmp(Deci.Plot.Freq.Roi,'maxabs')
                         if ~isempty(cirky(r).Children.findobj('Type','Contour').UserData)
-                            cirky(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),cirky)) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),cirky))];
+                            cirky(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),cirky(:))) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),cirky(:)))];
                         else
-                            cirky(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').ZData(:))),cirky)) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').ZData(:))),cirky))];
+                            cirky(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').ZData(:))),cirky(:))) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').ZData(:))),cirky(:)))];
                         end
                         %cirky(r).Children.findobj('Type','Contour').LevelList = [linspace(cirky(r).CLim(1),cirky(r).CLim(2),12)];
                     end
@@ -803,18 +803,18 @@ for cond = 1:length(Deci.Plot.Draw)
                     subby(r).CLim = Deci.Plot.Freq.Roi;
                 elseif strcmp(Deci.Plot.Freq.Roi,'maxmin')
                     if ~ isempty(subby(r).Children.UserData)
-                    subby(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),subby)) max(arrayfun(@(c) max(c.Children.UserData(:)),subby))];
+                    subby(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),subby(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),subby(:)))];
                     else
-                    subby(r).CLim = [min(arrayfun(@(c) min(c.Children.ZData(:)),subby)) max(arrayfun(@(c) max(c.Children.ZData(:)),subby))];       
+                    subby(r).CLim = [min(arrayfun(@(c) min(c.Children.ZData(:)),subby(:))) max(arrayfun(@(c) max(c.Children.ZData(:)),subby(:)))];       
                     end
                     
                     %subby(r).Children.LevelList = [linspace(subby(r).CLim(1),subby(r).CLim(2),12)];
                     
                 elseif strcmp(Deci.Plot.Freq.Roi,'maxabs')
                     if ~ isempty(subby(r).Children.UserData)
-                    subby(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby)) max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby))];
+                    subby(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby(:))) max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby(:)))];
                     else
-                    subby(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby)) max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby))];    
+                    subby(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby(:))) max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby(:)))];    
                     
                     end
                     %(r).Children.LevelListMode = 'auto';
