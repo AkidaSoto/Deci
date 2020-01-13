@@ -35,21 +35,21 @@ preart = data.preart;
 
 %% Laplace Transformation
 if Deci.Analysis.Laplace
-    %     [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
-    %     ecfg.elec = elec;
-    %     data = ft_scalpcurrentdensity(ecfg, data);
+%         [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
+%         ecfg.elec = elec;
+%         data = ft_scalpcurrentdensity(ecfg, data);
     
     dirlist = dir('C:\Users\CTGill\Documents\GitHub\fieldtrip\template\electrode\*');
     filename = {dirlist(~[dirlist.isdir]).name}';
-    
-    % %Fieldtrip version of surface Laplacian
-    ecfg.elec = ft_read_sens(filename{12}); %This gives the standard 10-20 configuration
-    data = ft_scalpcurrentdensity(ecfg, data);
+     
+%     %Fieldtrip version of surface Laplacian
+%     ecfg.elec = ft_read_sens(filename{12}); %This gives the standard 10-20 configuration
+%     data = ft_scalpcurrentdensity(ecfg, data);
     
     % % Surface Laplacian based on Mike X Cohen
-    % elec_positions = ft_read_sens(filename{12}); %This gives the standard 10-20 configuration
-    % data = Surface_Lap(data,elec_positions);
-    
+    elec_positions = ft_read_sens(filename{12}); %This gives the standard 10-20 configuration
+    data = Surface_Lap(data,elec_positions);
+     
     data.condinfo = condinfo;
     data.preart = preart;
     
