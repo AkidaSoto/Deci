@@ -77,7 +77,7 @@ for  subject_list = 1:length(Deci.SubjectList)
         if isfield(freq,'lockers')
             lockers(subject_list,Conditions,:) = freq.lockers;
         else
-            lockers(subject_list,Conditions,:) = [];
+            lockers(subject_list,Conditions,:) = nan;
         end
         
         acfg.parameter = 'powspctrm';

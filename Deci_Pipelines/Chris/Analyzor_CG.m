@@ -35,21 +35,21 @@ preart = data.preart;
 
 %% Laplace Transformation
 if Deci.Analysis.Laplace
-    %     [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
-    %     ecfg.elec = elec;
-    %     data = ft_scalpcurrentdensity(ecfg, data);
+%         [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
+%         ecfg.elec = elec;
+%         data = ft_scalpcurrentdensity(ecfg, data);
     
     dirlist = dir('C:\Users\CTGill\Documents\GitHub\fieldtrip\template\electrode\*');
     filename = {dirlist(~[dirlist.isdir]).name}';
-    
-    % %Fieldtrip version of surface Laplacian
-    ecfg.elec = ft_read_sens(filename{12}); %This gives the standard 10-20 configuration
-    data = ft_scalpcurrentdensity(ecfg, data);
+     
+%     %Fieldtrip version of surface Laplacian
+%     ecfg.elec = ft_read_sens(filename{12}); %This gives the standard 10-20 configuration
+%     data = ft_scalpcurrentdensity(ecfg, data);
     
     % % Surface Laplacian based on Mike X Cohen
-    % elec_positions = ft_read_sens(filename{12}); %This gives the standard 10-20 configuration
-    % data = Surface_Lap(data,elec_positions);
-    
+    elec_positions = ft_read_sens(filename{12}); %This gives the standard 10-20 configuration
+    data = Surface_Lap(data,elec_positions);
+     
     data.condinfo = condinfo;
     data.preart = preart;
     
@@ -59,27 +59,27 @@ end
 
 %% HemifieldFlip
 
-if Deci.Analysis.HemifieldFlip.do
-    
-    Hemifields = preart{2}(:,find(mean(ismember(preart{2},Deci.Analysis.HemifieldFlip.Markers),1)));
-    
-    FlipCfg.trials  = ismember(Hemifields,Deci.Analysis.HemifieldFlip.Markers(2));
-    
-    FlipData = ft_selectdata(FlipCfg,data);
-    FlipData = hemifieldflip(FlipData);
-    
-    FlipCfg.trials = ~FlipCfg.trials;
-    
-    NotFlipData = ft_selectdata(FlipCfg,data);
-    
-    data = ft_appenddata([],FlipData,NotFlipData);
-end
-
-if ~strcmpi(Deci.Analysis.Channels,'all')
-    cfg = [];
-    cfg.channel = Deci.Analysis.Channels;
-    data = ft_selectdata(cfg,data);
-end
+% if Deci.Analysis.HemifieldFlip.do
+%     
+%     Hemifields = preart{2}(:,find(mean(ismember(preart{2},Deci.Analysis.HemifieldFlip.Markers),1)));
+%     
+%     FlipCfg.trials  = ismember(Hemifields,Deci.Analysis.HemifieldFlip.Markers(2));
+%     
+%     FlipData = ft_selectdata(FlipCfg,data);
+%     FlipData = hemifieldflip(FlipData);
+%     
+%     FlipCfg.trials = ~FlipCfg.trials;
+%     
+%     NotFlipData = ft_selectdata(FlipCfg,data);
+%     
+%     data = ft_appenddata([],FlipData,NotFlipData);
+% end
+% 
+% if ~strcmpi(Deci.Analysis.Channels,'all')
+%     cfg = [];
+%     cfg.channel = Deci.Analysis.Channels;
+%     data = ft_selectdata(cfg,data);
+% end
 
 %% Downsample
 if ~isempty(Deci.Analysis.DownSample)
@@ -101,22 +101,22 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     TimerCond = clock;
     
     %% do Extra.Once Analyses
-    if Deci.Analysis.Extra.do
-        
-        info.subject_list = subject_list;
-        info.Cond = Cond;
-        
-        if isfield(Deci.Analysis.Extra,'Once')
-            
-            for funs = find(Deci.Analysis.Extra.Once)
-                
-                if Deci.Analysis.Extra.list(funs)
-                    feval(Deci.Analysis.Extra.Functions{funs},Deci,info,data,Deci.Analysis.Extra.Params{funs}{:});
-                end
-            end
-        end
-        
-    end
+%     if Deci.Analysis.Extra.do
+%         
+%         info.subject_list = subject_list;
+%         info.Cond = Cond;
+%         
+%         if isfield(Deci.Analysis.Extra,'Once')
+%             
+%             for funs = find(Deci.Analysis.Extra.Once)
+%                 
+%                 if Deci.Analysis.Extra.list(funs)
+%                     feval(Deci.Analysis.Extra.Functions{funs},Deci,info,data,Deci.Analysis.Extra.Params{funs}{:});
+%                 end
+%             end
+%         end
+%         
+%     end
     
     
     %% Find Relevant Trials from that Condition info
