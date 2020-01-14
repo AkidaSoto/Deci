@@ -221,6 +221,8 @@ hasdc       = find(freqoi==0);
 hasnyq      = find(freqoi==data.fsample./2);
 hasdc_nyq   = [hasdc hasnyq];
 
+freq.cumtapcnt = ones([ntrials nfoi]);
+
 if exist('toi', 'var')
     freq.time = toi;
 end
