@@ -211,7 +211,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     fcfg.gpu = Deci.GCom;
                     fcfg.cpu = Deci.DCom;
                     
-                    Fourier = rmfield(dc_freqanalysis(fcfg, dat),'cfg');
+                    Fourier = dc_freqanalysis(fcfg, dat);
                     trllength = size(Fourier.fourierspctrm,1);
                 else
                     display('Applying Hilbert Transformation')

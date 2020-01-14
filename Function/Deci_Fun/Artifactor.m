@@ -87,7 +87,7 @@ for subject_list = 1:length(Deci.SubjectList)
             
             cfg.channel = 'all'; 
             fakeUI = figure;
-            select_labels(fakeUI,[],sort(data_ica.label));
+            select_labels(fakeUI,[],sort(cellfun(@(c)c(10:end), data_ica.label, 'un', 0)));
             fakeUI.Visible =  'off';
             evalc('ft_databrowser(cfg,data_ica)');
             suptitle(Deci.SubjectList{subject_list});
@@ -96,7 +96,7 @@ for subject_list = 1:length(Deci.SubjectList)
             if isempty(fakeUI.UserData)
                 cfg.component = [];
             else
-                cfg.component = find(ismember(data_ica.label,fakeUI.UserData));
+                cfg.component = find(ismember(cellfun(@(c)c(10:end),data_ica.label, 'un', 0),fakeUI.UserData));
             end
             close(fakeUI)
             corr = [];
