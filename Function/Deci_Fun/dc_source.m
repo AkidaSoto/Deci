@@ -1,42 +1,123 @@
 function dc_source(Deci,info,Fourier,params)
 
-
+%http://www.fieldtriptoolbox.org/workshop/oslo2019/forward_modeling/
 %% Load Standards
 
 
 %Load Elec
-if exist([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']) == 2
+if exist([Deci.Folder.Raw  filesep Deci.SubjectList{info.subject_list} '.bvct']) == 2
     elec = ft_read_sens([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
 else
+    %elec = load('elec_source.mat');
     elec = ft_read_sens('standard_1020.elc');
 end
+
 eleccheck = find(ismember(elec.label,Fourier.label));
 elec.chanpos = elec.chanpos(eleccheck,:);
 elec.chantype = elec.chantype(eleccheck);
 elec.chanunit = elec.chanunit(eleccheck);
 elec.elecpos = elec.elecpos(eleccheck,:);
 elec.label = elec.label(eleccheck);
-
-%Load HeadModel
-load('standard_bem.mat','vol')
-
-% Make Sure same Units
-vol= ft_convert_units(vol, 'cm');
 elec = ft_convert_units(elec, 'cm');
 
-% Load Grid
-grid = ft_read_headshape('cortex_5124.surf.gii');
-grid = ft_convert_units(grid, 'cm');
+%mri = ft_read_mri('Subject01.mri');
+%mri = ft_convert_units(mri, 'cm');
 
-% create LeadField
+mri = ft_read_mri('standard_seg.mat');
+mri = ft_convert_units(mri, 'cm');
+load('standard_bem.mat','vol')
+vol = ft_convert_units(vol, 'cm');
+load('standard_sourcemodel3d8mm.mat','sourcemodel')
+
+figure
+ft_plot_sens(elec)
+ft_plot_vol(vol,'facealpha',.05)
+ft_plot_mesh(sourcemodel)
+
+
 lcfg                 = [];
 lcfg.elec            = elec;
 lcfg.channel          =  Fourier.label;
-lcfg.grid = grid;
+lcfg.grid = sourcemodel;
 lcfg.headmodel    = vol;
 lcfg.senstype = 'EEG';
 lcfg.normalize = 'yes';
-lf = ft_prepare_leadfield(lcfg,Fourier);
+%Fourier.label = cellfun(@lower,Fourier.label,'UniformOutput',false);
+
+lf = ft_prepare_leadfield(lcfg);
+%% Electro realignment
+
+% elec = ft_read_sens('standard_1020.elc');
+% eleccheck = find(ismember(elec.label,Fourier.label));
+% elec.chanpos = elec.chanpos(eleccheck,:);
+% elec.chantype = elec.chantype(eleccheck);
+% elec.chanunit = elec.chanunit(eleccheck);
+% elec.elecpos = elec.elecpos(eleccheck,:);
+% elec.label = elec.label(eleccheck);
+% elec = ft_convert_units(elec, 'cm');
+% 
+% cfg=[];
+% cfg.output    = {'brain','skull','scalp'};
+% mri_seg =ft_volumesegment(cfg,mri);
+% 
+% cfg=[];
+% cfg.tissues= {'scalp' 'skull' 'brain' };
+% cfg.numvertices = [6000 4000 2000];
+% bnd=ft_prepare_mesh(cfg,mri_seg);
+% 
+% cfg = [];
+% cfg.method = 'interactive';
+% cfg.headshape = bnd(3); % scalp surface [rotate z 270, move x and z by 3.5]
+% cfg.elec = elec;
+% elec_realigned = ft_electroderealign(cfg);
+% 
+% cfg = [];
+% cfg.method = 'project';
+% cfg.headshape = bnd(1); % scalp surface
+% cfg.elec = elec_realigned;
+% elec_realigned = ft_electroderealign(cfg);
+% 
+% figure
+% hold on
+% ft_plot_sens(elec_realigned, 'elecsize', 40);
+% ft_plot_headshape(bnd, 'facealpha', 0.5);
+% view(90, 0)
+
+%% create headmodel
+
+% cfg=[];
+% cfg.output    = {'brain','skull','scalp'};
+% mri_seg =ft_volumesegment(cfg,mri);
+% 
+% cfg=[];
+% cfg.tissues= {'scalp' 'skull' 'brain' };
+% cfg.numvertices = [6000 4000 2000];
+% bnd=ft_prepare_mesh(cfg,mri_seg);
+% 
+% cfg = [];
+% cfg.method='openmeeg';
+% vol = ft_prepare_headmodel(cfg,bnd);
+%% create grid source\
+
+% Load Grid
+% grid = ft_read_headshape('cortex_5124.surf.gii');
+% grid = ft_convert_units(grid, 'cm');
+% 
+% cfg             = [];
+% cfg.headmodel   = vol; % used to estimate extent of grid
+% cfg.resolution  = .75; % a source per 0.01 m -> 1 cm
+% cfg.elec = elec;
+% %cfg.inwardshift = 0.005; % moving sources 5 mm inwards from the skull, ...
+%                          % since BEM models may be unstable her
+% sourcemodel = ft_prepare_sourcemodel(cfg);
+
+% figure
+% hold on
+% ft_plot_mesh(sourcemodel, 'vertexsize', 20);
+% ft_plot_vol(vol, 'facealpha', 0.5)
+% view(90, 0)
+
+%% source
 
 % create cfg
 cfg.type = 'eloreta';
@@ -51,14 +132,16 @@ sacfg.(lower(cfg.type)).lambda = cfg.lamda;
 sacfg.(lower(cfg.type)).keepfilter   = 'yes';
 sacfg.(lower(cfg.type)).fixedori     = 'yes';
 sacfg.grid         = lf;
+source_cmp       = ft_sourceanalysis_checkless(sacfg, Fourier);
+
+cfg.latency = params.toi;
+cfg.frequency = params.foi;
+Fourier = ft_selectdata(cfg,Fourier);
 
 %% Set Localize
 %param.toi = [-.2 0];
 
-cfg.latency = [.25 .5];
-Fourier = ft_selectdata(cfg,Fourier);
 
-source_cmp       = ft_sourceanalysis_checkless(sacfg, Fourier);
 source_cmp.avg.mom(~source_cmp.inside) = {zeros([3 size(source_cmp.cumtapcnt,1)])};
 source_cmp.avg.mom = cat(3,source_cmp.avg.mom{:});
 source_cmp.avg.mom = permute(source_cmp.avg.mom,[3 2 1]);
