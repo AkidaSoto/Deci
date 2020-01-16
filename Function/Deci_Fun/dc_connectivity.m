@@ -13,7 +13,7 @@ toi = find(datalow.time >= round(params.toi(1),4) & datalow.time <= round(params
 switch conne
     case 'ispc'
         
-        if ~isequal(datahigh.freq,datalow.freq) 
+        if isequal(datahigh.label,datalow.label)
             return
         end
         
