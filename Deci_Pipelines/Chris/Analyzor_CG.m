@@ -53,8 +53,7 @@ if Deci.Analysis.Laplace
     data.condinfo = condinfo;
     data.preart = preart;
     
-    data.condinfo = condinfo;
-    data.preart = preart;
+    clear dirlist filename elec_positions
 end
 
 %% HemifieldFlip
@@ -83,17 +82,17 @@ end
 
 %% Downsample
 if ~isempty(Deci.Analysis.DownSample)
-    data = ft_resampledata(struct('resamplefs',Deci.Analysis.DownSample,'detrend','no'),data);
+    data = ft_resampledata(struct('resamplefs',Deci.Analysis.DownSample,'detrend','no','feedback','no'),data);
 end
 
 
 data.condinfo = condinfo;
 data.preart = preart;
 
-if Deci.Analysis.HemifieldFlip.do
-    data.condinfo = cellfun(@(a,b) [a;b],FlipData.condinfo,NotFlipData.condinfo,'UniformOutput',false);
-    data.preart = cellfun(@(a,b) [a;b],FlipData.preart,NotFlipData.preart,'UniformOutput',false);
-end
+% if Deci.Analysis.HemifieldFlip.do
+%     data.condinfo = cellfun(@(a,b) [a;b],FlipData.condinfo,NotFlipData.condinfo,'UniformOutput',false);
+%     data.preart = cellfun(@(a,b) [a;b],FlipData.preart,NotFlipData.preart,'UniformOutput',false);
+% end
 
 %% Loop through Conditions
 for Cond = 1:length(Deci.Analysis.Conditions)
@@ -121,7 +120,6 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     
     %% Find Relevant Trials from that Condition info
     maxt = max(sum(ismember(preart{2},Deci.Analysis.Conditions{Cond}),2));
-    %     maxt = length(find(cellfun(@(c) any(ismember(Deci.Analysis.Conditions{Cond},c)), Deci.DT.Markers)));
     info.alltrials = find(sum(ismember(preart{2},Deci.Analysis.Conditions{Cond}),2) == maxt);
     
     %ignore all locks that are missing
@@ -186,7 +184,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         fcfg.keeptrials = 'yes';
                         fcfg.toi = Deci.Analysis.Freq.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Freq.Toi(2);
                         
-                        Fourier = rmfield(ft_freqanalysis(fcfg, dat),'cfg');
+                        Fourier = rmfield(dc_freqanalysis(fcfg, dat),'cfg');
                         Fourier.condinfo = dat.condinfo;
                         trllength = size(Fourier.fourierspctrm,1);
                     else
@@ -301,8 +299,13 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     fcfg.keeptrials = 'yes';
                     fcfg.toi = Deci.Analysis.Connectivity.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Connectivity.Toi(2);
                     
-                    Fourier = rmfield(ft_freqanalysis(fcfg, dat),'cfg');
+                    Fourier = rmfield(ft_freqanalysis_CG(fcfg, dat),'cfg');
+                    
                     Fourier.condinfo = dat.condinfo;
+                    
+                    fcfg = [];
+                    fcfg.channel = [Deci.Analysis.Connectivity.chan1 Deci.Analysis.Connectivity.chan2];
+                    Fourier = ft_selectdata(fcfg,Fourier);
                     
                     for funs = find(Deci.Analysis.Connectivity.list)
                         feval(Deci.Analysis.Connectivity.Functions{funs},Deci,info,Fourier,Deci.Analysis.Connectivity.Params{funs}{:});
@@ -314,6 +317,8 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     disp(['s:' num2str(subject_list) ' c:' num2str(Cond) ' Lock' num2str(Lock) ' time: ' num2str(etime(clock ,TimerChan))]);
                 end
             end
+            
+            clear Fourier dat cfg 
         end
     end
     
