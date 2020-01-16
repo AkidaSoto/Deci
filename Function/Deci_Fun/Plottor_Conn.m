@@ -36,8 +36,8 @@ for ConnList = 1:length(Params.List)
                 lockers(subject_list,Conditions,:) = [];
             end
             
-            conn.dimord = 'freq_freq_time';
-            %$conn.freq = conn.freqlow;
+            conn.dimord = 'chan_freq_time';
+            conn.freq = conn.freqlow;
             conn.label = conn.chanlow;
             
             Subjects{subject_list,Conditions} = conn;
@@ -113,6 +113,8 @@ for ConnList = 1:length(Params.List)
                 scfg.parameter = 'param';
                 scfg.operation = Deci.Plot.Math{conds};
                 evalc('MathData{subj} = ft_math(scfg,Subjects{subj,:})');
+                MathData{subj}.dimord = Subjects{subj,1}.dimord;
+                MathData{subj}.freq =  Subjects{subj,1}.freq;
             end
             
             Subjects(:,size(Subjects,2)+1) = MathData;
@@ -140,13 +142,13 @@ for ConnList = 1:length(Params.List)
             facfg.parameter =  'param';
             facfg.type = 'mean';
             facfg.keepindividual = 'yes';
-            evalc('ConnData{1,conds} = ft_timelockgrandaverage(facfg,Subjects{:,conds});');
-            ConnData{1,conds}.param = ConnData{1,conds}.individual;
+            evalc('ConnData{1,conds} = ft_freqgrandaverage(facfg,Subjects{:,conds});');
+            %ConnData{1,conds}.param = ConnData{1,conds}.individual;
             ConnData{1,conds} = rmfield(ConnData{1,conds},'cfg');
             
             WiretData{1,conds} = ConnData{1,conds};
             
-            WiretData{1,conds}.avg = squeeze(WiretData{1,conds}.individual);
+            WiretData{1,conds}.param = squeeze(WiretData{1,conds}.param);
             WiretData{1,conds}.dimord = 'subj_time';
             
         else
@@ -159,7 +161,7 @@ for ConnList = 1:length(Params.List)
             facfg.parameter =  'param';
             facfg.type = 'mean';
             facfg.keepindividual = 'no';
-            evalc('wiredata{1,conds} = ft_timelockgrandaverage(facfg,Subjects{:,conds});');
+            evalc('wiredata{1,conds} = ft_freqgrandaverage(facfg,Subjects{:,conds});');
             wiredata{1,conds} = rmfield(wiredata{1,conds},'cfg');
         end
         
@@ -192,7 +194,7 @@ for ConnList = 1:length(Params.List)
         Deci.Plot.Stat.neighbours = neighbours.neighbours;
         Deci.Plot.Stat.ivar = 1;
         
-        Deci.Plot.Stat.parameter = 'avg';
+        Deci.Plot.Stat.parameter = 'param';
         
         for conds = 1:length(Deci.Plot.Draw)
             design = [];
@@ -209,6 +211,8 @@ for ConnList = 1:length(Params.List)
                             end
                         end
                         
+                        design = design';
+                        
                         Deci.Plot.Stat.design = design;
                         
                         if length(Deci.Plot.Draw{conds}) > 2
@@ -222,7 +226,7 @@ for ConnList = 1:length(Params.List)
                         end
                         if  Params.Wire
                             
-                            [wirestat{conds}] = ft_timelockstatistics(Deci.Plot.Stat, WiretData{:,Deci.Plot.Draw{conds}});
+                            [wirestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, WiretData{:,Deci.Plot.Draw{conds}});
                         end
                         
                         if Params.Bar.do
@@ -320,10 +324,11 @@ for ConnList = 1:length(Params.List)
                     
                 end
                 
-                pcfg.ylim = ylim;
+                
                 pcfg.graphcolor = lines;
                 pcfg.linewidth = 1;
-                pcfg.parameter = 'avg';
+                pcfg.parameter = 'param';
+                pcfg.ylim = ylim;
                 
                 %ConnData(subj,Deci.Plot.Draw{cond})= cellfun(@(c) rmfield(rmfield(c,'chanlow'),'chanhigh'), ConnData(subj,Deci.Plot.Draw{cond}),'un',0);
                 %ConnData(subj,Deci.Plot.Draw{cond})= cellfun(@(c) rmfield(rmfield(c,'freqlow'),'freqhigh'), ConnData(subj,Deci.Plot.Draw{cond}),'un',0);
@@ -332,6 +337,7 @@ for ConnList = 1:length(Params.List)
                 %ConnData(subj,Deci.Plot.Draw{cond}) = cellfun(@(c) setfield(c,'dimord','chan_freq_time'), ConnData(subj,Deci.Plot.Draw{cond}),'un',0);
                 ft_singleplotER(pcfg,wiredata{subj,Deci.Plot.Draw{cond}});
                 
+                
                 if Deci.Plot.GrandAverage
                     arrayfun(@(c) uistack(c,'top'),b);
                     clear b
@@ -339,7 +345,10 @@ for ConnList = 1:length(Params.List)
                 
                 hold on
                 axis tight
+                
+                if Params.Bsl
                 plot([ConnData{cond}.time(1), ConnData{cond}.time(end)], [0 0], 'k--') % hor. line
+                end
                 plot([0 0], ylim, 'k--') % vert. l
                 
                 if Params.Stat

@@ -1,5 +1,5 @@
 figure('units', 'normalized', 'outerposition', [0 0 0.5 0.5])
-source_index = 1500; %% a superficial sources
+source_index = 4209; %% a superficial sources
 sensory_dipole_current = 100e-9; % Am (realistic)
 
 n_sensors = length(elec.label);

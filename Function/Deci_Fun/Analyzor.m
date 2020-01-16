@@ -90,7 +90,7 @@ if Deci.Analysis.HemifieldFlip.do
     data.postart.locks = postart.locks([find(ismember(postart.trlnum,find(FlipCfg.trials)));find(ismember(postart.trlnum,find(nonFlipCfg.trials)))],:);
     data.postart.events = postart.events([find(ismember(postart.trlnum,find(FlipCfg.trials)));find(ismember(postart.trlnum,find(nonFlipCfg.trials)))],:);
     data.postart.trlnum = postart.trlnum([find(ismember(postart.trlnum,find(FlipCfg.trials)));find(ismember(postart.trlnum,find(nonFlipCfg.trials)))]);
-
+    
     locks = data.locks;
     events = data.events;
     trlnum = data.trlnum;
@@ -100,6 +100,13 @@ if Deci.Analysis.HemifieldFlip.do
     
     display('HemifieldFlip Applied')
 end
+
+if Deci.Analysis.Preprocessing
+    
+    
+end
+
+
 
 if Deci.Analysis.Unique.do
     for funs = find(Deci.Analysis.Unique.list)
@@ -126,7 +133,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
         end
         error('1 or More Marker Codes not found in events. If using own DT, make sure Step 4 contains updated DT.Markers field')
     end
-        
+    
     maxt = length(find(cellfun(@(c) any(ismember(Deci.Analysis.Conditions{Cond},c)), Deci.DT.Markers)));
     info.alltrials = find(sum(ismember(events,Deci.Analysis.Conditions{Cond}),2) == maxt);
     %% ignore all locks with missing nans
@@ -141,7 +148,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
         info.nanlocks = logical(size(info.alltrials));
     end
     
-        %% Reject Arts
+    %% Reject Arts
     ccfg.trials =  info.alltrials(~info.nanlocks);
     if Deci.Analysis.ApplyArtReject
         ccfg.trials = ccfg.trials(ismember(trlnum(ccfg.trials),postart.trlnum));
@@ -153,7 +160,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     dataplaceholder = ft_selectdata(ccfg,data);
     
     if length(dataplaceholder.trial) < 40
-       display('!!!Trial Count for this condition is < 40, which is abnormally low!!!') 
+        display('!!!Trial Count for this condition is < 40, which is abnormally low!!!')
     end
     
     %% do Extra Analyses
@@ -167,7 +174,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     end
     %% Loop Through Locks
     
-    if Deci.Analysis.Freq.do || Deci.Analysis.Connectivity.do || Deci.Analysis.ERP.do
+    if Deci.Analysis.Freq.do || Deci.Analysis.Connectivity.do || Deci.Analysis.ERP.do || Deci.Analysis.Source.do
         
         for Lock = 1:length(Deci.Analysis.Locks)
             display(' ')
@@ -180,11 +187,10 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             evalc('dat = ft_datashift2(cfg,dataplaceholder)');
             
             for lockstd = 1:size(dat.trialinfo,2)
-              lockers(lockstd)  =  mean(dat.trialinfo(:,Lock) - dat.trialinfo(:,lockstd));
+                lockers(lockstd)  =  mean(dat.trialinfo(:,Lock) - dat.trialinfo(:,lockstd));
             end
             info.lockers = lockers;
             
-
             %% Do ERP Analysis
             if Deci.Analysis.ERP.do
                 mkdir([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
@@ -200,113 +206,176 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             end
             
             %% Do Freq Analyses
-                if ~strcmp(Deci.Analysis.Freq.method,'hilbert')
-                    fcfg = Deci.Analysis.Freq;
-                    fcfg.output='fourier';
-                    fcfg.pad = 'maxperlen';
-                    fcfg.scc = 0;
-                    fcfg.keeptapers = 'yes';
-                    fcfg.keeptrials = 'yes';
-                    fcfg.toi = Deci.Analysis.Freq.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Freq.Toi(2);
-                    fcfg.gpu = Deci.GCom;
-                    fcfg.cpu = Deci.DCom;
+            if ~strcmp(Deci.Analysis.Freq.method,'hilbert')
+                fcfg = Deci.Analysis.Freq;
+                fcfg.output='fourier';
+                fcfg.pad = 'maxperlen';
+                fcfg.scc = 0;
+                fcfg.keeptapers = 'yes';
+                fcfg.keeptrials = 'yes';
+                fcfg.toi = Deci.Analysis.Freq.Toi(1):round(diff([data.time{1}(1) data.time{1}(2)]),5):Deci.Analysis.Freq.Toi(2);
+                fcfg.gpu = Deci.GCom;
+                fcfg.cpu = Deci.DCom;
+                
+                Fourier = dc_freqanalysis(fcfg, dat);
+                trllength = size(Fourier.fourierspctrm,1);
+            else
+                display('Applying Hilbert Transformation')
+                fcfg = Deci.Analysis.Freq;
+                nyquist = data.fsample/2;
+                
+                freqs = Deci.Analysis.Freq.foi;
+                
+                tempfreq = [];
+                
+                for foi = 1:length(freqs)
                     
-                    Fourier = dc_freqanalysis(fcfg, dat);
-                    trllength = size(Fourier.fourierspctrm,1);
-                else
-                    display('Applying Hilbert Transformation')
-                    fcfg = Deci.Analysis.Freq;
-                    nyquist = data.fsample/2;
+                    hcfg = [];
+                    hcfg.bpfilter2 = 'yes';  %Modified implementation to work with MikexCohen's formula
+                    hcfg.bpfreq =[freqs(foi)-fcfg.width(foi) freqs(foi)+fcfg.width(foi)];
+                    hcfg.bpfiltord = round(fcfg.order*(data.fsample/hcfg.bpfreq(1)));
+                    hcfg.bpfilttype = 'firls';
+                    hcfg.transition_width = fcfg.transition_width;
+                    hcfg.hilbert = 'complex';
                     
-                    freqs = Deci.Analysis.Freq.foi;
+                    evalc('hil = ft_preprocessing(hcfg,dat)');
                     
-                    tempfreq = [];
+                    rcfg.latency = [Deci.Analysis.Freq.Toi];
+                    Fo = ft_selectdata(rcfg,hil);
                     
-                    for foi = 1:length(freqs)
-                        
-                        hcfg = [];
-                        hcfg.bpfilter2 = 'yes';  %Modified implementation to work with MikexCohen's formula
-                        hcfg.bpfreq =[freqs(foi)-fcfg.width(foi) freqs(foi)+fcfg.width(foi)];
-                        hcfg.bpfiltord = round(fcfg.order*(data.fsample/hcfg.bpfreq(1)));
-                        hcfg.bpfilttype = 'firls';
-                        hcfg.transition_width = fcfg.transition_width;
-                        hcfg.hilbert = 'complex';
-                        
-                        evalc('hil = ft_preprocessing(hcfg,dat)');
-                        
-                        rcfg.latency = [Deci.Analysis.Freq.Toi];
-                        Fo = ft_selectdata(rcfg,hil);
-                        
-                        tempfreq{foi}.fourierspctrm = permute(cell2mat(permute(Fo.trial,[3 1 2])),[3 1 4 2]);
-                        tempfreq{foi}.label = Fo.label;
-                        tempfreq{foi}.freq = freqs(foi);
-                        tempfreq{foi}.trialinfo = Fo.trialinfo;
-                        tempfreq{foi}.time = Fo.time{1}';
-                        tempfreq{foi}.dimord = 'rpt_chan_freq_time';
-                        
-                    end
+                    tempfreq{foi}.fourierspctrm = permute(cell2mat(permute(Fo.trial,[3 1 2])),[3 1 4 2]);
+                    tempfreq{foi}.label = Fo.label;
+                    tempfreq{foi}.freq = freqs(foi);
+                    tempfreq{foi}.trialinfo = Fo.trialinfo;
+                    tempfreq{foi}.time = Fo.time{1}';
+                    tempfreq{foi}.dimord = 'rpt_chan_freq_time';
                     
-                    acfg.parameter = 'fourierspctrm';
-                    acfg.appenddim = 'freq';
-                    
-                    Fourier = rmfield(ft_appendfreq(acfg,tempfreq{:}),'cfg');
-                    Fourier.dimord = 'rpt_chan_freq_time';
-                    trllength = size(Fourier.fourierspctrm,1);
                 end
                 
-                info.trllen = trllength;
-                Chan = Fourier.label;
+                acfg.parameter = 'fourierspctrm';
+                acfg.appenddim = 'freq';
                 
-                %% Loop Through Channels
-                for i = 1:length(Chan)
-                    info.Channels = Chan;
-                    info.ChanNum = i;
+                Fourier = rmfield(ft_appendfreq(acfg,tempfreq{:}),'cfg');
+                Fourier.dimord = 'rpt_chan_freq_time';
+                trllength = size(Fourier.fourierspctrm,1);
+            end
+            
+            info.trllen = trllength;
+            Chan = Fourier.label;
+            
+            %% Loop Through Channels
+            for i = 1:length(Chan)
+                info.Channels = Chan;
+                info.ChanNum = i;
+                
+                dcfg = [];
+                dcfg.channel = Chan(i);
+                freq = ft_selectdata(dcfg,Fourier);
+                
+                warning('off', 'MATLAB:MKDIR:DirectoryExists');
+                mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                mkdir([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                
+                freqplaceholder = freq;
+                if Deci.Analysis.Freq.do
+                    freq = freqplaceholder;
+                    freq.dimord = 'chan_freq_time';
+                    freq.powspctrm      = permute(abs(mean(freq.fourierspctrm./abs(freq.fourierspctrm),1)),[2 3 4 1]);         % divide by amplitude
+                    freq  = rmfield(freq,'fourierspctrm');
+                    freq.trllength = trllength;
+                    freq.lockers = lockers;
                     
-                    dcfg = [];
-                    dcfg.channel = Chan(i);
-                    freq = ft_selectdata(dcfg,Fourier);
+                    save([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
                     
-                    warning('off', 'MATLAB:MKDIR:DirectoryExists');
-                    mkdir([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
-                    mkdir([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
-
-                    freqplaceholder = freq;
-                    if Deci.Analysis.Freq.do
-                        freq = freqplaceholder;
-                        freq.dimord = 'chan_freq_time';
-                        freq.powspctrm      = permute(abs(mean(freq.fourierspctrm./abs(freq.fourierspctrm),1)),[2 3 4 1]);         % divide by amplitude
-                        freq  = rmfield(freq,'fourierspctrm');
-                        freq.trllength = trllength;
-                        freq.lockers = lockers;
-                        
-                        save([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
-                        
-                        
-                        freq = freqplaceholder;
-                        freq.powspctrm = permute(mean(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1]);
-                        freq.dimord = 'chan_freq_time';
-                        freq  = rmfield(freq,'fourierspctrm');
-                        freq.trllength = trllength;
-                        freq.lockers = lockers;
-                        save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
-                    end
                     
-                    if Deci.Analysis.Freq.Extra.do
-                        for funs = find(Deci.Analysis.Freq.Extra.list)
-                            if Deci.Analysis.Freq.Extra.list(funs)
-                                feval(Deci.Analysis.Freq.Extra.Functions{funs},Deci,info,freqplaceholder,Deci.Analysis.Freq.Extra.Params{funs}{:});
-                            end
+                    freq = freqplaceholder;
+                    freq.powspctrm = permute(mean(abs(freq.fourierspctrm).^2 ,1),[2 3 4 1]);
+                    freq.dimord = 'chan_freq_time';
+                    freq  = rmfield(freq,'fourierspctrm');
+                    freq.trllength = trllength;
+                    freq.lockers = lockers;
+                    save([Deci.Folder.Analysis filesep 'Freq_TotalPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
+                end
+                
+                if Deci.Analysis.Freq.Extra.do
+                    for funs = find(Deci.Analysis.Freq.Extra.list)
+                        if Deci.Analysis.Freq.Extra.list(funs)
+                            feval(Deci.Analysis.Freq.Extra.Functions{funs},Deci,info,freqplaceholder,Deci.Analysis.Freq.Extra.Params{funs}{:});
                         end
                     end
                 end
-                
-                % Do Connectivity Analysis
-                if Deci.Analysis.Connectivity.do
-                    for funs = find(Deci.Analysis.Connectivity.list)
-                        feval(Deci.Analysis.Connectivity.Functions{funs},Deci,info,Fourier,Deci.Analysis.Connectivity.Params{funs}{:});
+            end
+            
+            % Do Connectivity Analysis
+            if Deci.Analysis.Connectivity.do
+                for funs = find(Deci.Analysis.Connectivity.list)
+                    
+                    for Conn = 1:length(Deci.Analysis.Connectivity.Sets)
+                        
+                        Current = Deci.Analysis.Connectivity.Sets{Conn};
+                        chanl = Current{1};
+                        chanh = Current{2};
+                        freqlow = Current{3};
+                        freqhigh = Current{4};
+                        
+                        LF = dc_findfreq({freqlow});
+                        HF = dc_findfreq({freqhigh});
+                        
+                        %lcfg.latency = params.toi;
+                        lcfg.frequency = LF;
+                        lcfg.channel = {chanl};
+                        evalc('datalow = ft_selectdata(lcfg,Fourier)');
+                        freqs = datalow.freq;
+                        labels = datalow.label;
+                        
+                        cfg.resamplefs = Deci.Analysis.Connectivity.Params{funs}{:}.DownSample;
+                        evalc('datalow = ft_resampledata(cfg,datalow)');
+                        datalow.fourierspctrm = permute(cell2mat(permute(datalow.trial,[3 1 2])),[3 4 1 2]);
+                        datalow.freq = freqs;
+                        datalow.time = datalow.time{1};
+                        datalow.label = labels;
+                        datalow.dimord = 'rpt_chan_freq_time';
+                        
+                        %hcfg.latency = params.toi;
+                        hcfg.frequency = HF;
+                        hcfg.channel = {chanh};
+                        evalc('datahigh = ft_selectdata(hcfg,Fourier)');
+                        freqs = datahigh.freq;
+                        labels = datahigh.label;
+                        
+                        cfg.resamplefs = Deci.Analysis.Connectivity.Params{funs}{:}.DownSample;
+                        evalc('datahigh = ft_resampledata(cfg,datalow)');
+                        datahigh.fourierspctrm = permute(cell2mat(permute(datahigh.trial,[3 1 2])),[3 4 1 2]);
+                        datahigh.freq = freqs;
+                        datahigh.time = datahigh.time{1};
+                        datahigh.label = labels;
+                        datahigh.dimord = 'rpt_chan_freq_time';
+                        
+                        Deci.Analysis.Connectivity.Params{funs}{:}.Current = Current;
+                        
+                        time_window = Deci.Analysis.Connectivity.Params{funs}{:}.window; %linspace(1.5,3.5,length(Deci.Analysis.Freq.foi));
+                        Deci.Analysis.Connectivity.Params{funs}{:}.time_window = time_window(ismember(Fourier.freq,datalow.freq));
+                        
+                        feval(Deci.Analysis.Connectivity.Functions{funs},Deci,info,datalow,datahigh,Deci.Analysis.Connectivity.Params{funs}{:});
+                        
                     end
                 end
-                clear Fourier
+            end
+            
+            if Deci.Analysis.Source.do
+                for funs = find(Deci.Analysis.Source.list)
+                    
+                    switch Deci.Analysis.Source.Params{funs}{:}.datatype
+                        case 'time'
+                            input = dat;
+                        case 'freq'
+                            input = Fourier;
+                    end
+                    feval(Deci.Analysis.Source.Functions{funs},Deci,info,input,Deci.Analysis.Source.Params{funs}{:});
+                end
+            end
+            
+            clear Fourier
         end
     end
 end

@@ -221,6 +221,7 @@ hasdc       = find(freqoi==0);
 hasnyq      = find(freqoi==data.fsample./2);
 hasdc_nyq   = [hasdc hasnyq];
 freq.time = timeoi;
+freq.cumtapcnt = ones([ntrials nfoi]);
 
 % correct the 0 Hz or Nyqist bin if present, scaling with a factor of 2 is only appropriate for ~0 Hz
 if ~isempty(hasdc_nyq)
