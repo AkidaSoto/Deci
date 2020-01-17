@@ -1,105 +1,93 @@
-function Plottor_Conn(Deci,Params)
+function Plottor_Source(Deci,Params)
 
 %% Load
 cfg        = [];
-cfg.layout = Deci.Layout.eye;
-cfg.channel = 'all';
-cfg.interactive = 'yes';
 
-disp('----------------------');
-display(' ')
+display(['Plotting Source']);
 
-display(['Plotting Conn']);
 
-for ConnList = 1:length(Params.List)
+
+for SourceList = 1:length(Deci.Plot.Extra.Source.List)
     clear Subjects
+
+    if contains(Deci.Plot.Extra.Source.List,'time')
+       time = 1;
+    else
+       time = 0;
+    end
     
-    for  subject_list = 1:length(Deci.SubjectList)
+    for subject_list = 1:length(Deci.SubjectList)
         
         display(['Loading Plottor for Subject #' num2str(subject_list) ': ' Deci.SubjectList{subject_list}]);
         
         for Conditions = 1:length(Deci.Plot.CondTitle)
             
-            load([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep strjoin(Params.List{ConnList},'_') '.mat'],'conn');
+            load([Deci.Folder.Analysis filesep 'Extra' filesep 'Source' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Deci.Plot.Extra.Source.List{SourceList} '.mat'],'source');
             
-            %toi = round(freq.time,4) >= Tois(1) & round(freq.time,4) <= Tois(2);
-            
-            if isfield(conn,'trllen')
-                trllen(subject_list,Conditions) = conn.trllen;
-            else
-                trllen(subject_list,Conditions) = nan;
-            end
-            
-            if isfield(conn,'lockers')
-                lockers(subject_list,Conditions,:) = conn.lockers;
-            else
-                lockers(subject_list,Conditions,:) = [];
-            end
-            
-            conn.dimord = 'freq_freq_time';
-            %$conn.freq = conn.freqlow;
-            conn.label = conn.chanlow;
-            
-            Subjects{subject_list,Conditions} = conn;
+            Subjects{subject_list,Conditions} = source;
         end
         
     end
     
     %% Baseline Correction
-    display(' ');
-    display(['Using Lock: ' Deci.Plot.Lock]);
-    display(['Using Ref: ' Deci.Plot.BslRef ' at times ' strrep(regexprep(num2str(Deci.Plot.Freq.Bsl),' +',' '),' ','-')]);
     
-    if Params.Bsl
+    
+    if time
+        display(' ');
+        display(['Using Lock: ' Deci.Plot.Lock]);
+        display(['Using Ref: ' Deci.Plot.BslRef ' at times ' strrep(regexprep(num2str(Deci.Plot.Freq.Bsl),' +',' '),' ','-')]);
         
-        for Conditions = 1:size(Subjects,2)
-            for subject_list = 1:size(Subjects,1)
-                
-                if ~strcmpi(Deci.Plot.BslRef,Deci.Plot.Lock)
+        if Params.Bsl
+            for Conditions = 1:size(Subjects,2)
+                for subject_list = 1:size(Subjects,1)
                     
-                    load([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep strjoin(Params.List{ConnList},'_') '.mat'],'conn');
+                    if ~strcmpi(Deci.Plot.BslRef,Deci.Plot.Lock)
+                        
+                        load([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep Deci.Plot.CondTitle{Conditions} filesep Deci.Plot.Extra.Source.List{SourceList} '.mat'],'conn');
+                        
+                        ccfg.latency = Deci.Plot.Freq.Bsl;
+                        ccfg.avgovertime = 'yes';
+                        
+                        Bsl{subject_list,Conditions} = conn;
+                        
+                        toi1 = round(Bsl{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Bsl(1) & round(Bsl{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Bsl(2);
+                        
+                        Bsl{subject_list,Conditions}.param =  Bsl{subject_list,Conditions}.param(:,:,toi1);
+                        Bsl{subject_list,Conditions}.time = Bsl{subject_list,Conditions}.time(toi1);
+                        Bsl{subject_list,Conditions} = ft_selectdata(ccfg, Bsl{subject_list,Conditions});
+                        Bsl{subject_list,Conditions}.param = repmat(Bsl{subject_list,Conditions}.param,[1 1 size(Subjects{subject_list,Conditions}.param ,3)]);
+                        
+                    else
+                        ccfg.latency = Deci.Plot.Freq.Bsl;
+                        ccfg.avgovertime = 'yes';
+                        
+                        toi1 = round(Subjects{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Bsl(1) & round(Subjects{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Bsl(2);
+                        Bsl{subject_list,Conditions} =Subjects{subject_list,Conditions};
+                        Bsl{subject_list,Conditions}.param =  Bsl{subject_list,Conditions}.param(:,:,toi1);
+                        Bsl{subject_list,Conditions}.time = Bsl{subject_list,Conditions}.time(toi1);
+                        Bsl{subject_list,Conditions} = ft_selectdata(ccfg, Bsl{subject_list,Conditions});
+                        Bsl{subject_list,Conditions}.param = repmat(Bsl{subject_list,Conditions}.param,[1 1 size(Subjects{subject_list,Conditions}.param ,3)]);
+                    end
                     
-                    ccfg.latency = Deci.Plot.Freq.Bsl;
-                    ccfg.avgovertime = 'yes';
+                    switch Deci.Plot.Freq.BslType
+                        case 'none'
+                        case 'absolute'
+                            Subjects{subject_list,Conditions}.param =  Subjects{subject_list,Conditions}.param - Bsl{subject_list,Conditions}.param;
+                        case 'relative'
+                            Subjects{subject_list,Conditions}.param=  Subjects{subject_list,Conditions}.param ./ Bsl{subject_list,Conditions}.param;
+                        case 'relchange'
+                            Subjects{subject_list,Conditions}.param = ( Subjects{subject_list,Conditions}.param - Bsl{subject_list,Conditions}.param) ./ Bsl{subject_list,Conditions}.param;
+                        case 'db'
+                            Subjects{subject_list,Conditions}.param = 10*log10( Subjects{subject_list,Conditions}.param ./ Bsl{subject_list,Conditions}.param);
+                    end
                     
-                    Bsl{subject_list,Conditions} = conn;
+                    %Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(toi);
+                    %Subjects{subject_list,Conditions}.param = Subjects{subject_list,Conditions}.param(:,:,toi);
                     
-                    toi1 = round(Bsl{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Bsl(1) & round(Bsl{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Bsl(2);
-                    
-                    Bsl{subject_list,Conditions}.param =  Bsl{subject_list,Conditions}.param(:,:,toi1);
-                    Bsl{subject_list,Conditions}.time = Bsl{subject_list,Conditions}.time(toi1);
-                    Bsl{subject_list,Conditions} = ft_selectdata(ccfg, Bsl{subject_list,Conditions});
-                    Bsl{subject_list,Conditions}.param = repmat(Bsl{subject_list,Conditions}.param,[1 1 size(Subjects{subject_list,Conditions}.param ,3)]);
-                    
-                else
-                    ccfg.latency = Deci.Plot.Freq.Bsl;
-                    ccfg.avgovertime = 'yes';
-                    
-                    toi1 = round(Subjects{subject_list,Conditions}.time,4) >= Deci.Plot.Freq.Bsl(1) & round(Subjects{subject_list,Conditions}.time,4) <= Deci.Plot.Freq.Bsl(2);
-                    Bsl{subject_list,Conditions} =Subjects{subject_list,Conditions};
-                    Bsl{subject_list,Conditions}.param =  Bsl{subject_list,Conditions}.param(:,:,toi1);
-                    Bsl{subject_list,Conditions}.time = Bsl{subject_list,Conditions}.time(toi1);
-                    Bsl{subject_list,Conditions} = ft_selectdata(ccfg, Bsl{subject_list,Conditions});
-                    Bsl{subject_list,Conditions}.param = repmat(Bsl{subject_list,Conditions}.param,[1 1 size(Subjects{subject_list,Conditions}.param ,3)]);
                 end
-                
-                switch Deci.Plot.Freq.BslType
-                    case 'none'
-                    case 'absolute'
-                        Subjects{subject_list,Conditions}.param =  Subjects{subject_list,Conditions}.param - Bsl{subject_list,Conditions}.param;
-                    case 'relative'
-                        Subjects{subject_list,Conditions}.param=  Subjects{subject_list,Conditions}.param ./ Bsl{subject_list,Conditions}.param;
-                    case 'relchange'
-                        Subjects{subject_list,Conditions}.param = ( Subjects{subject_list,Conditions}.param - Bsl{subject_list,Conditions}.param) ./ Bsl{subject_list,Conditions}.param;
-                    case 'db'
-                        Subjects{subject_list,Conditions}.param = 10*log10( Subjects{subject_list,Conditions}.param ./ Bsl{subject_list,Conditions}.param);
-                end
-                
-                %Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(toi);
-                %Subjects{subject_list,Conditions}.param = Subjects{subject_list,Conditions}.param(:,:,toi);
-                
             end
         end
+        
     end
     
     %% Math
@@ -113,7 +101,8 @@ for ConnList = 1:length(Params.List)
                 scfg.parameter = 'param';
                 scfg.operation = Deci.Plot.Math{conds};
                 evalc('MathData{subj} = ft_math(scfg,Subjects{subj,:})');
-                MathData{subj}.dimord = Subjects{subj,1}.dim
+                MathData{subj}.dimord = Subjects{subj,1}.dimord;
+                MathData{subj}.freq =  Subjects{subj,1}.freq;
             end
             
             Subjects(:,size(Subjects,2)+1) = MathData;
@@ -141,13 +130,13 @@ for ConnList = 1:length(Params.List)
             facfg.parameter =  'param';
             facfg.type = 'mean';
             facfg.keepindividual = 'yes';
-            evalc('ConnData{1,conds} = ft_timelockgrandaverage(facfg,Subjects{:,conds});');
-            ConnData{1,conds}.param = ConnData{1,conds}.individual;
+            evalc('ConnData{1,conds} = ft_freqgrandaverage(facfg,Subjects{:,conds});');
+            %ConnData{1,conds}.param = ConnData{1,conds}.individual;
             ConnData{1,conds} = rmfield(ConnData{1,conds},'cfg');
             
             WiretData{1,conds} = ConnData{1,conds};
             
-            WiretData{1,conds}.avg = squeeze(WiretData{1,conds}.individual);
+            WiretData{1,conds}.param = squeeze(WiretData{1,conds}.param);
             WiretData{1,conds}.dimord = 'subj_time';
             
         else
@@ -160,7 +149,7 @@ for ConnList = 1:length(Params.List)
             facfg.parameter =  'param';
             facfg.type = 'mean';
             facfg.keepindividual = 'no';
-            evalc('wiredata{1,conds} = ft_timelockgrandaverage(facfg,Subjects{:,conds});');
+            evalc('wiredata{1,conds} = ft_freqgrandaverage(facfg,Subjects{:,conds});');
             wiredata{1,conds} = rmfield(wiredata{1,conds},'cfg');
         end
         
@@ -193,7 +182,7 @@ for ConnList = 1:length(Params.List)
         Deci.Plot.Stat.neighbours = neighbours.neighbours;
         Deci.Plot.Stat.ivar = 1;
         
-        Deci.Plot.Stat.parameter = 'avg';
+        Deci.Plot.Stat.parameter = 'param';
         
         for conds = 1:length(Deci.Plot.Draw)
             design = [];
@@ -210,6 +199,8 @@ for ConnList = 1:length(Params.List)
                             end
                         end
                         
+                        design = design';
+                        
                         Deci.Plot.Stat.design = design;
                         
                         if length(Deci.Plot.Draw{conds}) > 2
@@ -223,7 +214,7 @@ for ConnList = 1:length(Params.List)
                         end
                         if  Params.Wire
                             
-                            [wirestat{conds}] = ft_timelockstatistics(Deci.Plot.Stat, WiretData{:,Deci.Plot.Draw{conds}});
+                            [wirestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, WiretData{:,Deci.Plot.Draw{conds}});
                         end
                         
                         if Params.Bar.do
@@ -321,10 +312,11 @@ for ConnList = 1:length(Params.List)
                     
                 end
                 
-                pcfg.ylim = ylim;
+                
                 pcfg.graphcolor = lines;
                 pcfg.linewidth = 1;
-                pcfg.parameter = 'avg';
+                pcfg.parameter = 'param';
+                pcfg.ylim = ylim;
                 
                 %ConnData(subj,Deci.Plot.Draw{cond})= cellfun(@(c) rmfield(rmfield(c,'chanlow'),'chanhigh'), ConnData(subj,Deci.Plot.Draw{cond}),'un',0);
                 %ConnData(subj,Deci.Plot.Draw{cond})= cellfun(@(c) rmfield(rmfield(c,'freqlow'),'freqhigh'), ConnData(subj,Deci.Plot.Draw{cond}),'un',0);
@@ -333,6 +325,7 @@ for ConnList = 1:length(Params.List)
                 %ConnData(subj,Deci.Plot.Draw{cond}) = cellfun(@(c) setfield(c,'dimord','chan_freq_time'), ConnData(subj,Deci.Plot.Draw{cond}),'un',0);
                 ft_singleplotER(pcfg,wiredata{subj,Deci.Plot.Draw{cond}});
                 
+                
                 if Deci.Plot.GrandAverage
                     arrayfun(@(c) uistack(c,'top'),b);
                     clear b
@@ -340,7 +333,10 @@ for ConnList = 1:length(Params.List)
                 
                 hold on
                 axis tight
+                
+                if Params.Bsl
                 plot([ConnData{cond}.time(1), ConnData{cond}.time(end)], [0 0], 'k--') % hor. line
+                end
                 plot([0 0], ylim, 'k--') % vert. l
                 
                 if Params.Stat
