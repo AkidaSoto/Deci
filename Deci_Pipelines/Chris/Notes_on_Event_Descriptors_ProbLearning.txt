@@ -1,0 +1,44 @@
+## Notes on event descriptors for Probabilistic_Learning Experiment
+
+#Stim Conditions
+14 = AB
+15 = CD
+16 = EF
+
+
+#Stim Formats(L/R)
+41 = AB --> Left is optimal resp
+42 = BA --> Right is optimal resp
+
+
+#Response(L/R)
+37 = Resp Left
+38 = Resp Right
+
+
+#Response(cor/inc) --> *Note: this is linked with Feedback. 31 always goes with 23, 34 always goes with 22
+31 = incorrect resp
+34 = correct resp
+
+
+#Response(optimal/non-optimal)
+300 = optimal resp (i.e. A,C, or E depending on the stim condition)     --> either [format = 41 + resp = 37] or [format = 42 + resp = 38] 
+301 = non-optimal resp (i.e. B,D, or F depending on the stim condition) --> either [format = 41 + resp = 38] or [format = 42 + resp = 37] 
+
+
+#Feedback
+22 = Fdb correct
+23 = Fdb incorrect
+
+
+#This dictates whether A (C/E) is correct or incorrect. The percentage of 51 per stim condition per block should be 80%, 70% and 60% respectively.
+51 = A_Correct???
+52 = A_Incorrect???
+
+
+
+*Note:
+Feedback (cond_info column 6) is dependent on whether or not the response is correct (cond_info column 4). The correctness of the response is
+dependednt on whether A is correct (51) or A is incorrect(52) (cond_info column 6). For condition AB there should be 80% A_Correct (51) and 20%
+A_Incorrect (52). For condition CD there should be 70% A_Correct (51) and 30% A_Incorrect (52). For condition EF there should be 60% A_Correct 
+(51) and 20% A_Incorrect (52). However, it appears to be the case that A_Correct is 70% (A_Incorrect 30%) for all 3 conditions.
