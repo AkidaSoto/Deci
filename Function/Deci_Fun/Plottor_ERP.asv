@@ -24,13 +24,16 @@ for Dim = 1:length(Dims)
     end
 end
 
-if ~any(cellfun(@(c) Deci.Plot.(c).do,Dims))
+if isempty(Tois)
    error('No Figure Type has been checked') 
 end
 
 Tois = sort([Tois{:}]);
 
+if isempty(Tois)
 Tois = [Tois(1) Tois(end)];
+end
+
 Chois = unique([Chois{:}]);
 
 if length(Deci.Plot.Topo.Channel) == 1
@@ -118,15 +121,15 @@ for conds = 1:size(Subjects,2)
         facfg.parameter =  'avg';
         facfg.type = 'mean';
         facfg.keepindividual = 'yes';
-        evalc('ErpData{1,conds} = ft_timelockgrandaverage(facfg,Subjects{:,conds});');
-        ErpData{1,conds} = rmfield(ErpData{1,conds},'cfg');
+        evalc('FreqData{1,conds} = ft_timelockgrandaverage(facfg,Subjects{:,conds});');
+        ErqData{1,conds} = rmfield(ErqData{1,conds},'cfg');
         
     else
         Deci.Plot.Stat.do = false;
-        ErpData(:,conds) = Subjects(:,conds);
+        ErqData(:,conds) = Subjects(:,conds);
     end
     
-    for subj = 1:size(ErpData(:,conds),1)
+    for subj = 1:size(ErqData(:,conds),1)
         if Deci.Plot.Topo.do
             tcfg = [];
             tcfg.nanmean = Deci.Plot.nanmean;
@@ -134,7 +137,7 @@ for conds = 1:size(Subjects,2)
             tcfg.latency = Deci.Plot.Topo.Toi;
             tcfg.channel = Deci.Plot.Topo.Channel;
             
-            topodata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+            topodata{subj,conds} = ft_selectdata(tcfg,ErqData{subj,conds});
             
             tcfg.avgovertime = 'yes';
             topotdata{subj,conds} = ft_selectdata(tcfg,topodata{subj,conds});
@@ -147,7 +150,7 @@ for conds = 1:size(Subjects,2)
             tcfg.latency = Deci.Plot.Wire.Toi;
             tcfg.channel = Deci.Plot.Wire.Channel;
             
-            wiredata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+            wiredata{subj,conds} = ft_selectdata(tcfg,ErqData{subj,conds});
             
             tcfg.avgoverchan = 'yes';
             wiretdata{subj,conds} = ft_selectdata(tcfg,wiredata{subj,conds}); 
@@ -161,7 +164,7 @@ for conds = 1:size(Subjects,2)
             tcfg.latency = Deci.Plot.Bar.Toi;
             tcfg.channel = Deci.Plot.Bar.Channel;
             
-            bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+            bardata{subj,conds} = ft_selectdata(tcfg,ErqData{subj,conds});
             
             tcfg.avgoverchan = 'yes';
             tcfg.avgovertime = 'yes';
@@ -321,7 +324,7 @@ for cond = 1:length(Deci.Plot.Draw)
     end 
 
     clear cirky 
-    for subj = 1:size(ErpData,1)
+    for subj = 1:size(ErqData,1)
         if Deci.Plot.Topo.do
             topo(subj)  = figure;
             
@@ -357,10 +360,10 @@ for cond = 1:length(Deci.Plot.Draw)
                 ft_topoplotER(pcfg, topodata{subj,Deci.Plot.Draw{cond}(subcond)});
                 
                 if Deci.Plot.Draw{cond}(subcond) <= size(trllen,2)
-                title([Deci.SubjectList{subj} ' '  Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')']);
+                title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')']);
                     
                 else
-                title([Deci.SubjectList{subj} ' '  Deci.Plot.Subtitle{cond}{subcond}]);
+                title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
                 end
                 
                 colorbar('vert');
@@ -406,8 +409,7 @@ for cond = 1:length(Deci.Plot.Draw)
             pcfg.graphcolor = lines;
             pcfg.linewidth = 1;
             ft_singleplotER(pcfg,wiredata{subj,Deci.Plot.Draw{cond}});
-            set(gca, 'YDir', 'reverse');
-             
+            
             if Deci.Plot.GrandAverage
             arrayfun(@(c) uistack(c,'top'),b);
             clear b
@@ -432,7 +434,7 @@ for cond = 1:length(Deci.Plot.Draw)
             if max(Deci.Plot.Draw{cond}) <= size(trllen,2)
                 legend(arrayfun(@(a,b) [a{1} ' (' num2str(b) ')'] ,Deci.Plot.Subtitle{cond},trllen(subj,Deci.Plot.Draw{cond}),'UniformOutput',false));
             else
-                legend([ Deci.Plot.Subtitle{cond}{subcond}]);
+                legend([Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
             end
             
             set(legend, 'Interpreter', 'none')
@@ -449,15 +451,13 @@ for cond = 1:length(Deci.Plot.Draw)
                         hold on
                         
                         locktime = [lockers(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
-                        
+                        lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
                         
                         if locktime > xlims(1) && locktime < xlims(2)
                             plotlock = plot([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
                             plotlock.Color(4) = .2;
                             
                             if Deci.Plot.GrandAverage
-                                lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
-                                
                                 
                                 if [locktime - lockstd] < xlims(1)
                                     lockpstd(1) = xlims(1);
@@ -500,7 +500,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 /sqrt(size(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.avg,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1)));
             
             l = legend(Deci.Plot.Subtitle{cond});
-            title([Deci.SubjectList{subj} ' ' Deci.Plot.Title{cond} ' Wire'])
+            title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' Wire'])
             set(l, 'Interpreter', 'none')
             if Deci.Plot.Stat.do
                 hold on
@@ -514,23 +514,23 @@ for cond = 1:length(Deci.Plot.Draw)
         
     end
     
-    for subj = 1:size(ErpData,1)
-        if length(Deci.Plot.Topo.Channel) ~= 1
+    for subj = 1:size(ErqData,1)
+        if length(Deci.Plot.Freq.Topo.Channel) ~= 1
             
             if Deci.Plot.Topo.do
                 set(0, 'CurrentFigure', topo(subj) )
                 suptitle(Deci.Plot.Title{cond});
                 for r = 1:length(cirky(:))
-                    if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
+                    if length(Deci.Plot.Freq.Roi) == 2 && isnumeric(Deci.Plot.Freq.Roi)
                         cirky(r).CLim = Deci.Plot.Freq.Roi;
-                    elseif strcmp(Deci.Plot.Roi,'maxmin') 
+                    elseif strcmp(Deci.Plot.Freq.Roi,'maxmin') 
                         if ~ isempty(cirky(r).Children.UserData)
                             cirky(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),cirky(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),cirky(:)))];
                         else
                             cirky(r).CLim= [min(arrayfun(@(c) min(c.Children.ZData(:)),cirky(:))) max(arrayfun(@(c) max(c.Children.ZData(:)),cirky(:)))];
                         end
                         %cirky(r).Children.LevelList = [linspace(cirky(r).CLim(1),cirky(r).CLim(2),12)];
-                    elseif strcmp(Deci.Plot.Roi,'maxabs')
+                    elseif strcmp(Deci.Plot.Freq.Roi,'maxabs')
                         if ~isempty(cirky(r).Children.findobj('Type','Contour').UserData)
                             cirky(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),cirky(:))) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),cirky(:)))];
                         else

@@ -205,7 +205,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     ecfg.channel = dat.label(chan);
                     erp = ft_selectdata(ecfg,dat);
                     evalc('erp = ft_timelockanalysis([],erp)');
-                    erp.locker = lockers;
+                    erp.lockers = lockers;
                     erp.trllength = size(dat.trialinfo,1);
                     
                     mkdir([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);

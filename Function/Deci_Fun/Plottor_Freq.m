@@ -9,7 +9,7 @@ cfg.interactive = 'yes';
 
 %% Deci Checks
 Dims = {'Topo' 'Square' 'Wire' 'Bar'};
-
+Tois = [];
 for Dim = 1:length(Dims)
     if Deci.Plot.Freq.(Dims{Dim}).do
         if isequal(Deci.Plot.Freq.(Dims{Dim}).Channel,'Reinhart-All')
@@ -25,6 +25,11 @@ for Dim = 1:length(Dims)
         Chois{Dim} = Deci.Plot.Freq.(Dims{Dim}).Channel;
     end
 end
+
+if isempty(Tois)
+   error('No Figure Type has been checked') 
+end
+
 
 Tois = sort([Tois{:}]);
 Tois = [Tois(1) Tois(end)];
@@ -158,7 +163,7 @@ for Conditions = 1:size(Subjects,2)
             case 'relative'
                 Subjects{subject_list,Conditions}.powspctrm=  Subjects{subject_list,Conditions}.powspctrm ./ Bsl{subject_list,Conditions}.powspctrm;
             case 'relchange'
-                Subjects{subject_list,Conditions}.poswpctrm = ( Subjects{subject_list,Conditions}.powspctrm - Bsl{subject_list,Conditions}.powspctrm) ./ Bsl{subject_list,Conditions}.powspctrm;
+                Subjects{subject_list,Conditions}.powspctrm = ( Subjects{subject_list,Conditions}.powspctrm - Bsl{subject_list,Conditions}.powspctrm) ./ Bsl{subject_list,Conditions}.powspctrm;
             case 'db'
                 Subjects{subject_list,Conditions}.powspctrm = 10*log10( Subjects{subject_list,Conditions}.powspctrm ./ Bsl{subject_list,Conditions}.powspctrm);
         end
@@ -698,14 +703,14 @@ for cond = 1:length(Deci.Plot.Draw)
                         hold on
                         
                         locktime = [lockers(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
-                        lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                        
                         
                         if locktime > xlims(1) && locktime < xlims(2)
                             plotlock = plot([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
                             plotlock.Color(4) = .2;
                             
                             if Deci.Plot.GrandAverage
-                                
+                                lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
                                 if [locktime - lockstd] < xlims(1)
                                     lockpstd(1) = xlims(1);
                                 else
