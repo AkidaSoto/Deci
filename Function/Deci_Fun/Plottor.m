@@ -43,19 +43,19 @@ end
 
 %% Split
 
-if Deci.Run.Freq && ~isempty(Deci.Plot.Freq)
+if Deci.Run.Freq 
     Plottor_Freq(Deci);
 end
 
-if Deci.Run.ERP && ~isempty(Deci.Plot.ERP)
+if Deci.Run.ERP 
     Plottor_ERP(Deci);
 end
 
-if Deci.Run.CFC && ~isempty(Deci.Plot.CFC)
+if Deci.Run.CFC 
     Plottor_CFC(Deci);
 end
 
-if Deci.Run.Behavior && ~isempty(Deci.Plot.Behv)
+if Deci.Run.Behavior 
     Plottor_Behv(Deci);
 end
 
