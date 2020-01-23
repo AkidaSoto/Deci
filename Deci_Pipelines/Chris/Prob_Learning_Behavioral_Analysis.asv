@@ -239,11 +239,6 @@ if display_group_stats == 1
         end
     end
     
-    disp(['Group 1 count = ' num2str(group1_count)])
-    disp(['Group 2 count = ' num2str(group2_count)])
-    disp(['Group 3 count = ' num2str(group3_count)])
-    
-    disp([num2str(AB_count) ' subjects achieved threshold performance in AB stim condition.'])
-    disp([num2str(CD_count) ' subjects achieved threshold performance in CD stim condition.'])
-    disp([num2str(EF_count) ' subjects achieved threshold performance in EF stim condition.'])
+    display(['Group 1 count = ' num2str(group1_count)])
+    display
 end
