@@ -20,7 +20,7 @@ clc;
 
 plot_figs = false;
 save_figs = false;
-save_sbjPerformance_data = true;
+save_sbjPerformance_data = false;
 display_group_stats = true;
 
 pt = 'C:\Users\CTGill\Documents\Probablistic_Learning\ProcessedData\Definition';
@@ -39,7 +39,7 @@ for sbj = 1 :size(Subject_List,1)
     cond_info(:,7) = cfg.event(:,15);
     
     %determine response time 
-    rt=(cfg.trl(:,4)-cfg.trl(:,5))/1000;
+    rt = (cfg.trl(:,4)-cfg.trl(:,5))/1000;
     
     %define block ends
     Blk_ends = [60,120,180,240,300,360];
@@ -170,7 +170,6 @@ for sbj = 1 :size(Subject_List,1)
 %% Plotting
    
     if plot_figs == 1
-        
         X=[Sbj_Behv_data.Blk_performance{1,1}.AB_percent_corr,Sbj_Behv_data.Blk_performance{1,1}.CD_percent_corr,Sbj_Behv_data.Blk_performance{1,1}.EF_percent_corr;...
             Sbj_Behv_data.Blk_performance{1,2}.AB_percent_corr,Sbj_Behv_data.Blk_performance{1,2}.CD_percent_corr,Sbj_Behv_data.Blk_performance{1,2}.EF_percent_corr;...
             Sbj_Behv_data.Blk_performance{1,3}.AB_percent_corr,Sbj_Behv_data.Blk_performance{1,3}.CD_percent_corr,Sbj_Behv_data.Blk_performance{1,3}.EF_percent_corr;...
