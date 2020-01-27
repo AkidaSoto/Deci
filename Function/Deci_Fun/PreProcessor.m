@@ -194,13 +194,13 @@ evalc('data_bp = ft_preprocessing(cfg,data)');
 
 cfg = [];
 cfg.method  = 'runica';
-cfg.numcomponent= 20;
+cfg.numcomponent= Deci.ICA.CompNum;
 cfg.feedback = feedback;
 cfg.demean     = 'no';
 data_musc = ft_componentanalysis(cfg, data_bp);
 
 cfg           = [];
-cfg.numcomponent= 20;
+cfg.numcomponent= Deci.ICA.CompNum;
 cfg.unmixing  =data_musc.unmixing;
 cfg.topolabel = data_musc.topolabel;
 
