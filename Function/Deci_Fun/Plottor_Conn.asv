@@ -36,6 +36,7 @@ for ConnList = 1:length(Params.List)
                 lockers(subject_list,Conditions,:) = [];
             end
             
+            
             conn.dimord = 'chan_freq_time';
             conn.freq = conn.freqlow;
             conn.label = conn.chanlow;

@@ -43,7 +43,7 @@ for subject_list = 1:length(Deci.SubjectList)
         data_ica     = rmfield(data_ica,'cfg');
         
         figure;
-        cfg.component = [1:20];
+        cfg.component = [1:length(data_ica.label)];
         cfg.viewmode = 'component';
         
         clear cfg.method
@@ -70,7 +70,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         if ~Deci.ICA.Automatic
             disp('Manual ICA Rejection')
-            cfg.component = [1:20];
+            cfg.component = [1:length(data_ica.label)];
             cfg.viewmode = 'component';
             cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
             
@@ -79,7 +79,7 @@ for subject_list = 1:length(Deci.SubjectList)
             cfg.channelcolormap(2,:) = [0 0 1];
             cfg.channelcolormap(1,:) = [1 0 1];
             
-            cfg.colorgroups = ones(20,1)+3;
+            cfg.colorgroups = ones(length(data_ica.label),1)+3;
             cfg.colorgroups(unique([component{:}]),1) = cfg.colorgroups(unique([component{:}]),1) - 1;
             cfg.colorgroups(possiblecorrupt,1) = cfg.colorgroups(possiblecorrupt,1) - 2;
             
