@@ -39,8 +39,8 @@ Fois = [Fois(1) Fois(end)];
 
 Chois = unique([Chois{:}]);
 
-if length(Deci.Plot.Freq.Topo.Channel) == 1
-    Deci.Plot.Freq.Topo.do = 0;
+if length(Deci.Plot.Topo.Channel) == 1
+    Deci.Plot.Topo.do = 0;
 end
 
 %% Load
@@ -156,7 +156,7 @@ for Conditions = 1:size(Subjects,2)
             Bsl{subject_list,Conditions}.powspctrm = repmat(Bsl{subject_list,Conditions}.powspctrm,[1 1 size(Subjects{subject_list,Conditions}.powspctrm ,3)]);
         end
         
-        switch Deci.Plot.Freq.BslType
+        switch Deci.Plot.BslType
             case 'none'
             case 'absolute'
                 Subjects{subject_list,Conditions}.powspctrm =  Subjects{subject_list,Conditions}.powspctrm - Bsl{subject_list,Conditions}.powspctrm;
@@ -224,13 +224,13 @@ for conds = 1:size(Subjects,2)
     
     for subj = 1:size(FreqData(:,conds),1)
         
-        if Deci.Plot.Freq.Topo.do
+        if Deci.Plot.Topo.do
             tcfg = [];
             tcfg.nanmean = Deci.Plot.nanmean;
             
-            tcfg.latency = Deci.Plot.Freq.Topo.Toi;
-            tcfg.frequency = Deci.Plot.Freq.Topo.Foi;
-            tcfg.channel = Deci.Plot.Freq.Topo.Channel;
+            tcfg.latency = Deci.Plot.Topo.Toi;
+            tcfg.frequency = Deci.Plot.Topo.Foi;
+            tcfg.channel = Deci.Plot.Topo.Channel;
             
             topodata{subj,conds} = ft_selectdata(tcfg,FreqData{subj,conds});
             
@@ -244,13 +244,13 @@ for conds = 1:size(Subjects,2)
             end
         end
         
-        if Deci.Plot.Freq.Square.do
+        if Deci.Plot.Square.do
             tcfg = [];
             tcfg.nanmean = Deci.Plot.nanmean;
             
-            tcfg.latency = Deci.Plot.Freq.Square.Toi;
-            tcfg.frequency = Deci.Plot.Freq.Square.Foi;
-            tcfg.channel = Deci.Plot.Freq.Square.Channel;
+            tcfg.latency = Deci.Plot.Square.Toi;
+            tcfg.frequency = Deci.Plot.Square.Foi;
+            tcfg.channel = Deci.Plot.Square.Channel;
             
             squaredata{subj,conds} = ft_selectdata(tcfg,FreqData{subj,conds});
             
@@ -263,13 +263,13 @@ for conds = 1:size(Subjects,2)
             end
         end
         
-        if Deci.Plot.Freq.Wire.do
+        if Deci.Plot.Wire.do
             tcfg = [];
             tcfg.nanmean = Deci.Plot.nanmean;
             
-            tcfg.latency = Deci.Plot.Freq.Wire.Toi;
-            tcfg.frequency = Deci.Plot.Freq.Wire.Foi;
-            tcfg.channel = Deci.Plot.Freq.Wire.Channel;
+            tcfg.latency = Deci.Plot.Wire.Toi;
+            tcfg.frequency = Deci.Plot.Wire.Foi;
+            tcfg.channel = Deci.Plot.Wire.Channel;
             
             wiredata{subj,conds} = ft_selectdata(tcfg,FreqData{subj,conds});
             
@@ -282,13 +282,13 @@ for conds = 1:size(Subjects,2)
             end
         end
         
-        if Deci.Plot.Freq.Bar.do
+        if Deci.Plot.Bar.do
             tcfg = [];
             tcfg.nanmean = Deci.Plot.nanmean;
             
-            tcfg.latency = Deci.Plot.Freq.Bar.Toi;
-            tcfg.frequency = Deci.Plot.Freq.Bar.Foi;
-            tcfg.channel = Deci.Plot.Freq.Bar.Channel;
+            tcfg.latency = Deci.Plot.Bar.Toi;
+            tcfg.frequency = Deci.Plot.Bar.Foi;
+            tcfg.channel = Deci.Plot.Bar.Channel;
             
             bardata{subj,conds} = ft_selectdata(tcfg,FreqData{subj,conds});
             
@@ -342,36 +342,36 @@ if Deci.Plot.Stat.do
                         Deci.Plot.Stat.clustertail      = 0;
                     end
                     
-                    if Deci.Plot.Freq.Topo.do
+                    if Deci.Plot.Topo.do
                         [topostat{conds}] = ft_freqstatistics(Deci.Plot.Stat, topotdata{Deci.Plot.Draw{conds}});
                     end
                     
-                    if Deci.Plot.Freq.Square.do
+                    if Deci.Plot.Square.do
                         [squarestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, squaretdata{:,Deci.Plot.Draw{conds}});
                     end
                     
-                    if Deci.Plot.Freq.Wire.do
+                    if Deci.Plot.Wire.do
                         [wirestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, wiretdata{:,Deci.Plot.Draw{conds}});
                     end
                     
-                    if Deci.Plot.Freq.Bar.do
+                    if Deci.Plot.Bar.do
                         [barstat{conds}] = ft_freqstatistics(Deci.Plot.Stat, bartdata{Deci.Plot.Draw{conds}});
                     end
                 else
                     
-                    if Deci.Plot.Freq.Topo.do
+                    if Deci.Plot.Topo.do
                         topostat{conds}.mask = permute(ones(size(topotdata{Deci.Plot.Draw{conds}}.powspctrm(1,:,:,:))),[2 3 4 1]);
                     end
                     
-                    if Deci.Plot.Freq.Square.do
+                    if Deci.Plot.Square.do
                         [squarestat{conds}.mask] = permute(ones(size(squaretdata{:,Deci.Plot.Draw{conds}}.powspctrm(1,:,:,:))),[2 3 4 1]);
                     end
                     
-                    if Deci.Plot.Freq.Wire.do
+                    if Deci.Plot.Wire.do
                         [wirestat{conds}.mask] = permute(ones(size(wiretdata{:,Deci.Plot.Draw{conds}}.powspctrm(1,:,:,:))),[2 3 4 1]);
                     end
                     
-                    if Deci.Plot.Freq.Bar.do
+                    if Deci.Plot.Bar.do
                         [barstat{conds}.mask] = permute(ones(size(bartdata{Deci.Plot.Draw{conds}}.powspctrm(1,:,:,:))),[2 3 4 1]);
                     end
                     
@@ -382,25 +382,25 @@ if Deci.Plot.Stat.do
                 
                 Deci.Plot.Stat.design = ones(size(Subjects,1));
 
-                if Deci.Plot.Freq.Topo.do
+                if Deci.Plot.Topo.do
                     alltopotdata = ft_freqgrandaverage([],topotdata{Deci.Plot.Draw{conds}});
                     alltopotdata.dimord = 'rpt_chan_freq_time';
                     [topostat{conds}] = ft_freqstatistics(Deci.Plot.Stat, alltopotdata);
                 end
                 
-                if Deci.Plot.Freq.Square.do
+                if Deci.Plot.Square.do
                     allsquaretdata = ft_freqgrandaverage([],squaretdata{Deci.Plot.Draw{conds}});
                     allsquaretdata.dimord = 'rpt_chan_freq_time';
                     [squarestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, allsquaretdata);
                 end
                 
-                if Deci.Plot.Freq.Wire.do
+                if Deci.Plot.Wire.do
                     allwiretdata = ft_freqgrandaverage([],wiretdata{Deci.Plot.Draw{conds}});
                     allwiretdata.dimord = 'rpt_chan_freq_time';
                     [wirestat{conds}] = ft_freqstatistics(Deci.Plot.Stat, allwiretdata);
                 end
                 
-                if Deci.Plot.Freq.Bar.do
+                if Deci.Plot.Bar.do
                     allbartdata = ft_freqgrandaverage([],bartdata{Deci.Plot.Draw{conds}});
                     allbartdata.dimord = 'rpt_chan_freq_time';
                     [barstat{conds}] = ft_freqstatistics(Deci.Plot.Stat, allbartdata);
@@ -420,7 +420,7 @@ end
 for cond = 1:length(Deci.Plot.Draw)
     if Deci.Plot.Stat.do
         
-        if Deci.Plot.Freq.Square.do
+        if Deci.Plot.Square.do
             tacfg = cfg;
             tacfg.parameter = 'stat';
             squarestat{cond}.mask = double(squarestat{cond}.mask);
@@ -441,7 +441,7 @@ for cond = 1:length(Deci.Plot.Draw)
             end
         end
         
-        if Deci.Plot.Freq.Topo.do
+        if Deci.Plot.Topo.do
             tacfg = cfg;
             tacfg.parameter = 'stat';
             topostat{cond}.mask = double(topostat{cond}.mask);
@@ -460,7 +460,7 @@ for cond = 1:length(Deci.Plot.Draw)
             end
         end
         
-        if Deci.Plot.Freq.Wire.do
+        if Deci.Plot.Wire.do
             tcfg = cfg;
             tcfg.parameter = 'stat';
             wirestat{cond}.mask = double(wirestat{cond}.mask);
@@ -472,7 +472,7 @@ for cond = 1:length(Deci.Plot.Draw)
             end
         end
         
-        if Deci.Plot.Freq.Bar.do
+        if Deci.Plot.Bar.do
             tcfg = cfg;
             tcfg.parameter = 'stat';
               barstat{cond}.mask= double(barstat{cond}.mask);
@@ -491,7 +491,7 @@ for cond = 1:length(Deci.Plot.Draw)
     clear cirky subby
     for subj = 1:size(FreqData,1)
             
-        if Deci.Plot.Freq.Square.do
+        if Deci.Plot.Square.do
             square(subj) = figure;
             
             if Deci.Plot.Stat.do
@@ -499,7 +499,7 @@ for cond = 1:length(Deci.Plot.Draw)
             end
         end
         
-        if Deci.Plot.Freq.Topo.do
+        if Deci.Plot.Topo.do
             topo(subj)  = figure;
             
             if Deci.Plot.Stat.do
@@ -507,12 +507,12 @@ for cond = 1:length(Deci.Plot.Draw)
             end
         end
         
-        if Deci.Plot.Freq.Wire.do
+        if Deci.Plot.Wire.do
             wire(subj)  = figure;
         end
 
         for subcond = 1:length(Deci.Plot.Draw{cond})
-            if Deci.Plot.Freq.Topo.do
+            if Deci.Plot.Topo.do
                 set(0, 'CurrentFigure', topo(subj))
                 topo(subj).Visible = 'on';
                 cirky(subj,subcond)    =  subplot(length(Deci.Plot.Draw{cond}),1,subcond);
@@ -544,7 +544,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 
             end
             
-            if Deci.Plot.Freq.Square.do
+            if Deci.Plot.Square.do
                 set(0, 'CurrentFigure', square(subj) )
                 square(subj).Visible = 'on';
                 subby(subj,subcond) = subplot(length(Deci.Plot.Draw{cond}),1,subcond );
@@ -622,7 +622,7 @@ for cond = 1:length(Deci.Plot.Draw)
                
             end
             
-            if Deci.Plot.Freq.Wire.do
+            if Deci.Plot.Wire.do
                 set(0, 'CurrentFigure', wire(subj) )
                 wire(subj).Visible = 'on';
                 
@@ -646,7 +646,7 @@ for cond = 1:length(Deci.Plot.Draw)
             
         end
         
-        if Deci.Plot.Freq.Wire.do
+        if Deci.Plot.Wire.do
             set(0, 'CurrentFigure', wire(subj) )
             wire(subj).Visible = 'on';
             
@@ -686,9 +686,10 @@ for cond = 1:length(Deci.Plot.Draw)
             if max(Deci.Plot.Draw{cond}) <= size(trllen,2)
                 legend(arrayfun(@(a,b) [ Deci.Plot.Freq.Type ' ' a{1} ' (' num2str(b) ')'] ,Deci.Plot.Subtitle{cond},trllen(subj,Deci.Plot.Draw{cond}),'UniformOutput',false));
             else
-                legend([Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
+                legend([Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}]);
             end
             
+             title([SubjectList{subj} ' ' Deci.Plot.Title{cond}], 'Interpreter', 'none');
             set(legend, 'Interpreter', 'none')
             xlim([wiredata{cond}.time(1) wiredata{cond}.time(end)])
             xlabel('Time');
@@ -742,7 +743,7 @@ for cond = 1:length(Deci.Plot.Draw)
             
         end
         
-        if Deci.Plot.Freq.Bar.do
+        if Deci.Plot.Bar.do
             barfig(subj)  = figure;
             set(0, 'CurrentFigure', barfig(subj) )
             barfig(subj).Visible = 'on';
@@ -752,7 +753,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 /sqrt(size(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.powspctrm,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1)));
             
             l = legend(Deci.Plot.Subtitle{cond});
-            title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' Wire'])
+            title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond}])
             set(l, 'Interpreter', 'none')
             if Deci.Plot.Stat.do
                 hold on
@@ -767,9 +768,9 @@ for cond = 1:length(Deci.Plot.Draw)
     end
     
     for subj = 1:size(FreqData,1)
-        if length(Deci.Plot.Freq.Topo.Channel) ~= 1
+        if length(Deci.Plot.Topo.Channel) ~= 1
             
-            if Deci.Plot.Freq.Topo.do
+            if Deci.Plot.Topo.do
                 set(0, 'CurrentFigure', topo(subj) )
                 suptitle(Deci.Plot.Title{cond});
                 for r = 1:length(cirky(:))
@@ -800,7 +801,7 @@ for cond = 1:length(Deci.Plot.Draw)
             end
         end
         
-        if Deci.Plot.Freq.Square.do
+        if Deci.Plot.Square.do
             set(0, 'CurrentFigure', square(subj))
             suptitle([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond}]);
             for r = 1:length(subby(:))

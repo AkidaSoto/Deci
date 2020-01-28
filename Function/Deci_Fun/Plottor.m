@@ -51,10 +51,6 @@ if Deci.Run.ERP
     Plottor_ERP(Deci);
 end
 
-if Deci.Run.CFC 
-    Plottor_CFC(Deci);
-end
-
 if Deci.Run.Behavior 
     Plottor_Behv(Deci);
 end
