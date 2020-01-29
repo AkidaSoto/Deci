@@ -9,6 +9,12 @@ else
     
     LF = 1;
     
+    Imp_cfg.reref = 'yes';
+    Imp_cfg.channel  = 'all';
+    Imp_cfg.refchannel = 'all';
+    evalc('data = ft_preprocessing(Imp_cfg,data)');
+    disp('---Implicit Rereference applied---');
+
 end
 
 

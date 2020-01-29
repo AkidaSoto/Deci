@@ -37,15 +37,15 @@ for dts = 1:length(dt)
         data = rmfield(data,'preart');
     end
     
-%     if ~isequaln(cfg.trl(:,4:end),data.locks)
-%        error('unequal locks beteen dt and art!') 
-%     end
+    if ~isequaln(cfg.trl(:,4:end),data.locks)
+       error('unequal locks beteen dt and art!') 
+    end
 
     data.locks = cfg.trl(:,4:end);
     data.events = cfg.event;
-    data.trlnum = cfg.trlnum;
+    data.trlnum = cfg.trialnum;
 
-    if ~folder(art_outpath)  
+    if ~isfolder(art_outpath)  
        mkdir(art_outpath) 
     end
     

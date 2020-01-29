@@ -106,13 +106,6 @@ if Deci.Analysis.HemifieldFlip.do
     display('HemifieldFlip Applied')
 end
 
-if Deci.Analysis.Preprocessing.do
-    
-    
-end
-
-
-
 if Deci.Analysis.Unique.do
     for funs = find(Deci.Analysis.Unique.list)
         if Deci.Analysis.Unique.list(funs)
@@ -179,7 +172,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     end
     %% Loop Through Locks
     
-    if Deci.Analysis.Freq.do || Deci.Analysis.Connectivity.do || Deci.Analysis.ERP.do || Deci.Analysis.Source.do
+    if Deci.Analysis.Freq.do || Deci.Analysis.Connectivity.do || Deci.Analysis.ERP.do || Deci.Analysis.Source.do || Deci.Analysis.Freq.Extra.do
         
         for Lock = 1:length(Deci.Analysis.Locks)
             display(' ')
@@ -216,7 +209,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             
             %% Do Freq Analyses
             
-            if Deci.Analysis.Freq.do || Deci.Analysis.Connectivity.do
+            if Deci.Analysis.Freq.do || Deci.Analysis.Connectivity.do || Deci.Analysis.Freq.Extra.do
                 
                 if ~strcmp(Deci.Analysis.Freq.method,'hilbert')
                     fcfg = Deci.Analysis.Freq;
@@ -356,7 +349,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             labels = datahigh.label;
                             
                             cfg.resamplefs = Deci.Analysis.Connectivity.Params{funs}{:}.DownSample;
-                            evalc('datahigh = ft_resampledata(cfg,datalow)');
+                            evalc('datahigh = ft_resampledata(cfg,datahigh)');
                             datahigh.fourierspctrm = permute(cell2mat(permute(datahigh.trial,[3 1 2])),[3 4 1 2]);
                             datahigh.freq = freqs;
                             datahigh.time = datahigh.time{1};

@@ -112,6 +112,7 @@ for ConnList = 1:length(Params.List)
                 evalc('MathData{subj} = ft_math(scfg,Subjects{subj,:})');
                 MathData{subj}.dimord = Subjects{subj,1}.dimord;
                 MathData{subj}.freq =  Subjects{subj,1}.freq;
+                MathData{subj}.label =  Subjects{subj,1}.label;
             end
             
             Subjects(:,size(Subjects,2)+1) = MathData;
