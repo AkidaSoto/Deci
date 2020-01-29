@@ -45,19 +45,18 @@ for j = 1:length(startstopseg)
     sample = {event(startstopseg(1,j):startstopseg(2,j)).sample};
     sample{ismember(value,50)} = sample{ismember(value,53)} - 1500;
     
-    if length(find(ismember([23 51],value))) == 2 || length(find(ismember([21 52],value))) == 2
+    if length(find(ismember([23 51],value))) == 3 || length(find(ismember([21 52],value))) == 3
         value = [value(1:find(ismember(value,[51 52]))) 300 value(find(ismember(value,[51 52]))+1:end)];
         sample = [sample(1:find(ismember(value,[51 52]))) sample(ismember(value,[51 52])) sample(find(ismember(value,[51 52]))+1:end)];
     end
     
-    if length(find(ismember([23 52],value))) == 2 
+    if length(find(ismember([23 52],value))) == 3 
         value = [value(1:find(ismember(value,[51 52]))) 400 value(find(ismember(value,[51 52]))+1:end)];
         sample = [sample(1:find(ismember(value,[51 52]))) sample(ismember(value,[51 52])) sample(find(ismember(value,[51 52]))+1:end)];
     end
     
-    if length(find(ismember([21 51],value))) == 2 
+    if length(find(ismember([23 31 52],value))) == 3 || length(find(ismember([23 32 52],value))) == 3
         value = [value(1:find(ismember(value,[51 52]))) 500 value(find(ismember(value,[51 52]))+1:end)];
-        sample = [sample(1:find(ismember(value,[51 52]))) sample(ismember(value,[51 52])) sample(find(ismember(value,[51 52]))+1:end)];
     end
     
     
