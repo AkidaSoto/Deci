@@ -429,7 +429,7 @@ for ConnList = 1:length(Params.List)
                     /sqrt(size(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.param,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1)));
                 
                 l = legend(Deci.Plot.Subtitle{cond});
-                title([SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} ' ' strjoin(Params.List{ConnList})]);
+                title([SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond} '' strjoin(Params.List{ConnList},' ']))
                 set(l, 'Interpreter', 'none')
                 if Deci.Plot.Stat.do
                     hold on
