@@ -11,9 +11,9 @@ function dc_updatetrials(dt_path,art_inpath,art_outpath)
 dt = CleanDir(dt_path);
 art = CleanDir(art_inpath);
 
-if ~all(ismember(dt,art))
-   error('unequal dt and art lengths') 
-end
+% if ~all(ismember(dt,art))
+%    error('unequal dt and art lengths') 
+% end
 
 for dts = 1:length(dt)
 
@@ -38,19 +38,20 @@ for dts = 1:length(dt)
     end
     
     if ~isequaln(cfg.trl(:,4:end),data.locks)
-       error('unequal locks beteen dt and art!') 
+       %error('unequal locks beteen dt and art!') 
+       dts
     end
 
-    data.locks = cfg.trl(:,4:end);
-    data.events = cfg.event;
-    data.trlnum = cfg.trialnum;
-
-    if ~isfolder(art_outpath)  
-       mkdir(art_outpath) 
-    end
-    
-    save([art_outpath filesep art{dts}],'data');
-    data = rmfield(data,'trial');
-    save([art_outpath filesep art{dts} '_info'],'data');
+%     data.locks = cfg.trl(:,4:end);
+%     data.events = cfg.event;
+%     data.trlnum = cfg.trialnum;
+% 
+%     if ~isfolder(art_outpath)  
+%        mkdir(art_outpath) 
+%     end
+%     
+%     save([art_outpath filesep art{dts}],'data');
+%     data = rmfield(data,'trial');
+%     save([art_outpath filesep art{dts} '_info'],'data');
     
 end
