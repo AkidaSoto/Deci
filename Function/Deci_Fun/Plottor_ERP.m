@@ -111,14 +111,14 @@ if Deci.Plot.Hemiflip.do
             hcfg.parameter = 'avg';
             hcfg.operation = 'x2 - x1';
             
-            ContraCfg.channels = dc_getchans('odd');
+            ContraCfg.channel = dc_getchans('even');
             ContraData = ft_selectdata(ContraCfg,Subjects{subj,:});
             ContraData = hemifieldflip(ContraData);
             
-            IpsiCfg.channels = dc_getchans('even');
+            IpsiCfg.channel = dc_getchans('odd');
             IpsiData = ft_selectdata(IpsiCfg,Subjects{subj,:});
             
-            Subjects{subj,conds} = ft_math(scfg,IpsiData,ContraData);
+            Subjects{subj,conds} = ft_math(hcfg,IpsiData,ContraData);
             
         end
     end
