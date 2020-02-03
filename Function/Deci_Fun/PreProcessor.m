@@ -184,7 +184,11 @@ else
 end
 
 %% ICA
+
 display(' ')
+
+if Deci.ICA.do
+
 disp(['---Starting ICA---']);
 display(' ')
 cfg = [];
@@ -203,6 +207,8 @@ cfg           = [];
 cfg.numcomponent= Deci.ICA.CompNum;
 cfg.unmixing  =data_musc.unmixing;
 cfg.topolabel = data_musc.topolabel;
+
+end
 
 data.locks = locks;
 data.events = events;

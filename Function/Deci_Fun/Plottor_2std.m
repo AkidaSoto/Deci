@@ -161,9 +161,11 @@ for fig = find(Deci.Plot.Extra.Std.Acc.Figure)
                 
                 
                 for blk = 1:size(Acc{fig},3)
-                plot([.75+blk-1 1.25+blk-1],[AccMean{fig}(:,draw,blk)+2*Accstd{fig}(:,draw,blk) AccMean{fig}(:,draw,blk)+2*Accstd{fig}(:,draw,blk)],'LineWidth',2,'Color',liner(draw,:),'HandleVisibility','off');
-                plot([.75+blk-1 1.25+blk-1],[AccMean{fig}(:,draw,blk)-2*Accstd{fig}(:,draw,blk) AccMean{fig}(:,draw,blk)-2*Accstd{fig}(:,draw,blk)],'LineWidth',2,'Color',liner(draw,:),'HandleVisibility','off');
+                plot([.75+blk-1 1.25+blk-1],[AccMean{fig}(:,draw,blk)+2.5*Accstd{fig}(:,draw,blk) AccMean{fig}(:,draw,blk)+2.5*Accstd{fig}(:,draw,blk)],'LineWidth',2,'Color',liner(draw,:),'HandleVisibility','off');
+                plot([.75+blk-1 1.25+blk-1],[AccMean{fig}(:,draw,blk)-2.5*Accstd{fig}(:,draw,blk) AccMean{fig}(:,draw,blk)-2.5*Accstd{fig}(:,draw,blk)],'LineWidth',2,'Color',liner(draw,:),'HandleVisibility','off');
                 end
+                
+                %Changed to 2.5STD
                 
                 xticks(1:size(Acc{fig},3))
                 title(['Std Scatter Total for ' Sub.Acc{1} ': ' Deci.Plot.Extra.Std.Acc.Title{fig} ' '],'Interpreter','none')
