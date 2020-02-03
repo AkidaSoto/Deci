@@ -39,9 +39,7 @@ switch conne
             end
         end
         
-        %conn.param(:,1,:) = nanmean(ispc,2);
-        conn.param = ispc;
-        
+        conn.param(:,1,:) = nanmean(ispc,2);
         clear ispc phase_angle_diffs phase_low phase_high
         
         conn.dimord = 'rpt_freq_time';
@@ -89,8 +87,7 @@ switch conne
         end
         
         %conn.param(:,1,1,:) = permute(nanmean(nanmean(plv,2),3),[1 4 2 3]);
-        conn.param = plv;
-         
+        
         clear plv phase_low phase_high phase_angle_diffs
         
         conn.dimord = 'rpt_freqlow_freqhigh_time';
@@ -132,7 +129,6 @@ switch conne
         end
         
         %conn.param(:,1,1,:) = permute(nanmean(nanmean(mvl,2),3),[1 4 2 3]);
-        conn.param = mvl;
         clear mvl phaselow amphigh
         
         conn.dimord = 'rpt_freqlow_freqhigh_time';
@@ -184,18 +180,15 @@ switch conne
                 end
             end
         end
-        %conn.param(1,1,:) = permute(nanmean(nanmean(pac,1),2),[3 2 1]);
-        conn.param = pac;
+        conn.param(1,1,:) = permute(nanmean(nanmean(pac,1),2),[3 2 1]);
         clear pac phaselow amphigh
         
         conn.dimord = 'freqlow_freqhigh_time';
         conn.chanlow = datalow.label;
         conn.chanhigh = datahigh.label;
         conn.time = datalow.time(toi);
-        %conn.freqlow = mean(datalow.freq,2);
-        %conn.freqhigh = mean(datahigh.freq,2);
-        conn.freq = datalow.freq;
-        conn.freq = datahigh.freq;
+        conn.freqlow = mean(datalow.freq,2);
+        conn.freqhigh = mean(datahigh.freq,2);
         
         conn.lockers = info.lockers;
         conn.trllen = info.trllen;
@@ -224,18 +217,15 @@ switch conne
             end
         end
         
-        %conn.param(1,1,:) = permute(nanmean(nanmean(cs_cl,1),2),[3 1 2]);
-        conn.param = cs_cl;
+        conn.param(1,1,:) = permute(nanmean(nanmean(cs_cl,1),2),[3 1 2]);
         clear cs_cl phaselow amphigh
         
         conn.dimord = 'freqlow_freqhigh_time';
         conn.chanlow = datalow.label;
         conn.chanhigh = datahigh.label;
         conn.time = datalow.time(toi);
-        %conn.freqlow = mean(datalow.freq,2);
-        %conn.freqhigh = mean(datahigh.freq,2);
-        conn.freq = datalow.freq;
-        conn.freq = datahigh.freq;
+        conn.freqlow = mean(datalow.freq,2);
+        conn.freqhigh = mean(datahigh.freq,2);
         
         conn.lockers = info.lockers;
         conn.trllen = info.trllen;
@@ -269,18 +259,15 @@ switch conne
             end
         end
         
-        %conn.param(1,1,:) = permute(nanmean(nanmean(cs_cl,1),2),[3 1 2]);
-        conn.param = cs_cl;
+        conn.param(1,1,:) = permute(nanmean(nanmean(cs_cl,1),2),[3 1 2]);
         clear cs_cl phaselow amphigh
         
         conn.dimord = 'rpt_freqlow_freqhigh';
         conn.chanlow = datalow.label;
         conn.chanhigh = datahigh.label;
         conn.time = datalow.time(toi);
-        %conn.freqlow = mean(datalow.freq,2);
-        %conn.freqhigh = mean(datahigh.freq,2);
-        conn.freq = datalow.freq;
-        conn.freq = datahigh.freq;
+        conn.freqlow = mean(datalow.freq,2);
+        conn.freqhigh = mean(datahigh.freq,2);
         
         conn.lockers = info.lockers;
         conn.trllen = info.trllen;
