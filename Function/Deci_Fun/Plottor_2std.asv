@@ -245,20 +245,13 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
             
             dx = 0.1; dy = 0; % displacement so the text does not overlay the data points
             
-            
-            for cond = 1:size(Acc{fig},2)
-                for subj = 1:size(Acc{fig},1)
-                    for blk = 1:size(Acc{fig},3)
-                        
-                        if  AccMean{fig}(:,draw,blk)+2.5*Accstd{fig}(:,draw,blk) || AccMean{fig}(:,draw,blk)+2.5*Accstd{fig}(:,draw,blk)
-                            
-                            
-                            text(sort(repmat([1:size(Acc{fig},3)],[1 size(Acc{fig},1)]))+dx, reshape(Acc{fig}(:,draw,:),[size(Acc{fig},1)*size(Acc{fig},3) 1])+dy, repmat(Deci.SubjectList,[1 size(Acc{fig},3)]),'Interpreter','none');
-                        end
-                    end
-                end
+            for subj = 1:length(Deci.SubjectList)
+                
+                if  AccMean{fig}(:,draw,blk)+2.5*Accstd{fig}(:,draw,blk) || AccMean{fig}(:,draw,blk)+2.5*Accstd{fig}(:,draw,blk)
+                
+                
+            text(sort(repmat([1:size(Acc{fig},3)],[1 size(Acc{fig},1)]))+dx, reshape(Acc{fig}(:,draw,:),[size(Acc{fig},1)*size(Acc{fig},3) 1])+dy, repmat(Deci.SubjectList,[1 size(Acc{fig},3)]),'Interpreter','none');
             end
-            
             
             for blk = 1:size(Acc{fig},3)
                 plot([.75+blk-1 1.25+blk-1],[AccMean{fig}(:,draw,blk)+2.5*Accstd{fig}(:,draw,blk) AccMean{fig}(:,draw,blk)+2.5*Accstd{fig}(:,draw,blk)],'LineWidth',2,'Color',liner(draw,:),'HandleVisibility','off');
