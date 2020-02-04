@@ -551,7 +551,7 @@ if ~exist('dimord', 'var')
   % since there have been problems with trials not being selected correctly due to the warning going unnoticed
   % it is better to throw an error than a warning
   %warning('could not determine dimord of "%s" in the following data', field)
-  disp(data);
+  %disp(data);
   
   dimtok(cellfun(@isempty, dimtok)) = {'unknown'};
   if all(~cellfun(@isempty, dimtok))

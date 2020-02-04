@@ -18,7 +18,7 @@ for brains = 1:length(params.Brain)
         case 'Magnitude'
             brain = abs(freq.fourierspctrm);
         case 'Phase'
-            brain = phase(freq.fourierspctrm);
+            brain = angle(freq.fourierspctrm);
     end
     
     for behaviors = 1:length(params.Behavior)
@@ -38,41 +38,38 @@ for brains = 1:length(params.Brain)
             
             time_window_idx = round((1000/freq.freq(foi))*time_window(foi)/(1000*mean(diff(freq.time))));
             
-            for ti = 1:length(freq.time)
+            for ti = 1:length(toi)
                 %compute phase snychronization
-                b_time = mean(brain(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx),4);
+                b_time = squeeze(mean(brain(:,:,foi,toi(ti)-time_window_idx:toi(ti)+time_window_idx),4));
                 
                 switch params.Brain{brains}
                     case 'Magnitude'
                         
                         [r,p] = corrcoef(zscore(b_time),parameter);
-                        R(fois,tois) = r(1,2);
-                        P(chns,fois,tois) = p(1,2);
+                        R(1,foi,ti) = r(1,2);
+                        P(1,foi,ti) = p(1,2);
                         
                     case 'Phase'
-                        [R(chns,fois,tois),P(chns,fois,tois)] =  circ_corrcl(Subjects{subject_list,Conditions}.powspctrm(:,chns,fois,tois), parameter);
+                        [R(1,foi,ti),P(1,foi,ti)] =  circ_corrcl(b_time, parameter);
                         
                 end
-                
             end
         end
         
-        extracorr.label = Subjects{subject_list,Conditions}.label;
-        extracorr.freq = Subjects{subject_list,Conditions}.freq;
-        extracorr.time = Subjects{subject_list,Conditions}.time;
+        extracorr.label = freq.label;
+        extracorr.freq = freq.freq;
+        extracorr.time = freq.time;
         extracorr.dimord =  'chan_freq_time';
         
         extracorr.powspctrm = R;
         R = extracorr;
-        
-        RSub{subject_list,Conditions,Var}= R;
-        
+
         extracorr.powspctrm = P;
         P = extracorr;
         
-        mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Freq{brains} '_' params.Behavior{behaviors}  filesep Deci.SubjectListinfo{subject_list}  filesep Deci.Analysis.LocksTitle{infoLock} filesep Deci.Analysis.CondTitle{Cond}])
-        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Freq{brains} '_' params.Behavior{behaviors}  filesep Deci.SubjectListinfo{subject_list}  filesep Deci.Analysis.LocksTitle{infoLock} filesep Deci.Analysis.CondTitle{Cond} filesep info.Channels{info.ChanNum}],'R','P');
-        
+        mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Brain{brains} '_' params.Behavior{behaviors}  filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}])
+        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Brain{brains} '_' params.Behavior{behaviors}  filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep info.Channels{info.ChanNum}],'R','P');
+        clear R P
         
     end
     
