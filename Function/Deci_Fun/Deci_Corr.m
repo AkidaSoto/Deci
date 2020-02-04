@@ -51,27 +51,29 @@ for brains = 1:length(params.Brain)
                         
                     case 'Phase'
                         [R(chns,fois,tois),P(chns,fois,tois)] =  circ_corrcl(Subjects{subject_list,Conditions}.powspctrm(:,chns,fois,tois), parameter);
-  
+                        
                 end
-                
-                extracorr.label = Subjects{subject_list,Conditions}.label;
-                extracorr.freq = Subjects{subject_list,Conditions}.freq;
-                extracorr.time = Subjects{subject_list,Conditions}.time;
-                extracorr.dimord =  'chan_freq_time';
-                
-                extracorr.powspctrm = R;
-                R = extracorr;
-                
-                RSub{subject_list,Conditions,Var}= R;
-                
-                extracorr.powspctrm = P;
-                P = extracorr;
-                
-                mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Freq{brains} '_' params.Behavior{behaviors}  filesep Deci.SubjectListinfo{subject_list}  filesep Deci.Analysis.LocksTitle{infoLock} filesep Deci.Analysis.CondTitle{Cond}])
-                save([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Freq{brains} '_' params.Behavior{behaviors}  filesep Deci.SubjectListinfo{subject_list}  filesep Deci.Analysis.LocksTitle{infoLock} filesep Deci.Analysis.CondTitle{Cond} filesep info.Channels{info.ChanNum}],'R','P');
                 
             end
         end
+        
+        extracorr.label = Subjects{subject_list,Conditions}.label;
+        extracorr.freq = Subjects{subject_list,Conditions}.freq;
+        extracorr.time = Subjects{subject_list,Conditions}.time;
+        extracorr.dimord =  'chan_freq_time';
+        
+        extracorr.powspctrm = R;
+        R = extracorr;
+        
+        RSub{subject_list,Conditions,Var}= R;
+        
+        extracorr.powspctrm = P;
+        P = extracorr;
+        
+        mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Freq{brains} '_' params.Behavior{behaviors}  filesep Deci.SubjectListinfo{subject_list}  filesep Deci.Analysis.LocksTitle{infoLock} filesep Deci.Analysis.CondTitle{Cond}])
+        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Freq{brains} '_' params.Behavior{behaviors}  filesep Deci.SubjectListinfo{subject_list}  filesep Deci.Analysis.LocksTitle{infoLock} filesep Deci.Analysis.CondTitle{Cond} filesep info.Channels{info.ChanNum}],'R','P');
+        
+        
     end
     
 end
