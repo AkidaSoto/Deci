@@ -103,7 +103,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(StatData{cond}.mask,[length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
             end
             
-            pcfg.imagetype = 'contourf';
+            pcfg.imagetype = Deci.Plot.ImageType;
             pcfg.colormap = Deci.Plot.ColorMap;
             evalc('ft_singleplotTFR(pcfg,Segdata{subj,Deci.Plot.Draw{cond}(subcond)})');
             axis tight
