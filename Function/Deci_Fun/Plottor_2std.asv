@@ -297,9 +297,9 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
             for subj = 1:size(RT{fig},1)
                 for blk = 1:size(RT{fig},3)
                     
-                    if RT{fig}(subj,draw,blk) >= RTMean{fig}(:,draw,blk)+2.5*RTstd{fig}(:,draw,blk) || RT{fig}(subj,draw,blk) <= RTMean{fig}(:,draw,blk)-2.5*RTstd{fig}(:,draw,blk)
-                         text(blk+dx, RT{fig}(subj,draw,blk)+dy, Deci.SubjectList(subj),'Interpreter','none','FontSize',9);
-                     end
+                    if RT{fig}(subj,draw,blk) >= RTMean{fig}(:,draw,blk)+2.5*RTstd{fig}(:,draw,blk) || RT{fig}(subj,draw,blk) <= RTMean{fig}(:,draw,blk)+2.5*RTstd{fig}(:,draw,blk)
+                        text(sort(repmat([1:size(RT{fig},3)],[1 size(RT{fig},1)]))+dx, reshape(RT{fig}(:,draw,:),[size(RT{fig},1)*size(RT{fig},3) 1])+dy, repmat(Deci.SubjectList,[1 size(RT{fig},3)]),'Interpreter','none');
+                    end
                 end
             end
             

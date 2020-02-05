@@ -25,5 +25,12 @@ elseif strcmp(Deci.SubjectList,'gui')
     close(fakeUI);
 end
 disp(['Running Deci for ' num2str(length(Deci.SubjectList)) ' subjects'])
-display(' ')
+display(' ');
+
+Pronouns = {'He','She','They'};
+
+Deci = Exist(Deci,'Person',[]);
+
+Deci.Person = Exist(Deci.Person,'Type','Concise'); % Concise
+Deci.Person.Pro = [Pronouns(randi(3))];
 end

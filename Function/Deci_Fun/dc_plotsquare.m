@@ -103,7 +103,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(StatData{cond}.mask,[length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
             end
             
-            pcfg.imagetype = 'contourf';
+            pcfg.imagetype = Deci.Plot.ImageType;
             pcfg.colormap = Deci.Plot.ColorMap;
             evalc('ft_singleplotTFR(pcfg,Segdata{subj,Deci.Plot.Draw{cond}(subcond)})');
             axis tight
@@ -171,7 +171,7 @@ for cond = 1:length(Deci.Plot.Draw)
             if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
                 subby(r).CLim = Deci.Plot.Roi;
             elseif strcmp(Deci.Plot.Roi,'maxmin')
-                if ~ isempty(subby(r).Children.UserData)
+                if isempty(subby(r).Children.UserData)
                     subby(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),subby(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),subby(:)))];
                 else
                     subby(r).CLim = [min(arrayfun(@(c) min(c.Children.ZData(:)),subby(:))) max(arrayfun(@(c) max(c.Children.ZData(:)),subby(:)))];
@@ -180,7 +180,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 %subby(r).Children.LevelList = [linspace(subby(r).CLim(1),subby(r).CLim(2),12)];
                 
             elseif strcmp(Deci.Plot.Roi,'maxabs')
-                if ~ isempty(subby(r).Children.UserData)
+                if isempty(subby(r).Children.UserData)
                     subby(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby(:))) max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby(:)))];
                 else
                     subby(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby(:))) max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby(:)))];
