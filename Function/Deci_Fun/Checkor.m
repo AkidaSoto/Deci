@@ -32,5 +32,5 @@ Pronouns = {'He','She','They'};
 Deci = Exist(Deci,'Person',[]);
 
 Deci.Person = Exist(Deci.Person,'Type','Concise'); % Concise
-Deci.Person.Pro = [Pronouns(Randi(3))];
+Deci.Person.Pro = [Pronouns(randi(3))];
 end
