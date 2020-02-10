@@ -27,6 +27,15 @@ evalc('data_eeg = ft_redefinetrial(Trialcfg,data_eeg)');
 locks = data_eeg.trialinfo;
 events = TrlDefs.event;
 trlnum = TrlDefs.trialnum;
+
+if Deci.PP.demean 
+   dcfg.demean = 'yes';
+   dcfg.baselinewindow = 'all';
+   evalc('data_eeg = ft_preprocessing(dcfg,data_eeg)');
+end
+
+
+
 %%
 if ~isempty(Deci.PP.ScalingFactor)
     disp('Data Scaled');
