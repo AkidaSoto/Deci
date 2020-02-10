@@ -18,11 +18,11 @@ info.variable = 'R';
 [Subjects,info] =  dc_plotload(Deci,info);
 
 %% Baseline Correction
-% display(' ');
-% display(['Using Lock: ' Deci.Plot.Lock]); 
-% display(['Using Ref: ' Deci.Plot.BslRef ' at times ' strrep(regexprep(num2str(Deci.Plot.Bsl),' +',' '),' ','-')]);
-% 
-% Subjects = dc_plotbsl(Deci,Subjects,info);
+display(' ');
+display(['Using Lock: ' Deci.Plot.Lock]); 
+display(['Using Ref: ' Deci.Plot.BslRef ' at times ' strrep(regexprep(num2str(Deci.Plot.Bsl),' +',' '),' ','-')]);
+
+Subjects = dc_plotbsl(Deci,Subjects,info);
 
 %% Math
 if ~isempty(Deci.Plot.Math)
