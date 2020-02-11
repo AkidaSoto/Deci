@@ -180,7 +180,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 %subby(r).Children.LevelList = [linspace(subby(r).CLim(1),subby(r).CLim(2),12)];
                 
             elseif strcmp(Deci.Plot.Roi,'maxabs')
-                if isempty(subby(r).Children.UserData)
+                if ~isempty(subby(r).Children.UserData)
                     subby(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby(:))) max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby(:)))];
                 else
                     subby(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby(:))) max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby(:)))];

@@ -58,7 +58,7 @@ for brains = 1:length(params.Brain)
         
         extracorr.label = freq.label;
         extracorr.freq = freq.freq;
-        extracorr.time = freq.time;
+        extracorr.time = freq.time(toi);
         extracorr.dimord =  'chan_freq_time';
         
         extracorr.powspctrm = R;
