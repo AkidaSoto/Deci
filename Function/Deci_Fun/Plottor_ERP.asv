@@ -133,6 +133,9 @@ if Deci.Plot.Hemiflip.do
             Subjects = cat(2,IpsiData,ContraData);
             
             Deci.SubjectList = cat(2,cellfun(@(c) [c ' Ipsilateral'],Deci.SubjectList,'un',0),cellfun(@(c) [c ' Contralateral'],Deci.SubjectList,'un',0));
+        
+         Deci.Plot.Draw length(Deci.Plot.Draw) + length(Deci.Plot.Math)
+        
         end
 end
 %% Data Management
