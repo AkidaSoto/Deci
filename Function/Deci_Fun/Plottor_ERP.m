@@ -104,7 +104,7 @@ if Deci.Plot.Hemiflip.do
     display(' ')
     display(['Applying Hemifield Flipping'] )
 
-    Deci.Plot.Hemiflip = Exist(Deci.Plot.Hemiflip,'Type','Both');
+    Deci.Plot.Hemiflip = Exist(Deci.Plot.Hemiflip,'Type','Subtraction');
     
     if Deci.Plot.Topo.do
         error('cannot plot hemifield with topo')
@@ -133,6 +133,11 @@ if Deci.Plot.Hemiflip.do
             Subjects = cat(2,IpsiData,ContraData);
             
             Deci.SubjectList = cat(2,cellfun(@(c) [c ' Ipsilateral'],Deci.SubjectList,'un',0),cellfun(@(c) [c ' Contralateral'],Deci.SubjectList,'un',0));
+        
+         drawlength =  length(Deci.Plot.Draw) + length(Deci.Plot.Math);
+            
+         Deci.Plot.Draw =  cellfun(@(c) [c arrayfun(@(d) d+drawlength,c,'un',1)],Deci.Plot.Draw,'un',0);  
+        
         end
 end
 %% Data Management
