@@ -155,17 +155,13 @@ for subject_list = 1:length(Deci.SubjectList)
         
         
         if Deci.Art.ShowArt
+            
             Summary_artifacts = ~data_rej.saminfo;
             SAcfg.trials = Summary_artifacts;
             SAcfg.viewmode = 'vertical';
-            evalc('savedtrls = ft_databrowser(SAcfg,ft_selectdata(SAcfg,ft_redefinetrial(tcfg,data)))');
+            evalc('artf = ft_databrowser(SAcfg,ft_selectdata(SAcfg,ft_redefinetrial(tcfg,data)))')
             
-            evalc('datacomp_saved = ft_rejectartifact(savedtrls,ft_selectdata(SAcfg,ft_redefinetrial(tcfg,data)))');
             
-            savedtrls = find(Summary_artifacts);
-            savedtrls =  savedtrls(~datacomp_saved.saminfo);
-            Summary_artifacts(savedtrls) = 0;
-            data_rej.saminfo = ~Summary_artifacts;
         end
         
         
