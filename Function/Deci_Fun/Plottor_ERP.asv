@@ -136,7 +136,7 @@ if Deci.Plot.Hemiflip.do
         
          drawlength =  length(Deci.Plot.Draw) + length(Deci.Plot.Math);
             
-         Deci.Plot.Draw =  cellfun(@(c) [c arrayfun(@(d) d+drawlength,c,'un',1)],Deci.Plot.Draw,'un',0);  
+         Deci.Plot.Draw =  cellfun(@(c) [c cellfun(@(d) d+drawlength,c,'un',0)],Deci.Plot.Draw,'un',0);  
         
         end
 end
