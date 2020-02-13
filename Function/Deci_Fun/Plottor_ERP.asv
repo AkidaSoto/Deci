@@ -136,7 +136,8 @@ if Deci.Plot.Hemiflip.do
         
          drawlength =  length(Deci.Plot.Draw) + length(Deci.Plot.Math);
             
-         Deci.Plot.Draw =  cellfun(@(c) [c cellfun(@(d) d+drawlength,c,'un',0)],Deci.Plot.Draw,'un',0);  
+         Deci.Plot.Draw =  cellfun(@(c) [c arrayfun(@(d) d+drawlength,c,'un',1)],Deci.Plot.Draw,'un',0);  
+         Deci.Plot.Subtitle =  cellfun(@(c) [cellfun(@(d) [d ' Ipsilateral'],c,'un',0) cellfun(@(d) [d ' Contralateral'],c,'un',0)],Deci.Plot.Subtitle,'un',0);  
         
         end
 end
@@ -473,7 +474,7 @@ for cond = 1:length(Deci.Plot.Draw)
             if max(Deci.Plot.Draw{cond}) <= size(trllen,2)
                 legend(arrayfun(@(a,b) [a{1} ' (' num2str(b) ')'] ,Deci.Plot.Subtitle{cond},trllen(subj,Deci.Plot.Draw{cond}),'UniformOutput',false));
             else
-                legend([ Deci.Plot.Subtitle{cond}{subcond}]);
+                legend([ Deci.Plot.Subtitle{cond}]);
             end
             
             set(legend, 'Interpreter', 'none')
