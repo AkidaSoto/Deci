@@ -169,6 +169,7 @@ for conds = 1:size(Subjects,2)
         facfg.type = 'mean';
         facfg.keepindividual = 'yes';
         evalc('ErpData{1,conds} = ft_timelockgrandaverage(facfg,Subjects{:,conds});');
+        ErpData{1,conds}.avg = ErpData{1,conds}.individual;
         ErpData{1,conds} = rmfield(ErpData{1,conds},'cfg');
         
     else
@@ -342,12 +343,12 @@ for cond = 1:length(Deci.Plot.Draw)
             tcfg = cfg;
             tcfg.parameter = 'stat';
             wirestat{cond}.mask = double(wirestat{cond}.mask);
-            if Deci.Plot.Stat.FPlots
-                wiret(cond)  = figure;
-                wiret(cond).Visible = 'on';
-                plot(squeeze(wirestat{cond}.time),squeeze(wirestat{cond}.stat))
-                title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
-            end
+%             if Deci.Plot.Stat.FPlots
+%                 wiret(cond)  = figure;
+%                 wiret(cond).Visible = 'on';
+%                 plot(squeeze(wirestat{cond}.time),squeeze(wirestat{cond}.stat))
+%                 title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
+%             end
         end
         
         if Deci.Plot.Bar.do
@@ -356,12 +357,12 @@ for cond = 1:length(Deci.Plot.Draw)
               barstat{cond}.mask= double(barstat{cond}.mask);
               barstat{cond}.mask(barstat{cond}.mask == 0) = .2;
 
-            if Deci.Plot.Stat.FPlots
-                bart(cond)  = figure;
-                bart(cond).Visible = 'on';
-                bar(barstat{cond}.stat)
-                title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
-            end
+%             if Deci.Plot.Stat.FPlots
+%                 bart(cond)  = figure;
+%                 bart(cond).Visible = 'on';
+%                 bar(barstat{cond}.stat)
+%                 title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
+%             end
         end
         
     end 
@@ -417,8 +418,8 @@ for cond = 1:length(Deci.Plot.Draw)
                 set(0, 'CurrentFigure', wire(subj) )
                 wire(subj).Visible = 'on';
                 
-                top = squeeze(nanmean(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1),2),3)) + squeeze(nanstd(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,2),3),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1));
-                bot = squeeze(nanmean(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1),2),3)) - squeeze(nanstd(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,2),3),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1));
+                top = squeeze(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1),2)) + squeeze(nanstd(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,2),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1));
+                bot = squeeze(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1),2)) - squeeze(nanstd(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,2),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1));
                 
                 if Deci.Plot.GrandAverage
                     pgon = polyshape([wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time fliplr(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time)],[top' fliplr(bot')],'Simplify', false);

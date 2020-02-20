@@ -221,6 +221,12 @@ for subject_list = 1:length(Deci.SubjectList)
             %             end
         end
         
+        
+        if ~isempty(Deci.Art.More)
+            evalc('data = ft_preprocessing(Deci.Art.More,data)');
+            disp('Additional Preprocessing');
+        end
+        
         data.locks = locks;
         data.events = events;
         data.trlnum = trlnum;
@@ -228,7 +234,7 @@ for subject_list = 1:length(Deci.SubjectList)
         mkdir([Deci.Folder.Artifact])
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
         data = rmfield(data,'trial');
-        save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
+        %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
         
     else
         disp('Skipping Artifactor');
@@ -253,7 +259,7 @@ for subject_list = 1:length(Deci.SubjectList)
         data = rmfield(rmfield(data,'unmixing'),'topolabel');
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
         data = rmfield(data,'trial');
-        save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
+        %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
     end
     
     
