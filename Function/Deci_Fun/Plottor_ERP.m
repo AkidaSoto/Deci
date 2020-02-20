@@ -277,7 +277,7 @@ if Deci.Plot.Stat.do
                     end
                     
                     if Deci.Plot.Wire.do
-                        [wirestat{conds}.mask] = permute(ones(size(wiretdata{:,Deci.Plot.Draw{conds}}.avg(1,:,:,:))),[2 3 4 1]);
+                        [wirestat{conds}.mask] = permute(ones(size(wiretdata{:,Deci.Plot.Draw{conds}}.avg(1,:,:,:))),[2 3 4 1])*0;
                     end
                     
                     if Deci.Plot.Bar.do
