@@ -48,7 +48,8 @@ switch conne
         conn.chanlow = datalow.label;
         conn.chanhigh = datahigh.label;
         conn.time = datalow.time(toi);
-        conn.freqlow = mean(datalow.freq,2);
+        conn.freqlow = datalow.freq;
+        conn.freqhigh = datahigh.freq;
         
         if params.rmvtrls
             conn.dimord = 'freq_time';
@@ -99,8 +100,8 @@ switch conne
         conn.time = datalow.time(toi);
         %conn.freqlow = mean(datalow.freq,2);
         %conn.freqhigh = mean(datahigh.freq,2);
-        conn.freq = datalow.freq;
-        conn.freq = datahigh.freq;
+        conn.freqlow = datalow.freq;
+        conn.freqhigh = datahigh.freq;
         
         if params.rmvtrls
             conn.dimord = 'freqlow_freqhigh_time';
@@ -141,8 +142,8 @@ switch conne
         conn.time = datalow.time(toi);
         %conn.freqlow = mean(datalow.freq,2);
         %conn.freqhigh = mean(datahigh.freq,2);
-        conn.freq = datalow.freq;
-        conn.freq = datahigh.freq;
+        conn.freqlow = datalow.freq;
+        conn.freqhigh = datahigh.freq;
         
         if params.rmvtrls
             conn.dimord = 'freqlow_freqhigh_time';
@@ -194,8 +195,8 @@ switch conne
         conn.time = datalow.time(toi);
         %conn.freqlow = mean(datalow.freq,2);
         %conn.freqhigh = mean(datahigh.freq,2);
-        conn.freq = datalow.freq;
-        conn.freq = datahigh.freq;
+        conn.freqlow = datalow.freq;
+        conn.freqhigh = datahigh.freq;
         
         conn.lockers = info.lockers;
         conn.trllen = info.trllen;
@@ -234,8 +235,8 @@ switch conne
         conn.time = datalow.time(toi);
         %conn.freqlow = mean(datalow.freq,2);
         %conn.freqhigh = mean(datahigh.freq,2);
-        conn.freq = datalow.freq;
-        conn.freq = datahigh.freq;
+        conn.freqlow = datalow.freq;
+        conn.freqhigh = datahigh.freq;
         
         conn.lockers = info.lockers;
         conn.trllen = info.trllen;
@@ -279,8 +280,8 @@ switch conne
         conn.time = datalow.time(toi);
         %conn.freqlow = mean(datalow.freq,2);
         %conn.freqhigh = mean(datahigh.freq,2);
-        conn.freq = datalow.freq;
-        conn.freq = datahigh.freq;
+        conn.freqlow = datalow.freq;
+        conn.freqhigh = datahigh.freq;
         
         conn.lockers = info.lockers;
         conn.trllen = info.trllen;
