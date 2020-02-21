@@ -361,7 +361,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                                 HF = dc_findfreq(freqhigh(foih));
                                                 
                                                 %lcfg.latency = params.toi;
-                                                lcfg.frequency = LF;
+                                                lcfg.frequency = minmax(Fourier.freq(LF(1) <= Fourier.freq & LF(2) >= Fourier.freq));
                                                 lcfg.channel = chanl(choil);
                                                 evalc('datalow = ft_selectdata(lcfg,Fourier)');
                                                 freqs = datalow.freq;
@@ -376,7 +376,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                                 datalow.dimord = 'rpt_chan_freq_time';
                                                 
                                                 %hcfg.latency = params.toi;
-                                                hcfg.frequency = HF;
+                                                hcfg.frequency = minmax(Fourier.freq(HF(1) <= Fourier.freq & HF(2) >= Fourier.freq));
                                                 hcfg.channel = chanh(choih);
                                                 evalc('datahigh = ft_selectdata(hcfg,Fourier)');
                                                 freqs = datahigh.freq;
