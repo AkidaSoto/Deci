@@ -37,7 +37,8 @@ for  subject_list = 1:length(Deci.SubjectList)
         end
         
         if isfield(var,'lockers')
-            info.lockers(subject_list,Conditions,:) = var.lockers;
+            LockNum = Deci.Analysis.Locks(ismember(Deci.Analysis.LocksTitle,Deci.Plot.Lock));
+            info.lockers(subject_list,Conditions,:) = var.lockers - var.lockers(LockNum);
         else
             info.lockers(subject_list,Conditions,:) = nan;
         end

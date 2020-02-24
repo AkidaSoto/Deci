@@ -1,5 +1,4 @@
-
-function Plottor_Freq(Deci)
+function Deci_BBPlot(Deci,params)
 
 %% Deci Checks
 Dims = {'Topo' 'Square' 'Wire' 'Bar'};
@@ -10,11 +9,11 @@ info.isfreq = true;
 disp('----------------------');
 display(' ')
 
-display(['Plotting ' Deci.Plot.Freq.Type]);
+display(['Plotting Brain-Behavior Correlation']);
 
-info.extension = ['Freq_' Deci.Plot.Freq.Type];
+info.extension = ['Extra' filesep 'Corr' filesep params.Brain '_' params.Behavior];
 info.parameter = 'powspctrm';
-info.variable = 'freq';
+info.variable = 'R';
 
 [Subjects,info] =  dc_plotload(Deci,info);
 
@@ -63,4 +62,5 @@ end
 if Deci.Plot.Bar.do
     dc_plotbar(Deci,Subjects,info)
 end
+
 end

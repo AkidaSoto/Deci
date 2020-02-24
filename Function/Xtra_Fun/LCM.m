@@ -58,7 +58,7 @@ for j = 1:length(startstopseg)
     offsets = begsample - [sample{ismember(value,cfg.DT.Locks)}];
     
     trl(end + 1,1:4+length(cfg.DT.Locks)) = nan;
-    trl(end ,1:4) = [begsample endsample 0 j];
+    trl(end ,1:4) = [begsample endsample 0 size(trl,1)];
     
     trl(end,logical([0 0 0 0 ismember(cfg.DT.Locks,value)])) = offsets;
     

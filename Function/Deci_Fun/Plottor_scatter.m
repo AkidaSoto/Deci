@@ -1,5 +1,9 @@
 function Plottor_2std(Deci,params)
 
+
+params = Exist(params,'std',params.std);
+params = Exist(params,'type',@mean);
+
 for subject_list = 1:length(Deci.SubjectList)
     
     data = [];
@@ -197,7 +201,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
             Acc{fig} = nanmean(Acc{fig},3);
         end
         
-        AccMean{fig} = nanmean(Acc{fig},1);
+        AccMean{fig} = params.type(Acc{fig},1);
         Accstd{fig} =  nanstd(Acc{fig},[],1);
         
         Sub.Acc = {'SubjAvg'}
@@ -217,7 +221,7 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
         
         
         RTstd{fig} = nanstd(RT{fig},[],1);
-        RTMean{fig} =  nanmean(RT{fig},1);
+        RTMean{fig} =  params.type(RT{fig},1);
         Sub.RT = {'SubjAvg'};
         
         %save([Deci.Folder.Version filesep 'Plot' filesep 'SimRT'],'RT','fullRT');
@@ -249,7 +253,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
                 for subj = 1:size(Acc{fig},1)
                     for blk = 1:size(Acc{fig},3)
                         
-                        if Acc{fig}(subj,draw,blk) >= AccMean{fig}(:,draw,blk)+2.5*Accstd{fig}(:,draw,blk) || Acc{fig}(subj,draw,blk) <= AccMean{fig}(:,draw,blk)-2.5*Accstd{fig}(:,draw,blk)
+                        if Acc{fig}(subj,draw,blk) >= AccMean{fig}(:,draw,blk)+params.std*Accstd{fig}(:,draw,blk) || Acc{fig}(subj,draw,blk) <= AccMean{fig}(:,draw,blk)-params.std*Accstd{fig}(:,draw,blk)
                             text(blk+dx, Acc{fig}(subj,draw,blk)+dy, Deci.SubjectList(subj),'Interpreter','none','FontSize',9);
                         end
                     end
@@ -258,11 +262,11 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
             
             
             for blk = 1:size(Acc{fig},3)
-                plot([.75+blk-1 1.25+blk-1],[AccMean{fig}(:,draw,blk)+2.5*Accstd{fig}(:,draw,blk) AccMean{fig}(:,draw,blk)+2.5*Accstd{fig}(:,draw,blk)],'LineWidth',2,'Color',liner(draw,:),'HandleVisibility','off');
-                plot([.75+blk-1 1.25+blk-1],[AccMean{fig}(:,draw,blk)-2.5*Accstd{fig}(:,draw,blk) AccMean{fig}(:,draw,blk)-2.5*Accstd{fig}(:,draw,blk)],'LineWidth',2,'Color',liner(draw,:),'HandleVisibility','off');
+                plot([.75+blk-1 1.25+blk-1],[AccMean{fig}(:,draw,blk)+params.std*Accstd{fig}(:,draw,blk) AccMean{fig}(:,draw,blk)+params.std*Accstd{fig}(:,draw,blk)],'LineWidth',2,'Color',liner(draw,:),'HandleVisibility','off');
+                plot([.75+blk-1 1.25+blk-1],[AccMean{fig}(:,draw,blk)-params.std*Accstd{fig}(:,draw,blk) AccMean{fig}(:,draw,blk)-params.std*Accstd{fig}(:,draw,blk)],'LineWidth',2,'Color',liner(draw,:),'HandleVisibility','off');
             end
             
-            %Changed to 2.5STD
+            %Changed to params.stdSTD
             
             xticks(1:size(Acc{fig},3))
             title(['Std Scatter Total for ' Sub.Acc{1} ': ' Deci.Plot.Behv.Acc.Title{fig} ' '],'Interpreter','none')
@@ -297,18 +301,18 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
             for subj = 1:size(RT{fig},1)
                 for blk = 1:size(RT{fig},3)
                     
-                    if RT{fig}(subj,draw,blk) >= RTMean{fig}(:,draw,blk)+2.5*RTstd{fig}(:,draw,blk) || RT{fig}(subj,draw,blk) <= RTMean{fig}(:,draw,blk)-2.5*RTstd{fig}(:,draw,blk)
+                    if RT{fig}(subj,draw,blk) >= RTMean{fig}(:,draw,blk)+params.std*RTstd{fig}(:,draw,blk) || RT{fig}(subj,draw,blk) <= RTMean{fig}(:,draw,blk)-params.std*RTstd{fig}(:,draw,blk)
                          text(blk+dx, RT{fig}(subj,draw,blk)+dy, Deci.SubjectList(subj),'Interpreter','none','FontSize',9);
                      end
                 end
             end
             
             for blk = 1:size(RT{fig},3)
-                plot([.75+blk-1 1.25+blk-1],[RTMean{fig}(:,draw,blk)+2.5*RTstd{fig}(:,draw,blk) RTMean{fig}(:,draw,blk)+2.5*RTstd{fig}(:,draw,blk)],'LineWidth',2,'Color',liner(draw,:),'HandleVisibility','off');
-                plot([.75+blk-1 1.25+blk-1],[RTMean{fig}(:,draw,blk)-2.5*RTstd{fig}(:,draw,blk) RTMean{fig}(:,draw,blk)-2.5*RTstd{fig}(:,draw,blk)],'LineWidth',2,'Color',liner(draw,:),'HandleVisibility','off');
+                plot([.75+blk-1 1.25+blk-1],[RTMean{fig}(:,draw,blk)+params.std*RTstd{fig}(:,draw,blk) RTMean{fig}(:,draw,blk)+params.std*RTstd{fig}(:,draw,blk)],'LineWidth',2,'Color',liner(draw,:),'HandleVisibility','off');
+                plot([.75+blk-1 1.25+blk-1],[RTMean{fig}(:,draw,blk)-params.std*RTstd{fig}(:,draw,blk) RTMean{fig}(:,draw,blk)-params.std*RTstd{fig}(:,draw,blk)],'LineWidth',2,'Color',liner(draw,:),'HandleVisibility','off');
             end
             
-            %Changed to 2.5STD
+            %Changed to params.stdSTD
             
             xticks(1:size(RT{fig},3))
             title(['Std Scatter Total for ' Sub.RT{1} ': ' Deci.Plot.Behv.RT.Title{fig} ' '],'Interpreter','none')

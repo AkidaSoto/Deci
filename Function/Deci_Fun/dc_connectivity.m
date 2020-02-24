@@ -19,6 +19,10 @@ switch conne
         
         for foi = 1:size(datalow.fourierspctrm,3)
             
+            if ~isequal(datalow.freq,datahigh.freq)
+               dc_error(Deci,'datalow and datahigh must have same freq ranges for ispc'); 
+            end
+            
             phase_low = angle(datalow.fourierspctrm(:,:,foi,:));
             phase_high = angle(datahigh.fourierspctrm(:,:,foi,:));
             %display('ispc only uses freqlow')
@@ -35,14 +39,17 @@ switch conne
             end
         end
         
-        conn.param(:,1,:) = nanmean(ispc,2);
+        %conn.param(:,1,:) = nanmean(ispc,2);
+        conn.param = ispc;
+        
         clear ispc phase_angle_diffs phase_low phase_high
         
         conn.dimord = 'rpt_freq_time';
         conn.chanlow = datalow.label;
         conn.chanhigh = datahigh.label;
         conn.time = datalow.time(toi);
-        conn.freqlow = mean(datalow.freq,2);
+        conn.freqlow = datalow.freq;
+        conn.freqhigh = datahigh.freq;
         
         if params.rmvtrls
             conn.dimord = 'freq_time';
@@ -53,7 +60,7 @@ switch conne
         conn.trllen = info.trllen;
         
         mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}]);
-        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep strjoin(Current,'_')],'conn','-v7.3');
+        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep params.SaveDir],'conn','-v7.3');
         clear conn
         
         
@@ -82,15 +89,19 @@ switch conne
             end
         end
         
-        conn.param(:,1,1,:) = permute(nanmean(nanmean(plv,2),3),[1 4 2 3]);
+        %conn.param(:,1,1,:) = permute(nanmean(nanmean(plv,2),3),[1 4 2 3]);
+        conn.param = plv;
+         
         clear plv phase_low phase_high phase_angle_diffs
         
         conn.dimord = 'rpt_freqlow_freqhigh_time';
         conn.chanlow = datalow.label;
         conn.chanhigh = datahigh.label;
         conn.time = datalow.time(toi);
-        conn.freqlow = mean(datalow.freq,2);
-        conn.freqhigh = mean(datahigh.freq,2);
+        %conn.freqlow = mean(datalow.freq,2);
+        %conn.freqhigh = mean(datahigh.freq,2);
+        conn.freqlow = datalow.freq;
+        conn.freqhigh = datahigh.freq;
         
         if params.rmvtrls
             conn.dimord = 'freqlow_freqhigh_time';
@@ -100,7 +111,7 @@ switch conne
         conn.lockers = info.lockers;
         conn.trllen = info.trllen;
         mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}]);
-        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep strjoin(Current,'_')],'conn','-v7.3');
+        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep params.SaveDir],'conn','-v7.3');
         clear conn
         
     case 'mvl'
@@ -121,15 +132,18 @@ switch conne
             end
         end
         
-        conn.param(:,1,1,:) = permute(nanmean(nanmean(mvl,2),3),[1 4 2 3]);
+        %conn.param(:,1,1,:) = permute(nanmean(nanmean(mvl,2),3),[1 4 2 3]);
+        conn.param = mvl;
         clear mvl phaselow amphigh
         
         conn.dimord = 'rpt_freqlow_freqhigh_time';
         conn.chanlow = datalow.label;
         conn.chanhigh = datahigh.label;
         conn.time = datalow.time(toi);
-        conn.freqlow = mean(datalow.freq,2);
-        conn.freqhigh = mean(datahigh.freq,2);
+        %conn.freqlow = mean(datalow.freq,2);
+        %conn.freqhigh = mean(datahigh.freq,2);
+        conn.freqlow = datalow.freq;
+        conn.freqhigh = datahigh.freq;
         
         if params.rmvtrls
             conn.dimord = 'freqlow_freqhigh_time';
@@ -139,7 +153,7 @@ switch conne
         conn.lockers = info.lockers;
         conn.trllen = info.trllen;
         mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}]);
-        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep strjoin(Current,'_')],'conn','-v7.3');
+        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep params.SaveDir],'conn','-v7.3');
         clear conn
         
     case 'pac'
@@ -171,20 +185,23 @@ switch conne
                 end
             end
         end
-        conn.param(1,1,:) = permute(nanmean(nanmean(pac,1),2),[3 2 1]);
+        %conn.param(1,1,:) = permute(nanmean(nanmean(pac,1),2),[3 2 1]);
+        conn.param = pac;
         clear pac phaselow amphigh
         
         conn.dimord = 'freqlow_freqhigh_time';
         conn.chanlow = datalow.label;
         conn.chanhigh = datahigh.label;
         conn.time = datalow.time(toi);
-        conn.freqlow = mean(datalow.freq,2);
-        conn.freqhigh = mean(datahigh.freq,2);
+        %conn.freqlow = mean(datalow.freq,2);
+        %conn.freqhigh = mean(datahigh.freq,2);
+        conn.freqlow = datalow.freq;
+        conn.freqhigh = datahigh.freq;
         
         conn.lockers = info.lockers;
         conn.trllen = info.trllen;
         mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}]);
-        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep strjoin(Current,'_')],'conn','-v7.3');
+        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep params.SaveDir],'conn','-v7.3');
         clear conn
         
     case 'cs_cl'
@@ -208,20 +225,23 @@ switch conne
             end
         end
         
-        conn.param(1,1,:) = permute(nanmean(nanmean(cs_cl,1),2),[3 1 2]);
+        %conn.param(1,1,:) = permute(nanmean(nanmean(cs_cl,1),2),[3 1 2]);
+        conn.param = cs_cl;
         clear cs_cl phaselow amphigh
         
         conn.dimord = 'freqlow_freqhigh_time';
         conn.chanlow = datalow.label;
         conn.chanhigh = datahigh.label;
         conn.time = datalow.time(toi);
-        conn.freqlow = mean(datalow.freq,2);
-        conn.freqhigh = mean(datahigh.freq,2);
+        %conn.freqlow = mean(datalow.freq,2);
+        %conn.freqhigh = mean(datahigh.freq,2);
+        conn.freqlow = datalow.freq;
+        conn.freqhigh = datahigh.freq;
         
         conn.lockers = info.lockers;
         conn.trllen = info.trllen;
         mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}]);
-        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep strjoin(Current,'_')],'conn','-v7.3');
+        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep params.SaveDir],'conn','-v7.3');
         clear conn
     case 'cs_cc'
         
@@ -250,20 +270,23 @@ switch conne
             end
         end
         
-        conn.param(1,1,:) = permute(nanmean(nanmean(cs_cl,1),2),[3 1 2]);
+        %conn.param(1,1,:) = permute(nanmean(nanmean(cs_cl,1),2),[3 1 2]);
+        conn.param = cs_cl;
         clear cs_cl phaselow amphigh
         
         conn.dimord = 'rpt_freqlow_freqhigh';
         conn.chanlow = datalow.label;
         conn.chanhigh = datahigh.label;
         conn.time = datalow.time(toi);
-        conn.freqlow = mean(datalow.freq,2);
-        conn.freqhigh = mean(datahigh.freq,2);
+        %conn.freqlow = mean(datalow.freq,2);
+        %conn.freqhigh = mean(datahigh.freq,2);
+        conn.freqlow = datalow.freq;
+        conn.freqhigh = datahigh.freq;
         
         conn.lockers = info.lockers;
         conn.trllen = info.trllen;
         mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}]);
-        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep strjoin(Current,'_')],'conn','-v7.3');
+        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep params.SaveDir],'conn','-v7.3');
         clear conn
 end
 

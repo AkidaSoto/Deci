@@ -56,9 +56,13 @@ for brains = 1:length(params.Brain)
             end
         end
         
+%         if any(any(arrayfun(@(c) iscomplex(c),R)))
+%            k = 0; 
+%         end
+        
         extracorr.label = freq.label;
         extracorr.freq = freq.freq;
-        extracorr.time = freq.time;
+        extracorr.time = freq.time(toi);
         extracorr.dimord =  'chan_freq_time';
         
         extracorr.powspctrm = R;

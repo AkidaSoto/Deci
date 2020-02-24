@@ -95,11 +95,17 @@ if ~isempty(Deci.Plot.Math)
     end
 end
 
+if Deci.Plot.GrandAverage
+    Deci.SubjectList = {'Group Average'};
+end
+
 %% Hemifield
 if Deci.Plot.Hemiflip.do
     display(' ')
     display(['Applying Hemifield Flipping'] )
-
+    
+    Deci.Plot.Hemiflip = Exist(Deci.Plot.Hemiflip,'Type','Subtraction');
+    
     if Deci.Plot.Topo.do
         error('cannot plot hemifield with topo')
     end
@@ -112,17 +118,32 @@ if Deci.Plot.Hemiflip.do
             hcfg.operation = 'x2 - x1';
             
             ContraCfg.channel = dc_getchans('even');
-            ContraData = ft_selectdata(ContraCfg,Subjects{subj,:});
-            ContraData = hemifieldflip(ContraData);
+            ContraData{subj,conds} = ft_selectdata(ContraCfg,Subjects{subj,:});
+            ContraData{subj,conds} = hemifieldflip(ContraData{subj,conds});
             
             IpsiCfg.channel = dc_getchans('odd');
-            IpsiData = ft_selectdata(IpsiCfg,Subjects{subj,:});
+            IpsiData{subj,conds} = ft_selectdata(IpsiCfg,Subjects{subj,:});
             
-            Subjects{subj,conds} = ft_math(hcfg,IpsiData,ContraData);
-            
+            if strcmpi(Deci.Plot.Hemiflip.Type,'Subtraction')
+                Subjects{subj,conds} = ft_math(hcfg,IpsiData{subj,conds},ContraData{subj,conds});
+            end
         end
+        
     end
     
+    if strcmpi(Deci.Plot.Hemiflip.Type,'Both')
+        Subjects = cat(2,IpsiData,ContraData);
+        
+        %Deci.SubjectList = cat(2,cellfun(@(c) [c ' Ipsilateral'],Deci.SubjectList,'un',0),cellfun(@(c) [c ' Contralateral'],Deci.SubjectList,'un',0));
+        
+        drawlength =  length(Deci.Plot.Draw) + length(Deci.Plot.Math);
+        
+        Deci.Plot.Draw =  cellfun(@(c) [c arrayfun(@(d) d+drawlength,c,'un',1)],Deci.Plot.Draw,'un',0);
+        Deci.Plot.Subtitle =  cellfun(@(c) [cellfun(@(d) [d ' Ipsilateral'],c,'un',0) cellfun(@(d) [d ' Contralateral'],c,'un',0)],Deci.Plot.Subtitle,'un',0);
+        
+    else
+        Deci.Plot.Title = cellfun(@(c) [c ' Contra - Ipsilateral'],Deci.Plot.Title,'un',0);
+    end
 end
 %% Data Management
 if size(Subjects,1) == 1
@@ -148,6 +169,7 @@ for conds = 1:size(Subjects,2)
         facfg.type = 'mean';
         facfg.keepindividual = 'yes';
         evalc('ErpData{1,conds} = ft_timelockgrandaverage(facfg,Subjects{:,conds});');
+        ErpData{1,conds}.avg = ErpData{1,conds}.individual;
         ErpData{1,conds} = rmfield(ErpData{1,conds},'cfg');
         
     else
@@ -255,7 +277,7 @@ if Deci.Plot.Stat.do
                     end
                     
                     if Deci.Plot.Wire.do
-                        [wirestat{conds}.mask] = permute(ones(size(wiretdata{:,Deci.Plot.Draw{conds}}.avg(1,:,:,:))),[2 3 4 1]);
+                        [wirestat{conds}.mask] = permute(ones(size(wiretdata{:,Deci.Plot.Draw{conds}}.avg(1,:,:,:))),[2 3 4 1])*0;
                     end
                     
                     if Deci.Plot.Bar.do
@@ -295,10 +317,6 @@ end
 
 %% Plot
 
-if Deci.Plot.GrandAverage
-    Deci.SubjectList = {'Group Average'};
-end
-
 for cond = 1:length(Deci.Plot.Draw)
     if Deci.Plot.Stat.do
         
@@ -325,12 +343,12 @@ for cond = 1:length(Deci.Plot.Draw)
             tcfg = cfg;
             tcfg.parameter = 'stat';
             wirestat{cond}.mask = double(wirestat{cond}.mask);
-            if Deci.Plot.Stat.FPlots
-                wiret(cond)  = figure;
-                wiret(cond).Visible = 'on';
-                plot(squeeze(wirestat{cond}.time),squeeze(wirestat{cond}.stat))
-                title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
-            end
+%             if Deci.Plot.Stat.FPlots
+%                 wiret(cond)  = figure;
+%                 wiret(cond).Visible = 'on';
+%                 plot(squeeze(wirestat{cond}.time),squeeze(wirestat{cond}.stat))
+%                 title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
+%             end
         end
         
         if Deci.Plot.Bar.do
@@ -339,12 +357,12 @@ for cond = 1:length(Deci.Plot.Draw)
               barstat{cond}.mask= double(barstat{cond}.mask);
               barstat{cond}.mask(barstat{cond}.mask == 0) = .2;
 
-            if Deci.Plot.Stat.FPlots
-                bart(cond)  = figure;
-                bart(cond).Visible = 'on';
-                bar(barstat{cond}.stat)
-                title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
-            end
+%             if Deci.Plot.Stat.FPlots
+%                 bart(cond)  = figure;
+%                 bart(cond).Visible = 'on';
+%                 bar(barstat{cond}.stat)
+%                 title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
+%             end
         end
         
     end 
@@ -400,8 +418,8 @@ for cond = 1:length(Deci.Plot.Draw)
                 set(0, 'CurrentFigure', wire(subj) )
                 wire(subj).Visible = 'on';
                 
-                top = squeeze(nanmean(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1),2),3)) + squeeze(nanstd(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,2),3),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1));
-                bot = squeeze(nanmean(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1),2),3)) - squeeze(nanstd(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,2),3),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1));
+                top = squeeze(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1),2)) + squeeze(nanstd(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,2),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1));
+                bot = squeeze(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1),2)) - squeeze(nanstd(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,2),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1));
                 
                 if Deci.Plot.GrandAverage
                     pgon = polyshape([wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time fliplr(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time)],[top' fliplr(bot')],'Simplify', false);
@@ -461,9 +479,10 @@ for cond = 1:length(Deci.Plot.Draw)
             if max(Deci.Plot.Draw{cond}) <= size(trllen,2)
                 legend(arrayfun(@(a,b) [a{1} ' (' num2str(b) ')'] ,Deci.Plot.Subtitle{cond},trllen(subj,Deci.Plot.Draw{cond}),'UniformOutput',false));
             else
-                legend([ Deci.Plot.Subtitle{cond}{subcond}]);
+                legend([ Deci.Plot.Subtitle{cond}]);
             end
             
+            title([Deci.SubjectList{subj} ' ' Deci.Plot.Title{cond}], 'Interpreter', 'none');
             set(legend, 'Interpreter', 'none')
             xlim([wiredata{cond}.time(1) wiredata{cond}.time(end)])
             xlabel('Time');

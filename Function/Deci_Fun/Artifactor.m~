@@ -124,6 +124,7 @@ for subject_list = 1:length(Deci.SubjectList)
             
             evalc('datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,data))');
             
+            
             postart.locks = postart.locks(ismember(postart.trlnum,find(datacomp_rej.saminfo)),:);
             postart.events = postart.events(ismember(postart.trlnum,find(datacomp_rej.saminfo)),:);
             postart.trlnum = postart.trlnum(ismember(postart.trlnum,find(datacomp_rej.saminfo)));
@@ -151,6 +152,18 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.channel = 'all';
         
         evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data))');
+        
+        
+        if Deci.Art.ShowArt
+            
+            Summary_artifacts = ~data_rej.saminfo;
+            SAcfg.trials = Summary_artifacts;
+            SAcfg.viewmode = 'vertical';
+            evalc('artf = ft_databrowser(SAcfg,ft_selectdata(SAcfg,ft_redefinetrial(tcfg,data)))')
+            
+            
+        end
+        
         
         postart.locks = postart.locks(ismember(postart.trlnum,find(data_rej.saminfo)),:);
         postart.events = postart.events(ismember(postart.trlnum,find(data_rej.saminfo)),:);

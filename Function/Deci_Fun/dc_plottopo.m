@@ -117,7 +117,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(StatData{cond}.mask',[size(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.(info.parameter),1) 1 length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.freq) length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time)]);
             end
             
-            pcfg.imagetype = 'contourf';
+            pcfg.imagetype = Deci.Plot.ImageType;
             pcfg.comment = 'no';
             pcfg.style = 'fill';
             pcfg.markersymbol = '.';
