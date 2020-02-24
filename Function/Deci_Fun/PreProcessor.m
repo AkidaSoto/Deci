@@ -175,7 +175,7 @@ if Deci.PP.Manual_Trial_Rejection
     tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)]; 
     evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data))');
     
-    postart.locks = locks(logical(ismember(data.trlnum.trlnum,data_rej.saminfo)),:);
+    postart.locks = locks(logical(ismember(data.trlnum,data_rej.saminfo)),:);
     postart.events = events(logical(ismember(postart.trlnum,data_rej.saminfo)),:);
     postart.trlnum = trlnum(logical(ismember(postart.trlnum,data_rej.saminfo)),:);
     

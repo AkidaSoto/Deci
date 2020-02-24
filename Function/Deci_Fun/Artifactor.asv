@@ -125,9 +125,9 @@ for subject_list = 1:length(Deci.SubjectList)
             evalc('datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,data))');
             
             
-            postart.locks = postart.locks(ismember(postart.trlnum,data.trlnum(datacomp_rej.saminfo)),:);
-            postart.events = postart.events(ismember(postart.trlnum,data.trlnum(datacomp_rej.saminfo)),:);
-            postart.trlnum = postart.trlnum(ismember(postart.trlnum,data.trlnum(data.trlnum,datacomp_rej.saminfo)));
+            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)),:);
+            postart.events = postart.events(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)),:);
+            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(data.trlnum,datacomp_rej.saminfo)));
             %
             %             cfg = [];
             %             cfg.trials = postart.trlnum;
@@ -169,9 +169,9 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         
         
-        postart.locks = postart.locks(ismember(postart.trlnum,data.trlnum(data_rej.saminfo)),:);
-        postart.events = postart.events(ismember(postart.trlnum,data.trlnum(data_rej.saminfo)),:);
-        postart.trlnum = postart.trlnum(ismember(postart.trlnum,data.trlnum(data_rej.saminfo)));
+        postart.locks = postart.locks(ismember(postart.trlnum,trlnum(data_rej.saminfo)),:);
+        postart.events = postart.events(ismember(postart.trlnum,trlnum(data_rej.saminfo)),:);
+        postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(data_rej.saminfo)));
         
         display(' ')
         disp('---Trial Summary Rejection Applied---')
@@ -185,9 +185,9 @@ for subject_list = 1:length(Deci.SubjectList)
             RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] < Deci.Art.RT.minlength;
             RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
             
-            postart.locks = postart.locks(ismember(postart.trlnum,find(~RT_Art)),:);
-            postart.events = postart.events(ismember(postart.trlnum,find(~RT_Art)),:);
-            postart.trlnum = postart.trlnum(ismember(postart.trlnum,find(~RT_Art)));
+            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(~RT_Art)),:);
+            postart.events = postart.events(ismember(postart.trlnum,trlnum(~RT_Art)),:);
+            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(~RT_Art)));
             
             display(' ')
             disp('---Reaction Time Rejection Applied---')
