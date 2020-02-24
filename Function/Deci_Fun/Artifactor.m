@@ -227,6 +227,9 @@ for subject_list = 1:length(Deci.SubjectList)
             disp('Additional Preprocessing');
         end
         
+        
+        
+        %if 
         data.locks = locks;
         data.events = events;
         data.trlnum = trlnum;
@@ -236,6 +239,8 @@ for subject_list = 1:length(Deci.SubjectList)
         data = rmfield(data,'trial');
         %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
         
+        
+      % end
     else
         disp('Skipping Artifactor');
         
