@@ -245,6 +245,7 @@ for subject_list = 1:length(Deci.SubjectList)
             %             end
         end
         
+        
         if ~isempty(Deci.Art.More)
             evalc('data = ft_preprocessing(Deci.Art.More,data)');
             disp('Additional Preprocessing');
@@ -268,6 +269,7 @@ for subject_list = 1:length(Deci.SubjectList)
             
             TempDeci.Step = 3;
             Deci_Backend(TempDeci);
+            
         else
 
             data.locks = locks;

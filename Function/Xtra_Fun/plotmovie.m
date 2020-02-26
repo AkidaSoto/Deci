@@ -8,13 +8,15 @@ figure;
 clear F
 for toi = 1:8:size(powdata.avg,2)
     cfg.xlim = [powdata.time(toi) powdata.time(toi)];
+    cfg.colormap = 'jet';
     ft_topoplotER(cfg,powdata);
     drawnow
     if toi == 1
        F(1) =  getframe(gcf);
-       
+%        gif('theta.gif')
     else
         F(end+1) = getframe(gcf);
+%         gif
     end
 end
 
