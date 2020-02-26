@@ -38,7 +38,7 @@ for subject_list = 1:length(Deci.SubjectList)
     
     cfg.trialnum = cfg.trl(:,4);
     
-    if ~all(diff(cfg.trialnum) == 1)
+    if ~all(diff(cfg.trialnum) == 1) || cfg.trialnum(1) ~= 1
        error('trlnum must be continious of 1:length trial collected');
     end
     
