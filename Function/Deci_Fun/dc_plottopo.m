@@ -63,7 +63,6 @@ for conds = 1:size(Subjects,2)
 end
 
 %% Stats
-
 if Deci.Plot.Stat.do
     StatData = dc_plotstat(Deci,SegStatdata,info);
 end
