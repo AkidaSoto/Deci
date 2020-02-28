@@ -118,11 +118,11 @@ if Deci.Plot.Hemiflip.do
             hcfg.operation = 'x2 - x1';
             
             ContraCfg.channel = dc_getchans('even');
-            ContraData{subj,conds} = ft_selectdata(ContraCfg,Subjects{subj,:});
+            ContraData{subj,conds} = ft_selectdata(ContraCfg,Subjects{subj,conds});
             ContraData{subj,conds} = hemifieldflip(ContraData{subj,conds});
             
             IpsiCfg.channel = dc_getchans('odd');
-            IpsiData{subj,conds} = ft_selectdata(IpsiCfg,Subjects{subj,:});
+            IpsiData{subj,conds} = ft_selectdata(IpsiCfg,Subjects{subj,conds});
             
             if strcmpi(Deci.Plot.Hemiflip.Type,'Subtraction')
                 Subjects{subj,conds} = ft_math(hcfg,IpsiData{subj,conds},ContraData{subj,conds});
