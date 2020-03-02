@@ -149,9 +149,9 @@ for subject_list = 1:length(Deci.SubjectList)
             evalc('datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,data))');
             
             
-            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)),:);
-            postart.events = postart.events(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)),:);
-            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(data.trlnum,datacomp_rej.saminfo)));
+            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(logical(datacomp_rej.saminfo))),:);
+            postart.events = postart.events(ismember(postart.trlnum,trlnum(logical(datacomp_rej.saminfo))),:);
+            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(logical(datacomp_rej.saminfo))));
             %
             %             cfg = [];
             %             cfg.trials = postart.trlnum;
@@ -193,9 +193,9 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         
         
-        postart.locks = postart.locks(ismember(postart.trlnum,trlnum(data_rej.saminfo)),:);
-        postart.events = postart.events(ismember(postart.trlnum,trlnum(data_rej.saminfo)),:);
-        postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(data_rej.saminfo)));
+        postart.locks = postart.locks(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
+        postart.events = postart.events(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
+        postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))));
         
         display(' ')
         disp('---Trial Summary Rejection Applied---')
