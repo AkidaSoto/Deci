@@ -347,59 +347,68 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                 conntype = {conntype};
                             end
                             
-                            for choil = 1:length(chanl)
+                            if isequal(chanl,chanh)
+                                chancmb = [chanl; chanh]';
+                            else
+                                chancmb = [chanl chanh];
+                                chancmb = chancmb(combvec(1:length(chanl),[1:length(chanh)]+length(chanl)))';
+                            end
+                            
+                            if isequal(freqlow,freqhigh)
+                                freqcmb = [freqlow; freqhigh]';
+                            else
+                                freqcmb = [freqlow freqhigh];
+                                freqcmb = freqcmb(combvec(1:length(freqlow),[1:length(freqhigh)]+length(freqlow)))';
+                            end
+                            
+                            
+                            for choicmb = 1:size(chancmb)
                                 
-                                for choih = 1:length(chanh)
+                                for foicmb = 1:length(freqcmb)
                                     
-                                    for foil = 1:length(freqlow)
+                                    for conoi = 1:length(conntype)
                                         
-                                        for foih = 1:length(freqhigh)
-                                            
-                                            for conoi = 1:length(conntype)
-                                                
-                                                LF = dc_findfreq(freqlow(foil));
-                                                HF = dc_findfreq(freqhigh(foih));
-                                                
-                                                %lcfg.latency = params.toi;
-                                                lcfg.frequency = minmax(Fourier.freq(LF(1) <= Fourier.freq & LF(2) >= Fourier.freq));
-                                                lcfg.channel = chanl(choil);
-                                                evalc('datalow = ft_selectdata(lcfg,Fourier)');
-                                                freqs = datalow.freq;
-                                                labels = datalow.label;
-                                                
-                                                cfg.resamplefs = Deci.Analysis.Connectivity.Params{funs}{:}.DownSample;
-                                                evalc('datalow = ft_resampledata(cfg,datalow)');
-                                                datalow.fourierspctrm = permute(cell2mat(permute(datalow.trial,[3 1 2])),[3 4 1 2]);
-                                                datalow.freq = freqs;
-                                                datalow.time = datalow.time{1};
-                                                datalow.label = labels;
-                                                datalow.dimord = 'rpt_chan_freq_time';
-                                                
-                                                %hcfg.latency = params.toi;
-                                                hcfg.frequency = minmax(Fourier.freq(HF(1) <= Fourier.freq & HF(2) >= Fourier.freq));
-                                                hcfg.channel = chanh(choih);
-                                                evalc('datahigh = ft_selectdata(hcfg,Fourier)');
-                                                freqs = datahigh.freq;
-                                                labels = datahigh.label;
-                                                
-                                                cfg.resamplefs = Deci.Analysis.Connectivity.Params{funs}{:}.DownSample;
-                                                evalc('datahigh = ft_resampledata(cfg,datahigh)');
-                                                datahigh.fourierspctrm = permute(cell2mat(permute(datahigh.trial,[3 1 2])),[3 4 1 2]);
-                                                datahigh.freq = freqs;
-                                                datahigh.time = datahigh.time{1};
-                                                datahigh.label = labels;
-                                                datahigh.dimord = 'rpt_chan_freq_time';
-                                                
-                                                Deci.Analysis.Connectivity.Params{funs}{:}.Current = [chanl(choil) chanh(choih) freqlow(foil) freqhigh(foih) conntype(conoi)];
-                                                
-                                                time_window = Deci.Analysis.Connectivity.Params{funs}{:}.window; %linspace(1.5,3.5,length(Deci.Analysis.Freq.foi));
-                                                Deci.Analysis.Connectivity.Params{funs}{:}.time_window = time_window(ismember(Fourier.freq,datalow.freq));
-                                                
-                                                Deci.Analysis.Connectivity.Params{funs}{1}.SaveDir = strjoin([chanl(choil) chanh(choih) freqlow(foil) freqhigh(foih) conntype(conoi)],'_');
-                                                
-                                                feval(Deci.Analysis.Connectivity.Functions{funs},Deci,info,datalow,datahigh,Deci.Analysis.Connectivity.Params{funs}{:});
-                                            end
-                                        end
+                                        LF = dc_findfreq(freqcmb(foicmb,1));
+                                        HF = dc_findfreq(freqcmb(foicmb,2));
+                                        
+                                        %lcfg.latency = params.toi;
+                                        lcfg.frequency = minmax(Fourier.freq(LF(1) <= Fourier.freq & LF(2) >= Fourier.freq));
+                                        lcfg.channel = chancmb(choicmb,1);
+                                        evalc('datalow = ft_selectdata(lcfg,Fourier)');
+                                        freqs = datalow.freq;
+                                        labels = datalow.label;
+                                        
+                                        cfg.resamplefs = Deci.Analysis.Connectivity.Params{funs}{:}.DownSample;
+                                        evalc('datalow = ft_resampledata(cfg,datalow)');
+                                        datalow.fourierspctrm = permute(cell2mat(permute(datalow.trial,[3 1 2])),[3 4 1 2]);
+                                        datalow.freq = freqs;
+                                        datalow.time = datalow.time{1};
+                                        datalow.label = labels;
+                                        datalow.dimord = 'rpt_chan_freq_time';
+                                        
+                                        %hcfg.latency = params.toi;
+                                        hcfg.frequency = minmax(Fourier.freq(HF(1) <= Fourier.freq & HF(2) >= Fourier.freq));
+                                        hcfg.channel = chancmb(choicmb,2);
+                                        evalc('datahigh = ft_selectdata(hcfg,Fourier)');
+                                        freqs = datahigh.freq;
+                                        labels = datahigh.label;
+                                        
+                                        cfg.resamplefs = Deci.Analysis.Connectivity.Params{funs}{:}.DownSample;
+                                        evalc('datahigh = ft_resampledata(cfg,datahigh)');
+                                        datahigh.fourierspctrm = permute(cell2mat(permute(datahigh.trial,[3 1 2])),[3 4 1 2]);
+                                        datahigh.freq = freqs;
+                                        datahigh.time = datahigh.time{1};
+                                        datahigh.label = labels;
+                                        datahigh.dimord = 'rpt_chan_freq_time';
+                                        
+                                        Deci.Analysis.Connectivity.Params{funs}{:}.Current = [chancmb(choicmb,:) freqcmb(foicmb,:) conntype(conoi)];
+                                        
+                                        time_window = Deci.Analysis.Connectivity.Params{funs}{:}.window; %linspace(1.5,3.5,length(Deci.Analysis.Freq.foi));
+                                        Deci.Analysis.Connectivity.Params{funs}{:}.time_window = time_window(ismember(Fourier.freq,datalow.freq));
+                                        
+                                        Deci.Analysis.Connectivity.Params{funs}{1}.SaveDir = strjoin([chancmb(choicmb,:) freqcmb(foicmb,:) conntype(conoi)],'_');
+                                        
+                                        feval(Deci.Analysis.Connectivity.Functions{funs},Deci,info,datalow,datahigh,Deci.Analysis.Connectivity.Params{funs}{:});
                                     end
                                 end
                             end
