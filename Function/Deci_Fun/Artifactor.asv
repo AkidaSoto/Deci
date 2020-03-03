@@ -112,30 +112,6 @@ for subject_list = 1:length(Deci.SubjectList)
             cfg.demean = 'yes';
             evalc('data = ft_rejectcomponent(cfg, data_ica)');
         end
-        
-        %% Interpolation
-        if isfield(Deci.Art,'interp')
-            Deci.Art.interp.method = 'spline';
-            load('C:\Users\User\Documents\GitHub\OurFieldTrip\Toolboxes\fieldtrip\template\neighbours\elec1010_neighb.mat','neighbours');
-            Deci.Art.interp.neighbours = neighbours;
-            
-            
-            if exist([Deci.SubjectList{subject_list} '.bvct']) == 2
-                [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
-            else
-                elec = ft_read_sens('standard_1020.elc');
-            end
-            Deci.Art.interp.elec = elec;
-            display('Laplace Interpolation Applied')
-            
-            nonrepairs.channel = data.label(~ismember(data.label,elec.label));
-            nonrepairs = ft_selectdata(nonrepairs,data);
-            [data_interp] = ft_channelrepair(Deci.Art.interp, data);
-            
-            data = ft_appenddata([],nonrepairs,data_interp);
-        end
-        
-        
         %% Manual Trial Rejection
         
         if Deci.Art.Manual_Trial_Rejection
@@ -149,9 +125,9 @@ for subject_list = 1:length(Deci.SubjectList)
             evalc('datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,data))');
             
             
-            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(logical(datacomp_rej.saminfo))),:);
-            postart.events = postart.events(ismember(postart.trlnum,trlnum(logical(datacomp_rej.saminfo))),:);
-            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(logical(datacomp_rej.saminfo))));
+            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)),:);
+            postart.events = postart.events(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)),:);
+            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(data.trlnum,datacomp_rej.saminfo)));
             %
             %             cfg = [];
             %             cfg.trials = postart.trlnum;
@@ -174,7 +150,7 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.keepchannel = 'yes';
         tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)];
         cfg.channel = 'all';
-        cfg.keepchannel = 'no';
+        
         evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data))');
         
         
@@ -187,15 +163,15 @@ for subject_list = 1:length(Deci.SubjectList)
             evalc('datacomp_saved = ft_rejectartifact(savedtrls,ft_selectdata(SAcfg,ft_redefinetrial(tcfg,data)))');
             
             savedtrls = find(Summary_artifacts);
-            savedtrls =  savedtrls(~logical(datacomp_saved.saminfo));
+            savedtrls =  savedtrls(~datacomp_saved.saminfo);
             Summary_artifacts(savedtrls) = 0;
             data_rej.saminfo = ~Summary_artifacts;
         end
         
         
-        postart.locks = postart.locks(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
-        postart.events = postart.events(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
-        postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))));
+        postart.locks = postart.locks(ismember(postart.trlnum,trlnum(data_rej.saminfo)),:);
+        postart.events = postart.events(ismember(postart.trlnum,trlnum(data_rej.saminfo)),:);
+        postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(data_rej.saminfo)));
         
         display(' ')
         disp('---Trial Summary Rejection Applied---')
@@ -245,41 +221,24 @@ for subject_list = 1:length(Deci.SubjectList)
             %             end
         end
         
+        
         if ~isempty(Deci.Art.More)
             evalc('data = ft_preprocessing(Deci.Art.More,data)');
             disp('Additional Preprocessing');
         end
         
-        if any(~ismember(data.label(~ismember(data.label,data_rej.label)),cfg.eog))
-            rej_chan = data.label(~ismember(data.label,data_rej.label));
-            interp_chan = rej_chan(~ismember(rej_chan,cfg.eog));
-            
-            TempDeci = Deci;
-            TempDeci.Art.interp.missingchannel = interp_chan;
-            TempDeci.PP.More.channel = data.label(~ismember(data.label,interp_chan));
-            TempDeci.SubjectList = Deci.SubjectList(subject_list);
-            TempDeci.Step = 2;
-            TempDeci.Proceed = 0;
-            TempDeci.PCom               = false;                                                      % Activates Parallel Computing for PP and Analysis only
-            TempDeci.GCom               = false; 
-            TempDeci.DCom               = false;
-            
-            Deci_Backend(TempDeci);
-            
-            TempDeci.Step = 3;
-            Deci_Backend(TempDeci);
-        else
-
-            data.locks = locks;
-            data.events = events;
-            data.trlnum = trlnum;
-            data.postart = postart;
-            mkdir([Deci.Folder.Artifact])
-            save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
-            data = rmfield(data,'trial');
-            %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
-        end
-
+        
+        
+        %if 
+        data.locks = locks;
+        data.events = events;
+        data.trlnum = trlnum;
+        data.postart = postart;
+        mkdir([Deci.Folder.Artifact])
+        save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
+        data = rmfield(data,'trial');
+        %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
+        
         
       % end
     else
