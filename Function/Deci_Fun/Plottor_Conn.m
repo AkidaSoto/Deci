@@ -61,6 +61,10 @@ for ConnList = 1:length(Params.List)
             freqcmb = freqcmb(combvec(1:length(freqlow),[1:length(freqhigh)]+length(freqlow)))';
         end
         
+        if isequal(size(freqcmb), [2 1])
+            freqcmb = freqcmb';
+        end
+        
         
         %% load 1 full conoi
         clear sub_cond

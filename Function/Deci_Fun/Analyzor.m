@@ -361,6 +361,9 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                 freqcmb = freqcmb(combvec(1:length(freqlow),[1:length(freqhigh)]+length(freqlow)))';
                             end
                             
+                            if isequal(size(freqcmb), [2 1])
+                               freqcmb = freqcmb'; 
+                            end
                             
                             for choicmb = 1:size(chancmb,1)
                                 
