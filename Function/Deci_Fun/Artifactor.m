@@ -166,6 +166,11 @@ for subject_list = 1:length(Deci.SubjectList)
             pause(.05);
         end
         
+        if ~isempty(Deci.Art.More)
+            evalc('data = ft_preprocessing(Deci.Art.More,data)');
+            disp('Additional Preprocessing');
+        end
+        
         %% Artifact Reject
         cfg =[];
         cfg.method = 'summary';
@@ -244,11 +249,7 @@ for subject_list = 1:length(Deci.SubjectList)
             %                 condinfo{3} = condinfo{3}(logical(datacomp_rej.saminfo));
             %             end
         end
-        
-        if ~isempty(Deci.Art.More)
-            evalc('data = ft_preprocessing(Deci.Art.More,data)');
-            disp('Additional Preprocessing');
-        end
+       
         
         if any(~ismember(data.label(~ismember(data.label,data_rej.label)),cfg.eog))
             rej_chan = data.label(~ismember(data.label,data_rej.label));
