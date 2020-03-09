@@ -408,7 +408,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                             
                                             conncfg.method = conntype{conoi};
                                             conncfg.channelcmb = chancmb(choicmb,:);
-                                            conn = ft_connectivityanalysis(conncfg,conndata);
+                                            evalc('conn = ft_connectivityanalysis(conncfg,conndata)');
                                             
                                             conn.([conntype{conoi} 'spctrm']) = permute(conn.([conntype{conoi} 'spctrm']),[2 3 1]);
                                             conn.dimord = 'freq_time';
@@ -456,7 +456,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                             
                                             conncfg.method = conntype{conoi};
                                             
-                                            conn = ft_crossfrequencyanalysis(conncfg,datalow,datahigh);
+                                            evalc('conn = ft_crossfrequencyanalysis(conncfg,datalow,datahigh)');
                                             
                                             conn.crsspctrm = permute(conn.crsspctrm,[2 3 4 1]);
                                             conn.dimord = conn.dimord(6:end);
