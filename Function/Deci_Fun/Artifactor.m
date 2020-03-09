@@ -112,7 +112,32 @@ for subject_list = 1:length(Deci.SubjectList)
             cfg.demean = 'yes';
             evalc('data = ft_rejectcomponent(cfg, data_ica)');
         end
+        
+        %% Interpolation
+        if isfield(Deci.Art,'interp')
+            Deci.Art.interp.method = 'spline';
+            load('C:\Users\User\Documents\GitHub\OurFieldTrip\Toolboxes\fieldtrip\template\neighbours\elec1010_neighb.mat','neighbours');
+            Deci.Art.interp.neighbours = neighbours;
+            
+            
+            if exist([Deci.SubjectList{subject_list} '.bvct']) == 2
+                [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
+            else
+                elec = ft_read_sens('standard_1020.elc');
+            end
+            Deci.Art.interp.elec = elec;
+            display('Laplace Interpolation Applied')
+            
+            nonrepairs.channel = data.label(~ismember(data.label,elec.label));
+            nonrepairs = ft_selectdata(nonrepairs,data);
+            [data_interp] = ft_channelrepair(Deci.Art.interp, data);
+            
+            data = ft_appenddata([],nonrepairs,data_interp);
+        end
+        
         %% Manual Trial Rejection
+        
+        
         
         if Deci.Art.Manual_Trial_Rejection
             cfg =[];
