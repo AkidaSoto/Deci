@@ -177,7 +177,7 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.method = 'summary';
         cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
         cfg.eog = Deci.Art.eog;
-        cfg.keepchannel = 'yes';
+        cfg.keepchannel = 'no';
         tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)];
         cfg.channel = 'all';
         

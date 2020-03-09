@@ -10,7 +10,7 @@ addpath(genpath('/projectnb/crc-nak/chartove/Julia/OurFieldTrip'))
 Deci = [];
 Deci.Folder.Raw         = ['G:\Julia\New_Datasets\3_9_2020'];              % Raw Data Folder Directory
 Deci.SubjectList        = 'gui';                                                % Cell Array of strings, 'all' or 'gui'
-Deci.Step               = 2;                                            % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
+Deci.Step               = 3;                                            % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
 Deci.Proceed            = false;                                                                  % Continue to next step when current step is done?
 Deci.PCom               = false;                                                       % Activates Parallel Computing for PP and Analysis only
 Deci.Folder.Version     = ['G:\Julia\ProcessedData'];        % Output Folder Directory
