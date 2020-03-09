@@ -225,22 +225,41 @@ for subject_list = 1:length(Deci.SubjectList)
             %                 condinfo{3} = condinfo{3}(logical(datacomp_rej.saminfo));
             %             end
         end
-       
         
         
         
-        %if 
-        data.locks = locks;
-        data.events = events;
-        data.trlnum = trlnum;
-        data.postart = postart;
-        mkdir([Deci.Folder.Artifact])
-        save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
-        data = rmfield(data,'trial');
-        %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
         
+        if any(~ismember(data.label(~ismember(data.label,data_rej.label)),cfg.eog))
+            rej_chan = data.label(~ismember(data.label,data_rej.label));
+            interp_chan = rej_chan(~ismember(rej_chan,cfg.eog));
+            
+            TempDeci = Deci;
+            TempDeci.Art.interp.missingchannel = interp_chan;
+            TempDeci.PP.More.channel = data.label(~ismember(data.label,interp_chan));
+            TempDeci.SubjectList = Deci.SubjectList(subject_list);
+            TempDeci.Step = 2;
+            TempDeci.Proceed = 0;
+            TempDeci.PCom               = false;                                                      % Activates Parallel Computing for PP and Analysis only
+            TempDeci.GCom               = false;
+            TempDeci.DCom               = false;
+            
+            Deci_Backend(TempDeci);
+            
+            TempDeci.Step = 3;
+            Deci_Backend(TempDeci);
+        else
+            
+            data.locks = locks;
+            data.events = events;
+            data.trlnum = trlnum;
+            data.postart = postart;
+            mkdir([Deci.Folder.Artifact])
+            save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
+            data = rmfield(data,'trial');
+            %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
+        end
         
-      % end
+
     else
         disp('Skipping Artifactor');
         
@@ -265,8 +284,8 @@ for subject_list = 1:length(Deci.SubjectList)
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
         data = rmfield(data,'trial');
         %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
-    end
-    
-    
-    disp('----------------------');
+end
+
+
+disp('----------------------');
 end
