@@ -135,8 +135,9 @@ for subject_list = 1:length(Deci.SubjectList)
             data = ft_appenddata([],nonrepairs,data_interp);
         end
         
-        
         %% Manual Trial Rejection
+        
+        
         
         if Deci.Art.Manual_Trial_Rejection
             cfg =[];
@@ -149,9 +150,9 @@ for subject_list = 1:length(Deci.SubjectList)
             evalc('datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,data))');
             
             
-            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(logical(datacomp_rej.saminfo))),:);
-            postart.events = postart.events(ismember(postart.trlnum,trlnum(logical(datacomp_rej.saminfo))),:);
-            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(logical(datacomp_rej.saminfo))));
+            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)),:);
+            postart.events = postart.events(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)),:);
+            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(data.trlnum,datacomp_rej.saminfo)));
             %
             %             cfg = [];
             %             cfg.trials = postart.trlnum;
@@ -166,15 +167,20 @@ for subject_list = 1:length(Deci.SubjectList)
             pause(.05);
         end
         
+        if ~isempty(Deci.Art.More)
+            evalc('data = ft_preprocessing(Deci.Art.More,data)');
+            disp('Additional Preprocessing');
+        end
+        
         %% Artifact Reject
         cfg =[];
         cfg.method = 'summary';
         cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
         cfg.eog = Deci.Art.eog;
-        cfg.keepchannel = 'yes';
+        cfg.keepchannel = 'no';
         tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)];
         cfg.channel = 'all';
-        cfg.keepchannel = 'no';
+        
         evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data))');
         
         
@@ -187,15 +193,15 @@ for subject_list = 1:length(Deci.SubjectList)
             evalc('datacomp_saved = ft_rejectartifact(savedtrls,ft_selectdata(SAcfg,ft_redefinetrial(tcfg,data)))');
             
             savedtrls = find(Summary_artifacts);
-            savedtrls =  savedtrls(~logical(datacomp_saved.saminfo));
+            savedtrls =  savedtrls(~datacomp_saved.saminfo);
             Summary_artifacts(savedtrls) = 0;
             data_rej.saminfo = ~Summary_artifacts;
         end
         
         
-        postart.locks = postart.locks(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
-        postart.events = postart.events(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
-        postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))));
+        postart.locks = postart.locks(ismember(postart.trlnum,trlnum(data_rej.saminfo)),:);
+        postart.events = postart.events(ismember(postart.trlnum,trlnum(data_rej.saminfo)),:);
+        postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(data_rej.saminfo)));
         
         display(' ')
         disp('---Trial Summary Rejection Applied---')
@@ -245,10 +251,8 @@ for subject_list = 1:length(Deci.SubjectList)
             %             end
         end
         
-        if ~isempty(Deci.Art.More)
-            evalc('data = ft_preprocessing(Deci.Art.More,data)');
-            disp('Additional Preprocessing');
-        end
+        
+        
         
         if any(~ismember(data.label(~ismember(data.label,data_rej.label)),cfg.eog))
             rej_chan = data.label(~ismember(data.label,data_rej.label));
@@ -261,7 +265,7 @@ for subject_list = 1:length(Deci.SubjectList)
             TempDeci.Step = 2;
             TempDeci.Proceed = 0;
             TempDeci.PCom               = false;                                                      % Activates Parallel Computing for PP and Analysis only
-            TempDeci.GCom               = false; 
+            TempDeci.GCom               = false;
             TempDeci.DCom               = false;
             
             Deci_Backend(TempDeci);
@@ -269,7 +273,7 @@ for subject_list = 1:length(Deci.SubjectList)
             TempDeci.Step = 3;
             Deci_Backend(TempDeci);
         else
-
+            
             data.locks = locks;
             data.events = events;
             data.trlnum = trlnum;
@@ -279,9 +283,8 @@ for subject_list = 1:length(Deci.SubjectList)
             data = rmfield(data,'trial');
             %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
         end
-
         
-      % end
+
     else
         disp('Skipping Artifactor');
         
@@ -306,8 +309,8 @@ for subject_list = 1:length(Deci.SubjectList)
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
         data = rmfield(data,'trial');
         %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
-    end
-    
-    
-    disp('----------------------');
+end
+
+
+disp('----------------------');
 end

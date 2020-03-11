@@ -19,7 +19,7 @@ end
 
                             
 switch conne
-    case 'ispc'
+    case 'plv'
         
         if isequal(datahigh.label,datalow.label)
             return
@@ -45,7 +45,7 @@ switch conne
             
             for ti = 1:length(toi)
                 %compute phase snychronization
-                ispc(:,freqcmb(foicmb,1),ti) = abs(mean(exp(1i*phase_angle_diffs(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx)),4));
+                ispc(freqcmb(foicmb,1),ti) = abs(mean(mean(exp(1i*phase_angle_diffs(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx)),4),1));
             end
         end
         
@@ -54,17 +54,12 @@ switch conne
         
         clear ispc phase_angle_diffs phase_low phase_high
         
-        conn.dimord = 'rpt_freq_time';
+        conn.dimord = 'freq_time';
         conn.chanlow = datalow.label;
         conn.chanhigh = datahigh.label;
         conn.time = datalow.time(toi);
         conn.freqlow = datalow.freq;
         conn.freqhigh = datahigh.freq;
-        
-        if params.rmvtrls
-            conn.dimord = 'freq_time';
-            conn.param = permute(nanmean(conn.param,1),[2 3 1]);
-        end
         
         conn.lockers = info.lockers;
         conn.trllen = info.trllen;
@@ -74,7 +69,7 @@ switch conne
         clear conn
         
         
-    case 'plv'
+    case 'penplv'
         
         if isequal(datahigh.freq,datalow.freq) && isequal(datahigh.label,datalow.label)
             return
@@ -173,31 +168,32 @@ switch conne
         
         nbin = 21;
         
-        for foi_low = 1:size(datalow.fourierspctrm,3)
-            time_window_idx = round((1000/datalow.freq(foi_low))*time_window(foi_low)/(1000*mean(diff(datalow.time))));
+        pac = nan([size(datalow.fourierspctrm,1) length(datalow.freq) length(datahigh.freq) length(toi)]);
+        
+        for foicmb = 1:size(freqcmb,1)
             
-            for foi_high = 1:size(datahigh.fourierspctrm,3)
+            time_window_idx = round((1000/datalow.freq(freqcmb(foicmb,1)))*time_window(freqcmb(foicmb,1))/(1000*mean(diff(datalow.time))));
+            
+            phaselow = angle(datalow.fourierspctrm(:,1,freqcmb(foicmb,1),:));
+            amphigh    = abs(datahigh.fourierspctrm(:,1,freqcmb(foicmb,2),:));
+            
+            for ti = 1:length(toi)
                 
-                phaselow = angle(datalow.fourierspctrm(:,1,foi_low,:));
-                amphigh    = abs(datahigh.fourierspctrm(:,1,foi_high,:));
+                [~,bin] = histc(phaselow(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx), linspace(-pi,pi,nbin));  % binned low frequency phase
+                binamp = zeros(size(amphigh(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx),1),nbin);      % binned amplitude
                 
-                for ti = 1:length(toi)
-                    
-                    [~,bin] = histc(phaselow(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx), linspace(-pi,pi,nbin));  % binned low frequency phase
-                    binamp = zeros(size(amphigh(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx),1),nbin);      % binned amplitude
-                    
-                    for k = 1:nbin-1
-                        idx = bin == k ;
-                        pacdata(k) = squeeze(mean(mean(amphigh(idx),4),1));
-                    end
-                    
-                    Q =ones(nbin-1,1)/[nbin-1];
-                    P = pacdata/ nansum(pacdata);
-                    
-                    pac(foi_low,foi_high,ti) = nansum(P.* log2(P./Q'))./log2(nbin-1);
+                for k = 1:nbin-1
+                    idx = bin == k ;
+                    pacdata(k) = squeeze(mean(mean(amphigh(idx),4),1));
                 end
+                
+                Q =ones(nbin-1,1)/[nbin-1];
+                P = pacdata/ nansum(pacdata);
+                
+                pac(freqcmb(foicmb,1),freqcmb(foicmb,2),ti) = nansum(P.* log2(P./Q'))./log2(nbin-1);
             end
         end
+    
         %conn.param(1,1,:) = permute(nanmean(nanmean(pac,1),2),[3 2 1]);
         conn.param = pac;
         clear pac phaselow amphigh
@@ -219,24 +215,25 @@ switch conne
         
     case 'cs_cl'
         
-        for foi_low = 1:size(datalow.fourierspctrm,3)
-            time_window_idx = round((1000/datalow.freq(foi_low))*time_window(foi_low)/(1000*mean(diff(datalow.time))));
+        cs_cl = nan([size(datalow.fourierspctrm,1) length(datalow.freq) length(datahigh.freq) length(toi)]);
+        
+        for foicmb = 1:size(freqcmb,1)
             
-            for foi_high = 1:size(datahigh.fourierspctrm,3)
+            time_window_idx = round((1000/datalow.freq(freqcmb(foicmb,1)))*time_window(freqcmb(foicmb,1))/(1000*mean(diff(datalow.time))));
+            
+            phaselow = angle(datalow.fourierspctrm(:,1,freqcmb(foicmb,1),:));
+            amphigh    = abs(datahigh.fourierspctrm(:,1,freqcmb(foicmb,2),:));
+            
+            
+            for ti = 1:length(toi)
                 
-                phaselow = angle(datalow.fourierspctrm(:,1,foi_low,:));
-                amphigh    = abs(datahigh.fourierspctrm(:,1,foi_high,:));
+                pha = circ_ang2rad(phaselow(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx));
+                amp =  amphigh(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx);
+                cs_cl(freqcmb(foicmb,1),freqcmb(foicmb,2),ti) = circ_corrcl(pha(:),amp(:));
                 
-                
-                for ti = 1:length(toi)
-                    
-                    pha = circ_ang2rad(phaselow(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx));
-                    amp =  amphigh(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx);
-                    cs_cl(foi_low,foi_high,ti) = circ_corrcl(pha(:),amp(:));
-                    
-                end
             end
         end
+        
         
         %conn.param(1,1,:) = permute(nanmean(nanmean(cs_cl,1),2),[3 1 2]);
         conn.param = cs_cl;
@@ -263,28 +260,28 @@ switch conne
         else
             
             
-            for foi_low = 1:size(datalow.fourierspctrm,3)
-                time_window_idx = round((1000/datalow.freq(foi_low))*time_window(foi_low)/(1000*mean(diff(datalow.time))));
+            cs_cc = nan([size(datalow.fourierspctrm,1) length(datalow.freq) length(datahigh.freq) length(toi)]);
+            
+            for foicmb = 1:size(freqcmb,1)
                 
-                for foi_high = 1:size(datahigh.fourierspctrm,3)
+                time_window_idx = round((1000/datalow.freq(freqcmb(foicmb,1)))*time_window(freqcmb(foicmb,1))/(1000*mean(diff(datalow.time))));
+                
+                phaselow = angle(datalow.fourierspctrm(:,1,freqcmb(foicmb,1),:));
+                phasehigh = angle(datahigh.fourierspctrm(:,1,freqcmb(foicmb,2),:));
+                
+                for ti = 1:length(toi)
                     
-                    phaselow = angle(datalow.fourierspctrm(:,1,foi_low,:));
-                    phasehigh = angle(datahigh.fourierspctrm(:,1,foi_high,:));
+                    phalow = circ_ang2rad(phaselow(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx));
+                    phahigh = circ_ang2rad(phasehigh(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx));
                     
-                    for ti = 1:length(toi)
-                        
-                        phalow = circ_ang2rad(phaselow(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx));
-                        phahigh = circ_ang2rad(phasehigh(:,:,:,toi(ti)-time_window_idx:toi(ti)+time_window_idx));
-                        
-                        cs_cl(foi_low,foi_high,ti) = circ_corrcc(phalow(:),phahigh(:));
-                        
-                    end
+                    cs_cc(freqcmb(foicmb,1),freqcmb(foicmb,2),ti) = circ_corrcc(phalow(:),phahigh(:));
+                    
                 end
             end
-        end
+            
         
         %conn.param(1,1,:) = permute(nanmean(nanmean(cs_cl,1),2),[3 1 2]);
-        conn.param = cs_cl;
+        conn.param = cs_cc;
         clear cs_cl phaselow amphigh
         
         conn.dimord = 'rpt_freqlow_freqhigh';
