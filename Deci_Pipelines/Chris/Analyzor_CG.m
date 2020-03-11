@@ -56,29 +56,6 @@ if Deci.Analysis.Laplace
     clear dirlist filename elec_positions
 end
 
-%% HemifieldFlip
-
-% if Deci.Analysis.HemifieldFlip.do
-%     
-%     Hemifields = preart{2}(:,find(mean(ismember(preart{2},Deci.Analysis.HemifieldFlip.Markers),1)));
-%     
-%     FlipCfg.trials  = ismember(Hemifields,Deci.Analysis.HemifieldFlip.Markers(2));
-%     
-%     FlipData = ft_selectdata(FlipCfg,data);
-%     FlipData = hemifieldflip(FlipData);
-%     
-%     FlipCfg.trials = ~FlipCfg.trials;
-%     
-%     NotFlipData = ft_selectdata(FlipCfg,data);
-%     
-%     data = ft_appenddata([],FlipData,NotFlipData);
-% end
-% 
-% if ~strcmpi(Deci.Analysis.Channels,'all')
-%     cfg = [];
-%     cfg.channel = Deci.Analysis.Channels;
-%     data = ft_selectdata(cfg,data);
-% end
 
 %% Downsample
 if ~isempty(Deci.Analysis.DownSample)
@@ -88,11 +65,6 @@ end
 
 data.condinfo = condinfo;
 data.preart = preart;
-
-% if Deci.Analysis.HemifieldFlip.do
-%     data.condinfo = cellfun(@(a,b) [a;b],FlipData.condinfo,NotFlipData.condinfo,'UniformOutput',false);
-%     data.preart = cellfun(@(a,b) [a;b],FlipData.preart,NotFlipData.preart,'UniformOutput',false);
-% end
 
 %% Loop through Conditions
 for Cond = 1:length(Deci.Analysis.Conditions)
