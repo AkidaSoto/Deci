@@ -4,5 +4,5 @@ Deci.Analysis.Freq.foi           = exp(linspace(log(2),log(40),40));            
 Deci.Analysis.Freq.width         = exp(linspace(log(3),log(13),40));                                                         % Width
 Deci.Analysis.Freq.gwidth        = 4;                                                          % Gwidth
 
-Deci.Analysis.Toi           = [-.5 1.5];                                                  % Time Range to save
-Deci.Analysis.Toilim        = [-2 3];
+Deci.Analysis.Freq.Toi           = [-.5 1.5];                                                  % Time Range to save
+Deci.Analysis.Freq.Toilim        = [-2 3];
