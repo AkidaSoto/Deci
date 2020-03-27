@@ -8,12 +8,12 @@ end
 
 AllFiles = unique(cellfun(@(d) d(1),cellfun(@(c) strsplit(c,'.'),AllFiles,'un',0)));
 
-IsCopy = cellfun(@(c) isstrprop(c{end},'digit'),cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',false));
+IsCopy = cellfun(@(c) isstrprop(c{end}(1),'digit'),cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',false));
 
 BaseFiles = AllFiles(~IsCopy);
 CopyFiles = AllFiles(IsCopy);
 
-CopysBaseName = cellfun(@(a,b) strjoin(a(1:end-b),'_'),cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',IsCopy,false));
+CopysBaseName = arrayfun(@(a,b) strjoin(a(1:end-b),'_'),cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',false),IsCopy,'un',false);
 
 
 mkdir(strcat(Dir,'_new'));
