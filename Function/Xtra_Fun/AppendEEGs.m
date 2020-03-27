@@ -13,7 +13,7 @@ IsCopy = cellfun(@(c) isstrprop(c{end},'digit'),cellfun(@(c) strsplit(c,'_'),All
 BaseFiles = AllFiles(~IsCopy);
 CopyFiles = AllFiles(IsCopy);
 
-CopysBaseName = cellfun(@(c) strjoin(c(1:end-1),'_'),cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',false));
+CopysBaseName = cellfun(@(a,b) strjoin(a(1:end-b),'_'),cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',IsCopy,false));
 
 
 mkdir(strcat(Dir,'_new'));
