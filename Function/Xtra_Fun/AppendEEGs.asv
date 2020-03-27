@@ -13,8 +13,10 @@ IsCopy = cellfun(@(c) isstrprop(c{end},'digit'),cellfun(@(c) strsplit(c,'_'),All
 BaseFiles = AllFiles(~IsCopy);
 CopyFiles = AllFiles(IsCopy);
 
-CopysBaseName = cellfun(@(c) c{1:end-1},cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',false));
+CopysBaseName = cellfun(@(e) e([1:end-2]),CopyFiles,'UniformOutput',false);
 
+
+ cellfun(@(c) c{1:end-1},cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',false))
 
 mkdir(strcat(Dir,'_new'));
 for Each = 1:length(BaseFiles)
