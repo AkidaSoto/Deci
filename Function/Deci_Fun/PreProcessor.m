@@ -134,9 +134,9 @@ if  ~isempty(data_eeg.label(strcmp(data_eeg.label,'StimTrak')))
     disp('StimTrak Removed')
 end
 
-% if ~isempty(Deci.PP.DownSample)
-%     data_eeg = ft_resampledata(struct('resamplefs',Deci.PP.DownSample,'detrend','no'),data_eeg);
-% end
+if isfield(Deci.PP,'DownSample')
+    data_eeg = ft_resampledata(struct('resamplefs',Deci.PP.DownSample,'detrend','no'),data_eeg);
+end
 
 if ~isempty(Deci.PP.More)
     More_cfg = Deci.PP.More;
@@ -201,8 +201,8 @@ if Deci.ICA.do
 disp(['---Starting ICA---']);
 display(' ')
 cfg = [];
+cfg = Deci.ICA;
 cfg.bpfilter = 'yes';
-cfg.bpfreq = Deci.ICA.bpfreq;
 evalc('data_bp = ft_preprocessing(cfg,data)');
 
 cfg = [];

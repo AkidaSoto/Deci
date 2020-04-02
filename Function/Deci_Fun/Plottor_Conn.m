@@ -152,6 +152,9 @@ for ConnList = 1:length(Params.List)
             end
         end
         
+        %% Bsl Correction
+        
+        
         
         %% Math
         if ~isempty(Deci.Plot.Math)
@@ -182,20 +185,21 @@ for ConnList = 1:length(Params.List)
             Deci.Plot.GrandAverage = false;
         end
         
-        if any(~isnan(trllen))
-            trlstd = nanstd(trllen,[],1);
-            trllen = nanmean(trllen,1);
-        end
-        
-        if any(~isnan(lockers))
-            lockersstd = nanstd(lockers,[],1);
-            lockers = nanmean(lockers,1);
-        end
-        
         
         for conds = 1:size(sub_cond,2)
             
             if Deci.Plot.GrandAverage
+                
+                
+                if any(~isnan(trllen))
+                    trlstd = nanstd(trllen,[],1);
+                    trllen = nanmean(trllen,1);
+                end
+                
+                if any(~isnan(lockers))
+                    lockersstd = nanstd(lockers,[],1);
+                    lockers = nanmean(lockers,1);
+                end
                 
                 
                 Subjs = cellfun(@(c) c.(param),sub_cond(:,conds),'UniformOutput',false);
@@ -464,7 +468,7 @@ for ConnList = 1:length(Params.List)
                         set(0, 'CurrentFigure', flfh_fig(subj) )
                         flfh_fig(subj).Visible = 'on';
                         subby_flfh(subj,subcond) = subplot(length(Deci.Plot.Draw{cond}),1,subcond );
-                        colormap(CoolMap)
+                        colormap('jet')
                         
                         freq = FL_FH{subj,Deci.Plot.Draw{cond}(subcond)};
                         [~,ufreqlow] = unique(freq.freqlow);
@@ -497,7 +501,7 @@ for ConnList = 1:length(Params.List)
                         
                         contourf(subby_fltime(subj,subcond),freq.time,unique(freq.(dim{ismember(dim,{'freq' 'freqlow'})})),freq.(param)(ufreqlow,:));
                         colorbar;
-                        colormap(CoolMap)
+                        colormap('jet')
                         if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
                             xlims = xlim;
                             ylims = ylim;
@@ -551,7 +555,7 @@ for ConnList = 1:length(Params.List)
                             title([Deci.Plot.Subtitle{cond}{subcond}]);
                         end
                         
-                        ylabel('Freq Low')
+                        ylabel('Frequency (Hz)')  %changed 'Freq Low' -> 'Frequency (Hz)'
                         if subcond == length(Deci.Plot.Draw{cond})
                             xlabel('Time')
                         end
@@ -568,7 +572,7 @@ for ConnList = 1:length(Params.List)
                         
                         contourf(subby_fhtime(subj,subcond),freq.time,unique(freq.freqhigh),freq.param(ufreqhigh,:))
                         colorbar;
-                        colormap(CoolMap)
+                        colormap('jet')
                         if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
                             xlims = xlim;
                             ylims = ylim;
@@ -652,7 +656,7 @@ for ConnList = 1:length(Params.List)
                         subby_cltime(subj,subcond).YTick = 1:length(freq.label);
                         end
 
-                        colormap(CoolMap)
+                        colormap('jet')
                         colorbar;
                         if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
                             xlims = xlim;
@@ -723,7 +727,7 @@ for ConnList = 1:length(Params.List)
                         freq = CH_time{subj,Deci.Plot.Draw{cond}(subcond)};
                         
                         imagesc(subby_chtime(subj,subcond),freq.time,1:length(unique(freq.labelcmb(:,2))),freq.(param));
-                        colormap(CoolMap)
+                        colormap('jet')
                         subby_chtime(subj,subcond).YTickLabel = unique(freq.labelcmb(:,2));
                         subby_chtime(subj,subcond).YTick = 1:length(unique(freq.labelcmb(:,2)));
                         

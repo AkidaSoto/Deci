@@ -14,7 +14,7 @@ for Conditions = 1:size(Subjects,2)
             
             for Channel = 1:length(info.Chois)
                 
-                load([Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep info.Chois{Channel} '.mat'],info.variable);
+                load([Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep info.Chois{Channel} '.mat'],info.variable);
                 evalc(['var =' info.variable]);
                 
                 if isfield(var,'freq')
