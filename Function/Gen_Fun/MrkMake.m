@@ -1,4 +1,4 @@
-opfunction MrkMake(folder,refmrk,newmrk,displace)
+function MrkMake(folder,refmrk,newmrk,displace)
 
 % folder - path to folder of data to process
 % refmrk - reference marker, cells of cells of strings 
