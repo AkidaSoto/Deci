@@ -116,7 +116,7 @@ for subject_list = 1:length(Deci.SubjectList)
         %% Interpolation
         if isfield(Deci.Art,'interp')
             Deci.Art.interp.method = 'spline';
-            load('C:\Users\User\Documents\GitHub\OurFieldTrip\Toolboxes\fieldtrip\template\neighbours\elec1010_neighb.mat','neighbours');
+            load('elec1010_neighb.mat','neighbours');
             Deci.Art.interp.neighbours = neighbours;
             
             
@@ -305,7 +305,9 @@ for subject_list = 1:length(Deci.SubjectList)
             data = rmfield(data,'preart');
         end
         
+        if isfield(data,'unmixing')
         data = rmfield(rmfield(data,'unmixing'),'topolabel');
+        end
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
         data = rmfield(data,'trial');
         %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')

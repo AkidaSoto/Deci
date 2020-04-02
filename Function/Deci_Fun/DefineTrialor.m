@@ -38,8 +38,12 @@ for subject_list = 1:length(Deci.SubjectList)
     
     cfg.trialnum = cfg.trl(:,4);
     
+    Deci.DT = Exist(Deci.DT,'trlcheck',true);
+    
+    if Deci.DT.trlcheck
     if ~all(diff(cfg.trialnum) == 1) || cfg.trialnum(1) ~= 1
        error('trlnum must be continious of 1:length trial collected');
+    end
     end
     
     cfg.trl = cfg.trl(:,[1:3 5:end]);

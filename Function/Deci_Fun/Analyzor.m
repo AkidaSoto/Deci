@@ -126,8 +126,11 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     
     if ~all(ismember(Deci.Analysis.Conditions{Cond},events))
         
+        if isfield(Deci.DT,'Type')
+        
         if ~strcmpi(Deci.DT.Type,'EEG_Polymerase')
             display(['Using unique Trial Def:' Deci.DT.Type])
+        end
         end
         error('1 or More Marker Codes not found in events. If using own DT, make sure Step 4 contains updated DT.Markers field')
     end
@@ -419,8 +422,9 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                             if Deci.Analysis.Connectivity.Zscore.do
                                                 
                                                 zdata = [];
+                                                
+                                                tic;
                                                 for s = 1:Deci.Analysis.Connectivity.Zscore.Runs
-                                                    
                                                     datahigh.fourierspctrm = datahigh.fourierspctrm(randperm(size(datahigh.fourierspctrm,1)),:,:,:);
                                                     
                                                     conndata = ft_appendfreq(struct('parameter','fourierspctrm','appenddim','chan'),datalow,datahigh);
@@ -428,10 +432,13 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                                     
                                                     conncfg.method = conntype{conoi};
                                                     conncfg.channelcmb = chancmb(choicmb,:);
-                                                    surr = ft_connectivityanalysis(conncfg,conndata);
+                                                    evalc('surr = ft_connectivityanalysis(conncfg,conndata)');
                                                     
                                                     zdata(s,:,:) = surr.([conntype{conoi} 'spctrm']);
+
                                                 end
+                                                
+                                                disp(['Finished Zscore in ' num2str(toc) 's']);
                                                 clear surr
                                                 
                                                 % z-score
@@ -471,7 +478,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                                     
                                                     datahigh.fourierspctrm = datahigh.fourierspctrm(randperm(size(datahigh.fourierspctrm,1)),:,:,:);
                                                     
-                                                    surr = ft_crossfrequencyanalysis(conncfg,datalow,datahigh);
+                                                    evalc('surr = ft_crossfrequencyanalysis(conncfg,datalow,datahigh)');
                                                     
                                                     zdata(s,:,:,:) = surr.crsspctrm;
                                                 end
