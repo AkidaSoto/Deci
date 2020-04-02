@@ -68,7 +68,7 @@ if ismember(Deci.Analysis.CondTitle(info.Cond),Deci.Analysis.Connectivity.cond)
         data1 = rmfield(data1,'cumtapcnt');
         data1 = rmfield(data1,'time');
         data1 = rmfield(data1,'trialinfo');
-        data1 = rmfield(data1,'condinfo');
+%         data1 = rmfield(data1,'condinfo');
         data1 = rmfield(data1,'cfg');
         
         cfg.channel = Fourier.label{chan_idx(2)};
@@ -81,7 +81,7 @@ if ismember(Deci.Analysis.CondTitle(info.Cond),Deci.Analysis.Connectivity.cond)
         data2 = rmfield(data2,'cumtapcnt');
         data2 = rmfield(data2,'time');
         data2 = rmfield(data2,'trialinfo');
-        data2 = rmfield(data2,'condinfo');
+%         data2 = rmfield(data2,'condinfo');
         data2 = rmfield(data2,'cfg');
         
 

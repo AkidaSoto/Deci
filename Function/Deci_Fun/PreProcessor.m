@@ -9,6 +9,15 @@ load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}],'cfg');
 TrlDefs = cfg;
 
 feedback = Deci.PP.feedback;
+
+%% File check
+
+if ~strcmpi(TrlDefs.datafile,[Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.eeg']) || ~strcmpi(TrlDefs.headerfile,[Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.vhdr']) || ~strcmpi(TrlDefs.dataset,[Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.eeg'])
+TrlDefs.datafile = [Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.eeg'];
+TrlDefs.headerfile = [Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.vhdr'];
+TrlDefs.dataset = [Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.eeg'];
+end
+
 %% Detrending and Filtering the FullData
 fullcfg = rmfield(TrlDefs,'trl');
 evalc('data_eeg = ft_preprocessing(fullcfg)');
