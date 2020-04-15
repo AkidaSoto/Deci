@@ -10,7 +10,7 @@ addpath(genpath('/projectnb/crc-nak/chartove/Julia/OurFieldTrip'))
 Deci = [];
 Deci.Folder.Raw         = ['G:\Julia\New_Datasets\3_9_2020'];              % Raw Data Folder Directory
 Deci.SubjectList        = 'gui';                                                % Cell Array of strings, 'all' or 'gui'
-Deci.Step               = 3;                                            % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
+Deci.Step               = 5;                                            % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
 Deci.Proceed            = false;                                                                  % Continue to next step when current step is done?
 Deci.PCom               = true;                                                       % Activates Parallel Computing for PP and Analysis only
 Deci.Folder.Version     = ['G:\Julia\ProcessedData'];        % Output Folder Directory
@@ -41,7 +41,9 @@ Deci.Art.AddComponents =  true;
 %Deci.Art.More.channel = {'FCz'};
 
 %% 4. Analysis
-Deci.Analysis.Laplace       =false;                                                               % Uses Captrak .bvct file with same name in RawData Folder
+Deci.Analysis.Laplace       = false;    
+Deci.Analysis.LaplaceFile = ['standard_1020.elc'];
+% Uses Captrak .bvct file with same name in RawData Folder
 Deci.Analysis.Locks         = [1];                                                          % Which Lock to Analyze        
 Deci.Analysis.LocksTitle    = {'Fdb Onset'};                      % Folder Title to save each Lock as
 Deci.Analysis.DownSample    = 500;                                              % Downsample Pre-Analysis
@@ -61,7 +63,6 @@ Deci.Analysis.Toilim        = [-2 3];
 
 
 Deci.Analysis.Connectivity.Sets = {{{'FCz'} {'FCz'} 'theta' 'beta' 'mi'}};
-Deci.Analysis.Connectivity.toi = [-.5 1.5]; 
 Deci.Analysis.Connectivity.DownSample = 100;
 Deci.Analysis.Connectivity.Zscore.do = false;
 Deci.Analysis.Connectivity.Zscore.Runs = 500;

@@ -514,6 +514,9 @@ for cond = 1:length(Deci.Plot.Draw)
                 boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
                 for bb = 1:length(boxes)
                     if ~isempty(boxes)
+                        boxes(bb).YData(boxes(bb).YData == min(boxes(bb).YData)) = min(ylim);
+                        boxes(bb).YData(boxes(bb).YData == max(boxes(bb).YData)) = max(ylim);
+                        
                         boxes(bb).FaceAlpha = .35;
                         uistack(boxes(bb),'bottom')
                         boxes(bb).HandleVisibility = 'off';
