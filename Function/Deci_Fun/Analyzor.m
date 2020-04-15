@@ -414,6 +414,9 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                             
                                             conncfg.method = conntype{conoi};
                                             conncfg.channelcmb = chancmb(choicmb,:);
+                                            Deci.Analysis.Connectivity = Exist(Deci.Analysis.Connectivity, 'keeptrials','no');
+                                            conncfg.keeptrials = Deci.Analysis.Connectivity.keeptrials;
+                                            
                                             evalc('conn = ft_connectivityanalysis(conncfg,conndata)');
                                             
                                             conn.([conntype{conoi} 'spctrm']) = permute(conn.([conntype{conoi} 'spctrm']),[2 3 1]);
@@ -462,9 +465,16 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                             save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep strjoin([chancmb(choicmb,:) freqcmb(foicmb,:) conntype(conoi)],'_')],'conn','-v7.3');
                                             clear conn
                                             
-                                        elseif ~isequal(LF,HF) && isequal(chancmb(choicmb,1),chancmb(choicmb,2)) && ismember(conntype(conoi),{'mi','erpac','mvl'})
+                                        elseif ~isequal(LF,HF) && isequal(chancmb(choicmb,1),chancmb(choicmb,2)) && ismember(conntype(conoi),{'mi','erpac','mvl','nmcoupling'})
                                             
-                                            conncfg.method = conntype{conoi};
+                                            if isequal(conntype{conoi},'nmcoupling')
+                                                conncfg.method = 'plv';
+                                            else
+                                                conncfg.method = conntype{conoi};
+                                            end
+  
+                                            Deci.Analysis.Connectivity = Exist(Deci.Analysis.Connectivity, 'keeptrials','no');
+                                            conncfg.keeptrials = Deci.Analysis.Connectivity.keeptrials;
                                             
                                             evalc('conn = ft_crossfrequencyanalysis(conncfg,datalow,datahigh)');
                                             

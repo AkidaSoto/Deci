@@ -342,7 +342,7 @@ if Deci.Plot.Behv.WriteExcel
             %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Summary');
         end
         
-        excelAccdata = table(Sub.Acc(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(AccBlock(blks))',trls',fAcc,fAccsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'Accuracy' 'SEM'});
+        excelAccdata = table(Sub.Acc(subs)',Deci.Plot.Behv.Acc.Subtitle{fig}(conds)',abs(AccBlock(blks)),trls',fAcc,fAccsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'Accuracy' 'SEM'});
         writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Summary');
         %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
     end

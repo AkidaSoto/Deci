@@ -1,11 +1,12 @@
-function [out, vec] = dc_checkmyfreqs(freqs,length,samplingrate)
+function [out, vec] = dc_checkmyfreqs(freqoi,endnsample,fsample)
 
-vec = unique(freqs/(samplingrate / length));
+freqboi   = round(freqoi ./ (fsample ./ endnsample)) + 1; % is equivalent to: round(freqoi .* endtime) + 1;
+freqboi   = unique(freqboi);
 
-if length(vec) ~=  length(freqs)
+if length(freqboi) ~=  length(freqoi)
     out = 'not good';
 else
     out = 'good';
 end
     
-ende
+end
