@@ -219,7 +219,14 @@ for ConnList = 1:length(Params.List)
                 ConnData(:,conds) = sub_cond(:,conds);
             end
             
+   %%         
             
+%    if Deci.Plot.Stat.do
+%        info.isfreq = 0;
+%        info.isconn = 1;
+%        StatData = dc_plotstat(Deci,SegStatdata,info);
+%    end
+   
             %% Data Management
             for subjs = 1:size(ConnData,1)
                 

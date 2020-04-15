@@ -5,6 +5,7 @@ function Plottor_Freq(Deci)
 Dims = {'Topo' 'Square' 'Wire' 'Bar'};
 [Deci, info] = dc_plotcheck(Deci,Dims);
 info.isfreq = true;
+info.isconn = false;
 
 %% Load
 disp('----------------------');
