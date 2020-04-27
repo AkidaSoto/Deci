@@ -9,6 +9,15 @@ load([Deci.Folder.Definition filesep Deci.SubjectList{subject_list}],'cfg');
 TrlDefs = cfg;
 
 feedback = Deci.PP.feedback;
+
+%% File check
+
+if ~strcmpi(TrlDefs.datafile,[Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.eeg']) || ~strcmpi(TrlDefs.headerfile,[Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.vhdr']) || ~strcmpi(TrlDefs.dataset,[Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.eeg'])
+TrlDefs.datafile = [Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.eeg'];
+TrlDefs.headerfile = [Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.vhdr'];
+TrlDefs.dataset = [Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.eeg'];
+end
+
 %% Detrending and Filtering the FullData
 fullcfg = rmfield(TrlDefs,'trl');
 evalc('data_eeg = ft_preprocessing(fullcfg)');
@@ -134,9 +143,9 @@ if  ~isempty(data_eeg.label(strcmp(data_eeg.label,'StimTrak')))
     disp('StimTrak Removed')
 end
 
-% if ~isempty(Deci.PP.DownSample)
-%     data_eeg = ft_resampledata(struct('resamplefs',Deci.PP.DownSample,'detrend','no'),data_eeg);
-% end
+if isfield(Deci.PP,'DownSample')
+    data_eeg = ft_resampledata(struct('resamplefs',Deci.PP.DownSample,'detrend','no'),data_eeg);
+end
 
 if ~isempty(Deci.PP.More)
     More_cfg = Deci.PP.More;
@@ -201,8 +210,8 @@ if Deci.ICA.do
 disp(['---Starting ICA---']);
 display(' ')
 cfg = [];
+cfg = Deci.ICA;
 cfg.bpfilter = 'yes';
-cfg.bpfreq = Deci.ICA.bpfreq;
 evalc('data_bp = ft_preprocessing(cfg,data)');
 
 cfg = [];

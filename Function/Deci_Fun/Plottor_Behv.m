@@ -7,7 +7,7 @@ for subject_list = 1:length(Deci.SubjectList)
     
     switch Deci.Plot.Behv.Source
         case 'PostArt'
-            load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info']);
+            load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}]);
             
             if isfield(data,'condinfo')  %replacer starting 12/22, lets keep for ~4 months
                 data.postart.locks = data.condinfo{1};
@@ -404,7 +404,7 @@ if Deci.Plot.Behv.WriteExcel
             %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'RT_Summary');
         end
         
-        excelAccdata = table(Sub.RT(subs)',Deci.Plot.Behv.RT.Subtitle{fig}(conds)',abs(RTBlock(blks)),trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
+        excelAccdata = table(Sub.RT(subs)',Deci.Plot.Behv.RT.Subtitle{fig}(conds)',abs(RTBlock(blks))',trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
         writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Summary');
         %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'TempSheet');
         
@@ -421,8 +421,8 @@ if ~isempty(Deci.Plot.Behv.Acc)
         
         for subj = 1:size(Acc{fig},1)
             
-            a(fignum,subj) = figure;
-            a(fignum,subj).Visible = 'on';
+            a(fig,subj) = figure;
+            a(fig,subj).Visible = 'on';
             
             
             for draw = 1:size(Acc{fig},2)

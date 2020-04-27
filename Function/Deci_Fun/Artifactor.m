@@ -112,7 +112,32 @@ for subject_list = 1:length(Deci.SubjectList)
             cfg.demean = 'yes';
             evalc('data = ft_rejectcomponent(cfg, data_ica)');
         end
+        
+        %% Interpolation
+        if isfield(Deci.Art,'interp')
+            Deci.Art.interp.method = 'spline';
+            load('elec1010_neighb.mat','neighbours');
+            Deci.Art.interp.neighbours = neighbours;
+            
+            
+            if exist([Deci.SubjectList{subject_list} '.bvct']) == 2
+                [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
+            else
+                elec = ft_read_sens('standard_1020.elc');
+            end
+            Deci.Art.interp.elec = elec;
+            display('Laplace Interpolation Applied')
+            
+            nonrepairs.channel = data.label(~ismember(data.label,elec.label));
+            nonrepairs = ft_selectdata(nonrepairs,data);
+            [data_interp] = ft_channelrepair(Deci.Art.interp, data);
+            
+            data = ft_appenddata([],nonrepairs,data_interp);
+        end
+        
         %% Manual Trial Rejection
+        
+        
         
         if Deci.Art.Manual_Trial_Rejection
             cfg =[];
@@ -142,12 +167,17 @@ for subject_list = 1:length(Deci.SubjectList)
             pause(.05);
         end
         
+        if ~isempty(Deci.Art.More)
+            evalc('data = ft_preprocessing(Deci.Art.More,data)');
+            disp('Additional Preprocessing');
+        end
+        
         %% Artifact Reject
         cfg =[];
         cfg.method = 'summary';
         cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
         cfg.eog = Deci.Art.eog;
-        cfg.keepchannel = 'yes';
+        cfg.keepchannel = 'no';
         tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)];
         cfg.channel = 'all';
         
@@ -222,25 +252,39 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         
         
-        if ~isempty(Deci.Art.More)
-            evalc('data = ft_preprocessing(Deci.Art.More,data)');
-            disp('Additional Preprocessing');
+        
+        
+        if any(~ismember(data.label(~ismember(data.label,data_rej.label)),cfg.eog))
+            rej_chan = data.label(~ismember(data.label,data_rej.label));
+            interp_chan = rej_chan(~ismember(rej_chan,cfg.eog));
+            
+            TempDeci = Deci;
+            TempDeci.Art.interp.missingchannel = interp_chan;
+            TempDeci.PP.More.channel = data.label(~ismember(data.label,interp_chan));
+            TempDeci.SubjectList = Deci.SubjectList(subject_list);
+            TempDeci.Step = 2;
+            TempDeci.Proceed = 0;
+            TempDeci.PCom               = false;                                                      % Activates Parallel Computing for PP and Analysis only
+            TempDeci.GCom               = false;
+            TempDeci.DCom               = false;
+            
+            Deci_Backend(TempDeci);
+            
+            TempDeci.Step = 3;
+            Deci_Backend(TempDeci);
+        else
+            
+            data.locks = locks;
+            data.events = events;
+            data.trlnum = trlnum;
+            data.postart = postart;
+            mkdir([Deci.Folder.Artifact])
+            save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
+            data = rmfield(data,'trial');
+            %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
         end
         
-        
-        
-        %if 
-        data.locks = locks;
-        data.events = events;
-        data.trlnum = trlnum;
-        data.postart = postart;
-        mkdir([Deci.Folder.Artifact])
-        save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
-        data = rmfield(data,'trial');
-        %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
-        
-        
-      % end
+
     else
         disp('Skipping Artifactor');
         
@@ -261,12 +305,14 @@ for subject_list = 1:length(Deci.SubjectList)
             data = rmfield(data,'preart');
         end
         
+        if isfield(data,'unmixing')
         data = rmfield(rmfield(data,'unmixing'),'topolabel');
+        end
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
         data = rmfield(data,'trial');
         %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
-    end
-    
-    
-    disp('----------------------');
+end
+
+
+disp('----------------------');
 end

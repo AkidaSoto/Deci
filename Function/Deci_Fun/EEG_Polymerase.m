@@ -44,14 +44,14 @@ for j = 1:length(startstopseg)
     sample = {event(startstopseg(1,j):startstopseg(2,j)).sample};
     
     
-    begsample = sample{ismember(value,cfg.DT.Locks(1))} + sstime(1)*hdr.Fs;
-    
-    
-    if isempty(find(ismember(value,cfg.DT.Locks(end))))
+    if ~all(ismember(cfg.DT.Locks,value))
         continue;
     else
-        endsample = sample{ismember(value,cfg.DT.Locks(end))} + sstime(2)*hdr.Fs;
+        begsample = sample{ismember(value,cfg.DT.Locks(1))} + sstime(1)*hdr.Fs;
     end
+    
+    endsample = sample{ismember(value,cfg.DT.Locks(end))} + sstime(2)*hdr.Fs;
+
     
     offsets = begsample - [sample{ismember(value,cfg.DT.Locks)}];
     

@@ -65,10 +65,12 @@ for  subject_list = 1:length(Deci.SubjectList)
         end
         
         if isfield(erp,'lockers')
-            lockers(subject_list,Conditions,:) = erp.lockers;
+            LockNum = Deci.Analysis.Locks(ismember(Deci.Analysis.LocksTitle,Deci.Plot.Lock));
+            lockers(subject_list,Conditions,:) = erp.lockers - erp.lockers(LockNum);
         else
             lockers(subject_list,Conditions,:) = nan;
         end
+        
         
         acfg.parameter = 'avg';
         acfg.appenddim = 'chan';
@@ -77,6 +79,49 @@ for  subject_list = 1:length(Deci.SubjectList)
     end
     clear Chans;
 end
+
+%% Bsl correct
+
+
+for Conditions = 1:size(Subjects,2)
+    for subject_list = 1:size(Subjects,1)
+        
+        if ~strcmpi(Deci.Plot.BslRef,Deci.Plot.Lock) || ~isempty(Deci.Plot.LockCond)
+            
+            if ~isempty(Deci.Plot.LockCond)
+                BslCond =    Deci.Plot.CondTitle{Deci.Plot.LockCond(Conditions)};
+            else
+                BslCond =    Deci.Plot.CondTitle{Conditions};
+            end
+            
+            for Channel = 1:length(Chois)
+                
+                load([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep Chois{Channel} '.mat'],'erp');
+
+                BslChan{Channel} = erp;
+                BslChan{Channel}.label = Chois(Channel);
+            end
+            
+            acfg.parameter = 'avg';
+            acfg.appenddim = 'chan';
+            Bsl{subject_list,Conditions} = rmfield(ft_appendtimelock(acfg,BslChan{:}),'cfg');
+            Bsl{subject_list,Conditions}.dimord = 'chan_time';
+        else
+            Bsl{subject_list,Conditions} =Subjects{subject_list,Conditions};
+        end
+        
+        toi2 = Bsl{subject_list,Conditions}.time >= round(Deci.Plot.Bsl(1),4) & Bsl{subject_list,Conditions}.time <= round(Deci.Plot.Bsl(2),4);
+        
+        Bsl{subject_list,Conditions}.avg = nanmean(Bsl{subject_list,Conditions}.avg(:,toi2),2);
+        Bsl{subject_list,Conditions}.avg = repmat(Bsl{subject_list,Conditions}.avg,[1 size(Subjects{subject_list,Conditions}.avg,3)]);
+
+        Subjects{subject_list,Conditions}.avg =  Subjects{subject_list,Conditions}.avg - Bsl{subject_list,Conditions}.avg;
+        Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(toi);
+        Subjects{subject_list,Conditions}.avg = Subjects{subject_list,Conditions}.avg(:,toi); 
+
+    end
+end
+
 
 %% Math
 if ~isempty(Deci.Plot.Math)
@@ -118,11 +163,11 @@ if Deci.Plot.Hemiflip.do
             hcfg.operation = 'x2 - x1';
             
             ContraCfg.channel = dc_getchans('even');
-            ContraData{subj,conds} = ft_selectdata(ContraCfg,Subjects{subj,:});
+            ContraData{subj,conds} = ft_selectdata(ContraCfg,Subjects{subj,conds});
             ContraData{subj,conds} = hemifieldflip(ContraData{subj,conds});
             
             IpsiCfg.channel = dc_getchans('odd');
-            IpsiData{subj,conds} = ft_selectdata(IpsiCfg,Subjects{subj,:});
+            IpsiData{subj,conds} = ft_selectdata(IpsiCfg,Subjects{subj,conds});
             
             if strcmpi(Deci.Plot.Hemiflip.Type,'Subtraction')
                 Subjects{subj,conds} = ft_math(hcfg,IpsiData{subj,conds},ContraData{subj,conds});
@@ -469,6 +514,9 @@ for cond = 1:length(Deci.Plot.Draw)
                 boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
                 for bb = 1:length(boxes)
                     if ~isempty(boxes)
+                        boxes(bb).YData(boxes(bb).YData == min(boxes(bb).YData)) = min(ylim);
+                        boxes(bb).YData(boxes(bb).YData == max(boxes(bb).YData)) = max(ylim);
+                        
                         boxes(bb).FaceAlpha = .35;
                         uistack(boxes(bb),'bottom')
                         boxes(bb).HandleVisibility = 'off';
