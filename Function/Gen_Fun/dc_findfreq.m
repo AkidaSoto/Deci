@@ -14,12 +14,18 @@ for freq = 1:length(freqin)
             freqout(freq,:) = [12.5 30];
         case 'alpha'
             freqout(freq,:) =[8 14]; %LP 4/2/20 changed from [8 12.5] to [8 14] 
+        case 'alpha2'
+            freqout(freq,:) =[9 12];  %LP 4/27 added 'alpha2'
+        case 'alpha3'
+            freqout(freq,:) =[11 14];  %LP 4/28 added 'alpha3'
         case 'lowgamma'
             freqout(freq,:) =[30 55];
         case 'highgamma'
             freqout(freq,:) = [55 80];
         case 'all'
             freqout(freq,:) = [1 100];
+        case 'beta2'
+            freqout(freq,:) = [17 20]; % 4/27 LP added 'beta2'
     end
 end
 
