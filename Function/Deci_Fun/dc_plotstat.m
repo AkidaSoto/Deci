@@ -12,8 +12,9 @@ for conds = 1:length(Deci.Plot.Draw)
     
     switch Deci.Plot.Stat.Comp
         case 'Conditions'
-            if length(Deci.Plot.Draw{conds}) ~= 1
+            if length(Deci.Plot.Draw{conds}) ~= 1 && ~Deci.Plot.GroupLevel
                 Deci.Plot.Stat.uvar = 2;
+                
                 
                 for subcond = 1:length(Deci.Plot.Draw{conds})
                     for subj = 1:size(SegStatdata{1}.(info.parameter),1)
@@ -43,8 +44,37 @@ for conds = 1:length(Deci.Plot.Draw)
                     [StatData{conds}] = ft_timelockstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
                 end
                 
+            elseif Deci.Plot.GroupLevel 
+                design = [];
+                
+                design(1,:) = Deci.Plot.Groups{2}+1;
+                
+                Deci.Plot.Stat.design = design;
+                
+                if length(Deci.Plot.Draw{conds}) > 2
+                    
+                    error('Currently does not support 2-Way Indep Anova')
+                    
+                    Deci.Plot.Stat.tail = 1;
+                    Deci.Plot.Stat.statistic = 'indepsamplesF';
+                    Deci.Plot.Stat.clustertail      = 1;
+                else
+                    Deci.Plot.Stat.statistic = 'indepsamplesT';
+                    Deci.Plot.Stat.tail = 0;
+                    Deci.Plot.Stat.clustertail      = 0;
+                end
+                
+                if info.isfreq
+                    [StatData{conds}] = ft_freqstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
+                elseif info.isconn
+                    Deci.Plot.Stat.minnbchan = 1;
+                    [StatData{conds}] = dc_connectivitystatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
+                else
+                    [StatData{conds}] = ft_timelockstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
+                end
+                
             else
-                [StatData{conds}.mask] = permute(ones(size(SegStatdata{:,Deci.Plot.Draw{conds}}.(info.parameter)(1,:,:,:))),[2 3 4 1]);
+                [StatData{conds}.mask] = permute(ones(size(SegStatdata{:,Deci.Plot.Draw{conds}(1)}.(info.parameter)(1,:,:,:))),[2 3 4 1]);
             end
             
         case 'Bsl'

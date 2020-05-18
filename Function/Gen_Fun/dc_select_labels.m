@@ -1,4 +1,4 @@
-function dc_select_labels(popup,event,label)
+function dc_select_labels(popup,event,label,varargin)
 
 pos      = get(0,'DefaultFigurePosition');
 
@@ -19,8 +19,16 @@ end
 userdata.select   = select;
 userdata.unselect = ~select;
 set(dlg, 'userdata', userdata); 
-uicontrol(dlg, 'style', 'text',       'position', [ 10 240+20 80+extra+extra  20], 'string', 'unselected');
-uicontrol(dlg, 'style', 'text',       'position', [200+extra 240+20 80+extra  20], 'string', 'selected  ');
+
+if ~isempty(varargin)
+    title = varargin{1};
+else
+    title = {'unselected','selected'};
+end
+
+
+uicontrol(dlg, 'style', 'text',       'position', [ 10 240+20 80+extra+extra  20], 'string', title{1});
+uicontrol(dlg, 'style', 'text',       'position', [200+extra 240+20 80+extra  20], 'string', title{2});
 uicontrol(dlg, 'style', 'listbox',    'position', [ 10  40+20 80+extra 200], 'min', 0, 'max', 2, 'tag', 'lbunsel') 
 uicontrol(dlg, 'style', 'listbox',    'position', [200+extra  40+20 80+extra 200], 'min', 0, 'max', 2, 'tag', 'lbsel') 
 uicontrol(dlg, 'style', 'pushbutton', 'position', [105+extra 175+20 80  20], 'string', 'add all >'   , 'callback', @label_addall);

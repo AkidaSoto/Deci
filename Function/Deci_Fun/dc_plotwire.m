@@ -22,6 +22,13 @@ for conds = 1:size(Subjects,2)
         end
         AvgData{1,conds} = rmfield(AvgData{1,conds},'cfg');
         
+        if Deci.Plot.GroupLevel
+            AvgData2{2,conds} = AvgData{1,conds};
+            AvgData2{1,conds} = AvgData{1,conds};
+            AvgData2{2,conds}.powspctrm = AvgData{1,conds}.powspctrm(Deci.Plot.Groups{2},:,:,:);
+            AvgData2{1,conds}.powspctrm = AvgData{1,conds}.powspctrm(Deci.Plot.Groups{1},:,:,:);
+        end
+        
     else
         Deci.Plot.Stat.do = false;
         AvgData(:,conds) = Subjects(:,conds);
@@ -56,7 +63,39 @@ end
 %% Plot
 
 if Deci.Plot.GrandAverage
+    
+    if Deci.Plot.GroupLevel
+    Deci.SubjectList = {'Group 1' 'Group 2'};    
+    
+     if Deci.Plot.GroupLevel
+        AvgData =  AvgData2;
+
+        for conds = 1:size(Subjects,2)
+            for subj = 1:size(AvgData(:,conds),1)
+                tcfg = [];
+                tcfg.nanmean = Deci.Plot.nanmean;
+                
+                tcfg.latency = Deci.Plot.Square.Toi;
+                tcfg.frequency = Deci.Plot.Square.Foi;
+                tcfg.channel = Deci.Plot.Square.Channel;
+                
+                Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+                
+                tcfg.avgoverchan = 'yes';
+                SegStatdata{subj,conds} = ft_selectdata(tcfg,Segdata{subj,conds});
+                
+                if strcmpi(Deci.Plot.FreqYScale,'log')
+                    Segdata{subj,conds}.freq = log(Segdata{subj,conds}.freq);
+                    SegStatdata{subj,conds}.freq = log(SegStatdata{subj,conds}.freq);
+                end
+            end
+        end
+     end
+    
+    
+    else
     Deci.SubjectList = {'Group Average'};
+    end
 end
 
 for cond = 1:length(Deci.Plot.Draw)
