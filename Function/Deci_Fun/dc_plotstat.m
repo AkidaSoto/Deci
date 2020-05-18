@@ -37,6 +37,7 @@ for conds = 1:length(Deci.Plot.Draw)
                 if info.isfreq
                     [StatData{conds}] = ft_freqstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
                 elseif info.isconn
+                    Deci.Plot.Stat.minnbchan = 1;
                     [StatData{conds}] = dc_connectivitystatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
                 else
                     [StatData{conds}] = ft_timelockstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
@@ -50,12 +51,18 @@ for conds = 1:length(Deci.Plot.Draw)
             Deci.Plot.Stat.tail = 0;
             Deci.Plot.Stat.statistic = 'indepsamplesT';
             
-            Deci.Plot.Stat.design = ones(size(SegStatdata{1}.(info.parameter),1));
+            Deci.Plot.Stat.design = ones([size(SegStatdata{1}.(info.parameter),1) 1]);
             
             if info.isfreq
                 allSegStatdata = ft_freqgrandaverage([],SegStatdata{Deci.Plot.Draw{conds}});
                 allSegStatdata.dimord = 'rpt_chan_freq_time';
                 [StatData{conds}] = ft_freqstatistics(Deci.Plot.Stat, allSegStatdata);
+            elseif info.isconn
+                
+                allSegStatdata = SegStatdata{1};
+                allSegStatdata.(info.parameter) = cellfun(@(c) c.(info.parameter),SegStatdata(Deci.Plot.Draw{conds}),'UniformOutput',false);
+                allSegStatdata.(info.parameter) = mean(cat(4,allSegStatdata.(info.parameter){:}),4);
+                [StatData{conds}] = dc_connectivitystatistics(Deci.Plot.Stat, allSegStatdata);
             else
                 allSegStatdata = ft_timelockgrandaverage([],SegStatdata{Deci.Plot.Draw{conds}});
                 allSegStatdata.dimord = 'rpt_chan_time';
