@@ -331,7 +331,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                 chanl = dc_getchans('noeyes');
                             end
                             
-                            if isequal(chanh,{'Reinhart-All'})
+                            if isequal(chanh,'Reinhart-All')
                                 chanh = dc_getchans('noeyes');
                             end
                             
