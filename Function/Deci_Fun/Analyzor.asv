@@ -308,8 +308,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     if Deci.Analysis.Freq.Extra.do
                         for funs = find(Deci.Analysis.Freq.Extra.list)
                             if Deci.Analysis.Freq.Extra.list(funs)
-                                %JC 6/2/20: i'm editing this to also pass "dat" to the function
-                                feval(Deci.Analysis.Freq.Extra.Functions{funs},Deci,info,freqplaceholder,dat,Deci.Analysis.Freq.Extra.Params{funs}{:});
+                                feval(Deci.Analysis.Freq.Extra.Functions{funs},Deci,info,freqplaceholder,Deci.Analysis.Freq.Extra.Params{funs}{:});
                             end
                         end
                     end

@@ -87,13 +87,15 @@ for ConnList = 1:length(Params.List)
                         
                         sub_freq{foicmb} = conn;
                         
-                        toi = round(conn.time,4) >= Deci.Plot.Extra.Conn.toi(1) & round(conn.time,4) <= Deci.Plot.Extra.Conn.toi(2);
-                        
-                        try
-                            Foi(subject_list,:) = conn.freq;
-                        catch
-                            error(['mismatch in frequencies at subject #' subject_list ', confirm and try reanalyzing?']);
+                        if isfield(conn,'time')
+                            toi = round(conn.time,4) >= Deci.Plot.Extra.Conn.toi(1) & round(conn.time,4) <= Deci.Plot.Extra.Conn.toi(2);
                         end
+                        
+%                         try
+%                             Foi(subject_list,:) = conn.freq;
+%                         catch
+%                             error(['mismatch in frequencies at subject #' subject_list ', confirm and try reanalyzing?']);
+%                         end
                         
                     end
                     
@@ -170,125 +172,125 @@ for ConnList = 1:length(Params.List)
         
         %% Bsl Correction
         
-        
-        display(' ');
-        display(['Using Lock: ' Deci.Plot.Lock]);
-        display(['Using Ref: ' Deci.Plot.BslRef ' at times ' strrep(regexprep(num2str(Deci.Plot.Bsl),' +',' '),' ','-')]);
-        
-        
-        if ~strcmp(Deci.Plot.BslType,'none')
+        if isfield(conn,'time');
+            display(' ');
+            display(['Using Lock: ' Deci.Plot.Lock]);
+            display(['Using Ref: ' Deci.Plot.BslRef ' at times ' strrep(regexprep(num2str(Deci.Plot.Bsl),' +',' '),' ','-')]);
             
-            for  subject_list = 1:length(Deci.SubjectList)
+            
+            if ~strcmp(Deci.Plot.BslType,'none')
                 
-                display(['Loading BSL for Subject #' num2str(subject_list) ': ' Deci.SubjectList{subject_list}]);
-                for Conditions = 1:length(Deci.Plot.CondTitle)
+                for  subject_list = 1:length(Deci.SubjectList)
                     
-                    
-                    if ~strcmpi(Deci.Plot.BslRef,Deci.Plot.Lock) || ~isempty(Deci.Plot.LockCond)
+                    display(['Loading BSL for Subject #' num2str(subject_list) ': ' Deci.SubjectList{subject_list}]);
+                    for Conditions = 1:length(Deci.Plot.CondTitle)
                         
                         
-                        for choicmb = 1:size(chancmb,1)
+                        if ~strcmpi(Deci.Plot.BslRef,Deci.Plot.Lock) || ~isempty(Deci.Plot.LockCond)
                             
-                            for foicmb = 1:size(freqcmb,1)
+                            
+                            for choicmb = 1:size(chancmb,1)
                                 
-                                if ~isempty(Deci.Plot.LockCond)
-                                    BslCond =    Deci.Plot.CondTitle{Deci.Plot.LockCond(Conditions)};
-                                else
-                                    BslCond =    Deci.Plot.CondTitle{Conditions};
+                                for foicmb = 1:size(freqcmb,1)
+                                    
+                                    if ~isempty(Deci.Plot.LockCond)
+                                        BslCond =    Deci.Plot.CondTitle{Deci.Plot.LockCond(Conditions)};
+                                    else
+                                        BslCond =    Deci.Plot.CondTitle{Conditions};
+                                    end
+                                    
+                                    
+                                    connfile = strjoin([chancmb(choicmb,1) chancmb(choicmb,2) freqcmb(foicmb,1) freqcmb(foicmb,2) conntype(conoi)],'_');
+                                    
+                                    load([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep BslCond filesep connfile  '.mat'],'conn');
+                                    
+                                    bslfreq{foicmb} = conn;
+                                    
+                                    
                                 end
                                 
-                                
-                                connfile = strjoin([chancmb(choicmb,1) chancmb(choicmb,2) freqcmb(foicmb,1) freqcmb(foicmb,2) conntype(conoi)],'_');
-                                
-                                load([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep BslCond filesep connfile  '.mat'],'conn');
-                                
-                                bslfreq{foicmb} = conn;
-                                
-                                
+                                if ismember(conntype(conoi),{'plv','wpli_debiased','wpli'})
+                                    param = [conntype{conoi} 'spctrm'];
+                                    
+                                    bsl_chan{choicmb} = bslfreq{foicmb};
+                                else
+                                    param = 'crsspctrm';
+                                    
+                                    ufl = unique(freqcmb(:,1));
+                                    
+                                    for fl = 1:length(ufl)
+                                        fldat = cellfun(@(c) c.crsspctrm,bslfreq(ismember(freqcmb(:,1),ufl{fl})),'UniformOutput',false);
+                                        tempdata{fl} = cat(2,fldat{:});
+                                    end
+                                    clear fldat
+                                    
+                                    bsl_chan{choicmb} = bslfreq{1};
+                                    bsl_chan{choicmb}.crsspctrm = cat(1,tempdata{:});
+                                    
+                                end
+                                clear bsl_freq
                             end
+                            
                             
                             if ismember(conntype(conoi),{'plv','wpli_debiased','wpli'})
                                 param = [conntype{conoi} 'spctrm'];
                                 
-                                bsl_chan{choicmb} = bslfreq{foicmb};
+                                uchoi = unique(chancmb(:,1));
+                                
+                                for choi = 1:length(uchoi)
+                                    chandat = cellfun(@(c) c.(param),bsl_chan(ismember(chancmb(:,1),uchoi{choi})),'UniformOutput',false);
+                                    tempdata{choi} = cat(3,chandat{:});
+                                end
+                                clear chandat
+                                
+                                bsl_cond{subject_list,Conditions} = bsl_chan{1};
+                                bsl_cond{subject_list,Conditions}.(param) = permute(cat(4,tempdata{:}),[4 3 1 2]);
+                                bsl_cond{subject_list,Conditions}.labelcmb = chancmb;
+                                bsl_cond{subject_list,Conditions}.dimord = ['chanlow_chanhigh_' bsl_cond{subject_list,Conditions}.dimord];
                             else
                                 param = 'crsspctrm';
                                 
-                                ufl = unique(freqcmb(:,1));
+                                chandat = cellfun(@(c) c.crsspctrm, bsl_chan,'un',0);
                                 
-                                for fl = 1:length(ufl)
-                                    fldat = cellfun(@(c) c.crsspctrm,bslfreq(ismember(freqcmb(:,1),ufl{fl})),'UniformOutput',false);
-                                    tempdata{fl} = cat(2,fldat{:});
-                                end
-                                clear fldat
-                                
-                                bsl_chan{choicmb} = bslfreq{1};
-                                bsl_chan{choicmb}.crsspctrm = cat(1,tempdata{:});
-                                
+                                bsl_cond{subject_list,Conditions} = bsl_chan{1};
+                                bsl_cond{subject_list,Conditions}.crsspctrm = permute(cat(length(strsplit(bsl_chan{1}.dimord,'_'))+1,chandat{:}),[length(strsplit(bsl_chan{1}.dimord,'_'))+1 1:length(strsplit(bsl_chan{1}.dimord,'_'))]);
+                                bsl_cond{subject_list,Conditions}.dimord = ['chan_' bsl_cond{subject_list,Conditions}.dimord];
+                                bsl_cond{subject_list,Conditions}.label = chancmb(:,1)';
                             end
-                            clear bsl_freq
-                        end
-                        
-                        
-                        if ismember(conntype(conoi),{'plv','wpli_debiased','wpli'})
-                            param = [conntype{conoi} 'spctrm'];
+                            clear sub_chan
                             
-                            uchoi = unique(chancmb(:,1));
-                            
-                            for choi = 1:length(uchoi)
-                                chandat = cellfun(@(c) c.(param),bsl_chan(ismember(chancmb(:,1),uchoi{choi})),'UniformOutput',false);
-                                tempdata{choi} = cat(3,chandat{:});
-                            end
-                            clear chandat
-                            
-                            bsl_cond{subject_list,Conditions} = bsl_chan{1};
-                            bsl_cond{subject_list,Conditions}.(param) = permute(cat(4,tempdata{:}),[4 3 1 2]);
-                            bsl_cond{subject_list,Conditions}.labelcmb = chancmb;
-                            bsl_cond{subject_list,Conditions}.dimord = ['chanlow_chanhigh_' bsl_cond{subject_list,Conditions}.dimord];
                         else
-                            param = 'crsspctrm';
-                            
-                            chandat = cellfun(@(c) c.crsspctrm, bsl_chan,'un',0);
-                            
-                            bsl_cond{subject_list,Conditions} = bsl_chan{1};
-                            bsl_cond{subject_list,Conditions}.crsspctrm = permute(cat(length(strsplit(bsl_chan{1}.dimord,'_'))+1,chandat{:}),[length(strsplit(bsl_chan{1}.dimord,'_'))+1 1:length(strsplit(bsl_chan{1}.dimord,'_'))]);
-                            bsl_cond{subject_list,Conditions}.dimord = ['chan_' bsl_cond{subject_list,Conditions}.dimord];
-                            bsl_cond{subject_list,Conditions}.label = chancmb(:,1)';
+                            bsl_cond{subject_list,Conditions} = sub_cond{subject_list,Conditions};
                         end
-                        clear sub_chan
                         
-                    else
-                        bsl_cond{subject_list,Conditions} = sub_cond{subject_list,Conditions};
+                        
+                        toi2 = bsl_cond{subject_list,Conditions}.time >= round(Deci.Plot.Bsl(1),4) & bsl_cond{subject_list,Conditions}.time <= round(Deci.Plot.Bsl(2),4);
+                        
+                        bsl_cond{subject_list,Conditions}.(param) = nanmean(bsl_cond{subject_list,Conditions}.(param)(:,:,:,toi2),4);
+                        bsl_cond{subject_list,Conditions}.(param) = repmat(bsl_cond{subject_list,Conditions}.(param),[1 1 1 size(sub_cond{subject_list,Conditions}.(param),4)]);
+                        
+                        
+                        switch Deci.Plot.BslType
+                            case 'none'
+                            case 'absolute'
+                                sub_cond{subject_list,Conditions}.(param) =  sub_cond{subject_list,Conditions}.(param) - bsl_cond{subject_list,Conditions}.(param);
+                            case 'relative'
+                                sub_cond{subject_list,Conditions}.(param)=  sub_cond{subject_list,Conditions}.(param) ./ bsl_cond{subject_list,Conditions}.(param);
+                            case 'relchange'
+                                sub_cond{subject_list,Conditions}.(param) = ( sub_cond{subject_list,Conditions}.(param) - bsl_cond{subject_list,Conditions}.(param)) ./ bsl_cond{subject_list,Conditions}.(param);
+                            case 'db'
+                                sub_cond{subject_list,Conditions}.(param) = 10*log10( sub_cond{subject_list,Conditions}.(param) ./ bsl_cond{subject_list,Conditions}.(param));
+                        end
+                        
+                        sub_cond{subject_list,Conditions}.time = sub_cond{subject_list,Conditions}.time(toi);
+                        sub_cond{subject_list,Conditions}.(param) = sub_cond{subject_list,Conditions}.(param)(:,:,:,toi);
+                        
                     end
-                    
-                    
-                    toi2 = bsl_cond{subject_list,Conditions}.time >= round(Deci.Plot.Bsl(1),4) & bsl_cond{subject_list,Conditions}.time <= round(Deci.Plot.Bsl(2),4);
-                    
-                    bsl_cond{subject_list,Conditions}.(param) = nanmean(bsl_cond{subject_list,Conditions}.(param)(:,:,:,toi2),4);
-                    bsl_cond{subject_list,Conditions}.(param) = repmat(bsl_cond{subject_list,Conditions}.(param),[1 1 1 size(sub_cond{subject_list,Conditions}.(param),4)]);
-                    
-                    
-                    switch Deci.Plot.BslType
-                        case 'none'
-                        case 'absolute'
-                            sub_cond{subject_list,Conditions}.(param) =  sub_cond{subject_list,Conditions}.(param) - bsl_cond{subject_list,Conditions}.(param);
-                        case 'relative'
-                            sub_cond{subject_list,Conditions}.(param)=  sub_cond{subject_list,Conditions}.(param) ./ bsl_cond{subject_list,Conditions}.(param);
-                        case 'relchange'
-                            sub_cond{subject_list,Conditions}.(param) = ( sub_cond{subject_list,Conditions}.(param) - bsl_cond{subject_list,Conditions}.(param)) ./ bsl_cond{subject_list,Conditions}.(param);
-                        case 'db'
-                            sub_cond{subject_list,Conditions}.(param) = 10*log10( sub_cond{subject_list,Conditions}.(param) ./ bsl_cond{subject_list,Conditions}.(param));
-                    end
-                    
-                    sub_cond{subject_list,Conditions}.time = sub_cond{subject_list,Conditions}.time(toi);
-                    sub_cond{subject_list,Conditions}.(param) = sub_cond{subject_list,Conditions}.(param)(:,:,:,toi);
                     
                 end
-                
             end
+            
         end
-        
-        
         %% Math
         if ~isempty(Deci.Plot.Math)
             
@@ -370,9 +372,11 @@ for ConnList = 1:length(Params.List)
                 if Params.FL_FH.do && all(ismember({'freqlow' 'freqhigh'},dim))
                     FL_FH{subjs,conds} = ConnData{subjs,conds};
                     
+                    if isfield(conn,'time')
                     flfhtoi = FL_FH{subjs,conds}.time  >= round(Deci.Plot.Extra.Conn.FL_FH.toi(1),4) & FL_FH{subjs,conds}.time <= round(Deci.Plot.Extra.Conn.FL_FH.toi(2),4);
                     FL_FH{subjs,conds}.time = FL_FH{subjs,conds}.time(flfhtoi);
                     FL_FH{subjs,conds}.(param) = FL_FH{subjs,conds}.param(:,:,:,flfhtoi);
+                    end
                     
                     FL_FH{subjs,conds}.(param) = permute(mean(FL_FH{subjs,conds}.(param),[find(~ismember(dim,{'freqlow' 'freqhigh'}))],'omitnan'),[find(ismember(dim,{'freqlow' 'freqhigh'})) find(~ismember(dim,{'freqlow' 'freqhigh'}))]);
                     FL_FH{subjs,conds}.dimord = 'freqlow_freqhigh';
@@ -393,9 +397,11 @@ for ConnList = 1:length(Params.List)
                 if Params.CL_CH.do && all(ismember({'chanlow' 'chanhigh'},dim))
                     CL_CH{subjs,conds} = ConnData{subjs,conds};
                     
+                    if isfield(conn,'time')
                     clchtoi = CL_CH{subjs,conds}.time  >= round(Deci.Plot.Extra.Conn.CL_CH.toi(1),4) & CL_CH{subjs,conds}.time <= round(Deci.Plot.Extra.Conn.CL_CH.toi(2),4);
                     CL_CH{subjs,conds}.time = CL_CH{subjs,conds}.time(clchtoi);
                     CL_CH{subjs,conds}.(param) = CL_CH{subjs,conds}.(param)(:,:,:,clchtoi);
+                    end
                     
                     CL_CH{subjs,conds}.(param) = permute(mean(CL_CH{subjs,conds}.(param),[find(~ismember(dim,{'chanlow' 'chanhigh'}))],'omitnan'),[find(ismember(dim,{'chanlow' 'chanhigh'})) find(~ismember(dim,{'chanlow' 'chanhigh'}))]);
                     CL_CH{subjs,conds}.dimord = 'chanlow_chanhigh';
@@ -496,27 +502,27 @@ for ConnList = 1:length(Params.List)
             
             
             if FLFH
-            FLFH_StatData = dc_plotstat(Deci,FL_FH_Stat,info);
+                FLFH_StatData = dc_plotstat(Deci,FL_FH_Stat,info);
             end
             
             if CLCH
-            CLCH_StatData = dc_plotstat(Deci,CL_CH_Stat,info);    
+                CLCH_StatData = dc_plotstat(Deci,CL_CH_Stat,info);
             end
             
             if FLtime
-             FLtime_StatData = dc_plotstat(Deci,FL_time_Stat,info);  
+                FLtime_StatData = dc_plotstat(Deci,FL_time_Stat,info);
             end
             
             if FHtime
-             FHtime_StatData = dc_plotstat(Deci,FH_time_Stat,info);    
+                FHtime_StatData = dc_plotstat(Deci,FH_time_Stat,info);
             end
             
             if CLtime
-             CLtime_StatData = dc_plotstat(Deci,CL_time_Stat,info);    
+                CLtime_StatData = dc_plotstat(Deci,CL_time_Stat,info);
             end
             
             if CHtime
-             CHtime_StatData = dc_plotstat(Deci,CH_time_Stat,info);    
+                CHtime_StatData = dc_plotstat(Deci,CH_time_Stat,info);
             end
             
         end
@@ -612,10 +618,11 @@ for ConnList = 1:length(Params.List)
                         
                         h = imagesc(subby_flfh(subj,subcond),unique(freq.freqlow),unique(freq.freqhigh),freq.(param)(ufreqlow,ufreqhigh)');
                         
+                        if Deci.Plot.Stat.do
                         set(h, 'AlphaDataMapping', 'scaled');
                         h.AlphaData = double(FLFH_StatData{cond}.mask)';
                         h.AlphaData(h.AlphaData == 0) = .2;
-                        
+                        end
                         
                         axis tight
                         colorbar;
@@ -641,9 +648,13 @@ for ConnList = 1:length(Params.List)
                         chan = CL_CH{subj,Deci.Plot.Draw{cond}(subcond)};
                         
                         h = imagesc(subby_clch(subj,subcond),1:length(chan.chanlow),1:length(chan.chanhigh),chan.(param)');
+                        
+                        
+                        if Deci.Plot.Stat.do
                         set(h, 'AlphaDataMapping', 'scaled');
                         h.AlphaData = double(CLCH_StatData{cond}.mask)';
                         h.AlphaData(h.AlphaData == 0) = .2;
+                        end
                         
                         subby_clch(subj,subcond).XTick = 1:length(chan.chanlow);
                         subby_clch(subj,subcond).XTickLabel = chan.chanlow;
@@ -678,10 +689,12 @@ for ConnList = 1:length(Params.List)
                         
                         [~,h] = contourf(subby_fltime(subj,subcond),freq.time,unique(freq.(dim{ismember(dim,{'freq' 'freqlow'})})),freq.(param)(ufreqlow,:));
                         
+                        
+                        if Deci.Plot.Stat.do
                         h.LineColor = 'none';
                         h.UserData = h.ZData;
                         h.ZData = h.ZData.*[double(FLtime_StatData{cond}.mask)];
-                        
+                        end
                         
                         colorbar;
                         colormap(Deci.Plot.ColorMap)
@@ -755,11 +768,11 @@ for ConnList = 1:length(Params.List)
                         
                         [~,h] = contourf(subby_fhtime(subj,subcond),freq.time,unique(freq.freqhigh),freq.param(ufreqhigh,:));
                         
-                        
+                        if Deci.Plot.Stat.do
                         h.LineColor = 'none';
                         h.UserData = h.ZData;
                         h.ZData = h.ZData.*[double(FHtime_StatData{cond}.mask)];
-                        
+                        end
                         
                         colorbar;
                         colormap(Deci.Plot.ColorMap)
@@ -846,10 +859,12 @@ for ConnList = 1:length(Params.List)
                             subby_cltime(subj,subcond).YTick = 1:length(freq.label);
                         end
                         
+                        if Deci.Plot.Stat.do
                         set(h, 'AlphaDataMapping', 'scaled');
                         h.AlphaData = double(CLtime_StatData{cond}.mask)';
                         h.AlphaData(h.AlphaData == 0) = .2;
-
+                        end
+                        
                         colormap(Deci.Plot.ColorMap)
                         colorbar;
                         if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
@@ -922,9 +937,12 @@ for ConnList = 1:length(Params.List)
                         
                         h = imagesc(subby_chtime(subj,subcond),freq.time,1:length(unique(freq.labelcmb(:,2))),freq.(param));
                         
+                        if Deci.Plot.Stat.do
                         set(h, 'AlphaDataMapping', 'scaled');
                         h.AlphaData = double(CHtime_StatData{cond}.mask)';
                         h.AlphaData(h.AlphaData == 0) = .2;
+                        end
+                        
                         
                         colorbar;
                         colormap(Deci.Plot.ColorMap)
