@@ -327,6 +327,15 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             Current = Deci.Analysis.Connectivity.Sets{Conn};
                             chanl = Current{1};
                             chanh = Current{2};
+                            
+                            if isequal(chanl,{'Reinhart-All'})
+                                chanl = dc_getchans('noeyes');
+                            end
+                            
+                            if isequal(chanh,{'Reinhart-All'})
+                                chanh = dc_getchans('noeyes');
+                            end
+                            
                             freqlow = Current{3};
                             freqhigh = Current{4};
                             conntype = Current{5};
