@@ -84,10 +84,9 @@ for ConnList = 1:length(Params.List)
         
         
         %% load 1 full conoi
-        clear sub_cond Foi
+        clear sub_cond Foi tempdata
         Deci.Plot.Extra.Conn = Exist(Deci.Plot.Extra.Conn,'toi',[-inf inf]);
-        
-        
+
         
         for  subject_list = 1:length(Deci.SubjectList)
             
@@ -615,7 +614,7 @@ for ConnList = 1:length(Params.List)
     
     
     for cond = 1:length(Deci.Plot.Draw)
-        clear flfh_fig fltime_fig fhtime_fig
+        clear flfh_fig fltime_fig fhtime_fig cl_fig
         
         
         for subj = 1:size(ConnData,1)
@@ -643,6 +642,10 @@ for ConnList = 1:length(Params.List)
             
             if CL_do
                 cl_fig(subj) = figure;
+                
+                
+                CL_StatData{cond}.mask = double(CL_StatData{cond}.mask);
+                CL_StatData{cond}.mask(CL_StatData{cond}.mask == 0) = .2;
                 
                 if Deci.Plot.Stat.do
                     dc_pmask(cl_fig)
@@ -784,6 +787,10 @@ for ConnList = 1:length(Params.List)
                     chan.mask = CL_StatData{cond}.mask;
                     
                     pcfg = cfg;
+
+                    pcfg.clim = 'maxmin';
+                    pcfg.maskparameter ='mask';
+   
                     pcfg.imagetype = Deci.Plot.ImageType;
                     pcfg.comment = 'no';
                     pcfg.style = 'fill';
