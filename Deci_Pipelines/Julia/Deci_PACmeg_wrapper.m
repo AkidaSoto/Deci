@@ -18,11 +18,24 @@ end
 % cfg.surr_N        = Number of iterations used for surrogate analysis
 % cfg.mask          = filters ALL data but masks between times [a b]
 % cfg.avg_PAC       = Average PAC over trials ('yes' or 'no')
+
+
 params.Fs = 1/(dat.time{1,1}(2)-dat.time{1,1}(1));
-[MI_matrix_raw,MI_matrix_surr] = PACmeg(params,data_table);
+% params.cfg = freq.cfg;
+% params.cfg.method = 'wavelet';
+% params.cfg.output      = 'fourier';
+% params.cfg.keeptrials  = 'yes' ;
+% phase_freqs = params.phase_freqs;
+% params.cfg.foilim        = [phase_freqs(1)-1 phase_freqs(1)+1];
+% params.cfg.toi = 'all';
+% params.dat = dat;
+
+[MI_matrix_raw,MI_matrix_surr] = Deci_PACmeg(params,data_table);
 MI_full = freq;
 MI_full.MI_matrix_raw = MI_matrix_raw;
 MI_full.MI_matrix_surr = MI_matrix_surr;
+MI_full.MI_avg_surr = squeeze(mean(MI_matrix_surr));
+MI_full.MI_matrix_norm = MI_matrix_raw./mean(MI_matrix_surr);
 MI_full.params = params;
 MI_full.info = info;
 %MI_full = rmfield(MI_full,'freq');

@@ -1,12 +1,12 @@
-%% 
+%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% This function performs statistical analyis on the matrix of modulation 
+% This function performs statistical analyis on the matrix of modulation
 % index (MI) values computed for PAC analysis.
 %
-% The script loads the comodulogram and adds the necessary info to make 
+% The script loads the comodulogram and adds the necessary info to make
 % into a FT data structure.
 %
-% Group statistics are then computed using cluster-based permutation tests 
+% Group statistics are then computed using cluster-based permutation tests
 % based on the Montercarlo method (Maris & Oostenveld, 2007).
 %
 % Inputs:
@@ -56,7 +56,7 @@ phase_list = params.phase_freqs;
 
 grandavgA = [];
 
-%so im just gonna have "post" be the raw and "pre" be the surrogate for now
+%gonna hardcode in first 30 trials bc im nasty
 
 for i =1:length(Subjects)
     
@@ -73,9 +73,15 @@ for i =1:length(Subjects)
     %if surr == 1
     %    MI_post.powspctrm = matrix_post_surrogates;
     % if loading raw MI estimate then the name of the variable is
-    % matrix_XXX   
+    % matrix_XXX
     %else
-        MI_post.powspctrm = Subjects{i,1}.MI_matrix_raw;
+    %the following should not be hardcoded as "3" but im lazy
+    MI_norm = Subjects{i,params.PAC_cond1}.MI_matrix_raw./mean(Subjects_surr{i,3}.MI_matrix_surr);
+    if params.trialflag
+        MI_post.powspctrm = squeeze(mean(MI_norm(params.trialnums,:,:)));
+    else
+        MI_post.powspctrm = squeeze(mean(MI_norm));
+    end
     %end
     MI_post.powspctrm = reshape(MI_post.powspctrm,[1,length(amp_list),length(phase_list)]);
     % Add to meta-matrix
@@ -99,9 +105,14 @@ for i =1:length(Subjects)
     % if loading surrogates then the name of the variable is
     % matrix_XXX_surrogates
     %if surr == 1
-        MI_pre.powspctrm = squeeze(mean(Subjects_surr{i,1}.MI_matrix_surr));
+    MI_norm = Subjects{i,params.PAC_cond2}.MI_matrix_raw./mean(Subjects_surr{i,3}.MI_matrix_surr);
+    if params.trialflag
+        MI_pre.powspctrm = squeeze(mean(MI_norm(params.trialnums,:,:)));
+    else
+        MI_pre.powspctrm = squeeze(mean(MI_norm));
+    end
     % if loading raw MI estimate then the name of the variable is
-    % matrix_XXX 
+    % matrix_XXX
     %else
     %    MI_pre.powspctrm = matrix_pre;
     %end
@@ -113,7 +124,11 @@ end
 
 %% Perform Stats
 cfg=[];
-cfg.latency = 'all';
+if params.latencyflag
+    cfg.latency = params.latency;
+else
+    cfg.latency = 'all';
+end
 cfg.frequency = 'all';
 cfg.dim         = grandavgA{1}.dimord;
 cfg.method      = 'montecarlo';
@@ -122,7 +137,7 @@ cfg.parameter   = 'powspctrm';
 cfg.correctm    = 'cluster';
 cfg.computecritval = 'yes';
 cfg.numrandomization = 1000;
-cfg.alpha       = 0.05; % Set alpha level
+cfg.alpha       = 0.1; % Set alpha level
 cfg.tail        = 0;    % Two sided testing
 
 % Design Matrix
@@ -136,22 +151,39 @@ stat = ft_freqstatistics(cfg,grandavgA{:}, grandavgB{:});
 
 %% Compute group difference between matrix_post and matrix_pre
 cfg = [];
-post_MI = ft_freqgrandaverage(cfg,grandavgA{:})
-pre_MI = ft_freqgrandaverage(cfg,grandavgB{:})
+post_MI = ft_freqgrandaverage(cfg,grandavgA{:});
+pre_MI = ft_freqgrandaverage(cfg,grandavgB{:});
 
 cfg = [];
 cfg.parameter = 'powspctrm';
 cfg.operation = 'subtract';
-diff_MI = ft_math(cfg,post_MI,pre_MI)
+diff_MI = ft_math(cfg,post_MI,pre_MI);
 
-cfg = [];
-cfg.zlim = 'maxabs';
-cfg.ylim = [params.amp_freqs(1) params.amp_freqs(end)];
-cfg.xlim    = [params.phase_freqs(1) params.phase_freqs(end)];
-fig1 = figure; 
-cfg.imagetype = 'straight';
-ft_singleplotTFR(cfg,diff_MI); colormap(jet);
-title('Difference in MI)');
+if params.trialflag
+    trialchar = [num2str(params.trialnums(1)),'-',num2str(params.trialnums(end))];
+end
+
+if params.latencyflag
+    timechar = [num2str(params.latency(1)),'-',num2str(params.latency(end))];
+end
+
+condchar = [char(Deci.Plot.CondTitle(params.PAC_cond1)) '-' char(Deci.Plot.CondTitle(params.PAC_cond2))];
+
+%this is broken for some reason
+
+% fig1 = figure;
+% cfg = [];
+% cfg.parameter = 'powspctrm';
+% cfg.zlim = 'maxabs';
+% cfg.ylim = [params.amp_freqs(1) params.amp_freqs(end)];
+% cfg.xlim    = [params.phase_freqs(1) params.phase_freqs(end)];
+% cfg.imagetype = 'straight';
+% ft_singleplotTFR(cfg,diff_MI); colormap(jet);
+% if params.trialflag
+%     title([condchar ' trials ' trialchar ' Difference in MI']);
+% else
+%     title([condchar ' Difference in MI']);
+% end
 
 %% Display results of stats (very rough - use make_smoothed_comodulograms)
 cfg=[];
@@ -159,16 +191,32 @@ cfg.parameter = 'stat';
 cfg.maskparameter = 'mask';
 cfg.maskstyle     = 'outline';
 cfg.zlim = 'maxabs';
-fig2 = figure; 
+fig2 = figure;
 cfg.imagetype = 'straight';
 ft_singleplotTFR(cfg,stat); colormap('jet');
 xlabel('Phase (Hz)'); ylabel('Amplitude (Hz)');
-title('Stat (z-scores)')
+
+titlestr = [condchar ' t statistic'];
+filename = [Deci.Folder.Plot filesep 'PACmeg' filesep condchar 'Stat'];
+
+if params.trialflag
+    titlestr = [titlestr ' trials ' trialchar];
+    filename = [filename '_' trialchar];
+end
+
+if params.latencyflag
+    titlestr = [titlestr ' from ' timechar 'sec'];
+    filename = [filename '_' timechar 'sec'];
+end
+
+title(titlestr);
 
 mkdir([Deci.Folder.Plot filesep 'PACmeg']);
-savefig(fig1,[Deci.Folder.Plot filesep 'PACmeg' filesep 'Diff']);
-savefig(fig2,[Deci.Folder.Plot filesep 'PACmeg' filesep 'Stat']);
-save([Deci.Folder.Plot filesep 'PACmeg' filesep 'stats']);
+
+%savefig(fig1,[Deci.Folder.Plot filesep 'PACmeg' filesep condchar 'Diff']);
+savefig(fig2,filename);
+saveas(fig2,filename,'png');
+save(filename);
 end
 
 
