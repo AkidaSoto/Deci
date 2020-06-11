@@ -4,14 +4,14 @@
 %
 % 0. MainMenu
 
-%addpath(genpath('/projectnb/crc-nak/chartove/Julia/Deci'))
-%addpath(genpath('/projectnb/crc-nak/chartove/Julia/OurFieldTrip'))
+addpath(genpath('/projectnb/crc-nak/chartove/Julia/Deci'))
+addpath(genpath('/projectnb/crc-nak/chartove/Julia/OurFieldTrip'))
 addpath(genpath('C:\Users\User\Documents\GitHub\PACmeg'))
 
 Deci = [];
 Deci.Folder.Raw         = ['G:\Julia\New_Datasets\3_9_2020'];              % Raw Data Folder Directory
 Deci.SubjectList        = 'gui';                                                % Cell Array of strings, 'all' or 'gui'
-Deci.Step               = 4;                                            % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
+Deci.Step               = 5;                                            % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
 Deci.Proceed            = false;                                                                  % Continue to next step when current step is done?
 Deci.PCom               = true;                                                       % Activates Parallel Computing for PP and Analysis only
 Deci.Folder.Version     = ['G:\Julia\ProcessedData'];        % Output Folder Directory
@@ -55,13 +55,13 @@ Deci.Analysis.CondTitle     = {'Cor' 'Inc' 'AllFeedback'};
 
 Deci.Analysis.Channels = {'FCz'};
 Deci.Analysis.Toi           = [-1 2];       %glitches if -1 2 which is what it was before                                      % Time Range to save
-Deci.Analysis.Toilim        = [-2 3];
+Deci.Analysis.Toilim        = [-4 5];
 
 
 Deci.Analysis.Connectivity.Sets = {{{'FCz'} {'FCz'} 'lowf' 'beta' 'mi'}}; %...
 %{{{'FCz'} {'FCz'} 'theta' 'beta' 'mi'}};
 %{{'FCz'} {'FCz'} 'theta' 'lowgamma' 'nmcoupling'}};
-Deci.Analysis.Connectivity.DownSample = 500;
+Deci.Analysis.Connectivity.DownSample = 100;
 
 %connectivity statistics
 Deci.Analysis.Connectivity.Zscore.do = false;
@@ -79,13 +79,13 @@ if Deci.Step == 4
     Deci.Analysis.Freq.method        = 'wavelet';                                                  % Currently only uses 'wavelet' and 'hilbert'
     Deci.Analysis.Freq.foi           = exp(linspace(log(2),log(100),25));                           % Frequency of Interest
     Deci.Analysis.Freq.width         = exp(linspace(log(3),log(13),25));			%number of cycles
-    %Deci.Analysis.Freq.gwidth        = 4;											%width of gaussian
+    Deci.Analysis.Freq.gwidth        = 4;											%width of gaussian
     
     Deci.Analysis.ERP.do  = false;
     Deci.Analysis.Freq.do  = true;
     Deci.Analysis.Freq.Extra.do = true;
     Deci.Analysis.Extra.do  = false;
-    Deci.Analysis.Connectivity.do = true;
+    Deci.Analysis.Connectivity.do = false;
     
     %Deci.Analysis.Freq.Extra.Corr.phase_freqs = 2*(1.3.^[0:5]);
     %Deci.Analysis.Freq.Extra.Corr.amp_freqs = round(12*(1.15.^[0:15]));
@@ -98,6 +98,7 @@ if Deci.Step == 4
     Deci.Analysis.Freq.Extra.Corr.surr_method = 'swap_trials';
     Deci.Analysis.Freq.Extra.Corr.surr_N = 500;
     Deci.Analysis.Freq.Extra.Corr.avg_PAC = 'no';
+    Deci.Analysis.Freq.Extra.Corr.mask = [-0.5 0];
     
     Deci.Analysis.Freq.Extra.do = true;
     Deci.Analysis.Freq.Extra.list = [true];
@@ -109,19 +110,20 @@ if Deci.Step == 4
 else
     
     Deci.Run.Behavior = false;
-    Deci.Run.Freq =true;
+    Deci.Run.Freq = false;
     Deci.Run.ERP =false;
-    Deci.Run.Extra = false;
+    Deci.Run.Extra = true;
     
     Deci.Plot.BslRef ='Fdb Onset';
     Deci.Plot.Lock = 'Fdb Onset';
     
     Deci.Plot.GrandAverage = true;
     
+    Deci.Analysis.CondTitle     = {'Cor' 'Inc' 'AllFeedback'};
     Deci.Plot.CondTitle     = {'Cor' 'Inc' 'AllFeedback'};
     
     Deci.Plot.Math         = {'x2-x1'};           % Condition Math done after Bsl, Condition Indexes are appended on.
-    Deci.Plot.Draw         = {[1:2] [3]};                   % Cell array of Condition Index for each figure
+    Deci.Plot.Draw         = {[1:2] [4]};                   % Cell array of Condition Index for each figure
     Deci.Plot.Figures      = [true true];                             % Which figure to plot currently
     Deci.Plot.Title        = {'All Trials' 'Subtraction'};          % Title for each figure
     Deci.Plot.Subtitle     = {{'Cor' 'Inc'} {'Inc - Cor'}};     % Cell array of strings of subtitles for each Condition
@@ -156,19 +158,19 @@ else
         Deci.Plot.Bsl     = [-.5 0];
     end
     
-    if Deci.Run.Extra
-        Deci.Plot.BslType = 'absolute';
-        Deci.Plot.Roi = 'maxabs';
-        Deci.Plot.ColorMap = flip(CoolMap);
-        
-        Deci.Plot.Stat.do = false;
-        Deci.Plot.Stat.Type = 'Anova/T-test';
-        Deci.Plot.Stat.alpha = .05;
-        Deci.Plot.Stat.correctm = 'fdr';
-        
-        
-        
-    elseif  Deci.Plot.Square.do
+    %     if Deci.Run.Extra
+    %         Deci.Plot.BslType = 'absolute';
+    %         Deci.Plot.Roi = 'maxabs';
+    %         Deci.Plot.ColorMap = flip(CoolMap);
+    %
+    %         Deci.Plot.Stat.do = false;
+    %         Deci.Plot.Stat.Type = 'Anova/T-test';
+    %         Deci.Plot.Stat.alpha = .05;
+    %         Deci.Plot.Stat.correctm = 'fdr';
+    %
+    %
+    
+    if  Deci.Plot.Square.do
         Omnibus = true;
         
         %statistics
@@ -233,10 +235,10 @@ else
     % Deci.Plot.Extra.Conn.amp_freqs = round(12*(1.15.^[0:15]));
     Deci.Plot.Extra.Conn.phase_freqs = 2:0.5:8;
     Deci.Plot.Extra.Conn.amp_freqs = 12:2:100;
-    Deci.Plot.Extra.Conn.trialflag = true;
+    Deci.Plot.Extra.Conn.trialflag = false;
     Deci.Plot.Extra.Conn.trialnums = [1:30];
-    Deci.Plot.Extra.Conn.latencyflag = 'false';
-    Deci.Plot.Extra.Conn.latency = 'all';
+    Deci.Plot.Extra.Conn.latencyflag = true;
+    Deci.Plot.Extra.Conn.latency = [-0.5 0];
     %the following is a really kludgy way of doing this but basically this
     %is selecting conditions from Deci.Plot.CondTitle
     Deci.Plot.Extra.Conn.PAC_cond1 = 1;

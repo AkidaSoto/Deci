@@ -124,11 +124,7 @@ end
 
 %% Perform Stats
 cfg=[];
-if params.latencyflag
-    cfg.latency = params.latency;
-else
     cfg.latency = 'all';
-end
 cfg.frequency = 'all';
 cfg.dim         = grandavgA{1}.dimord;
 cfg.method      = 'montecarlo';
@@ -214,7 +210,7 @@ title(titlestr);
 mkdir([Deci.Folder.Plot filesep 'PACmeg']);
 
 %savefig(fig1,[Deci.Folder.Plot filesep 'PACmeg' filesep condchar 'Diff']);
-savefig(fig2,filename);
+savefig(fig2,[filename '.fig']);
 saveas(fig2,filename,'png');
 save(filename);
 end

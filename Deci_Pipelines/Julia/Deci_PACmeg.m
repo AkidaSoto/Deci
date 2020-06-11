@@ -90,6 +90,11 @@ fprintf('Using the %s method for PAC computation\n',method);
 
 % Get Masking
 mask = ft_getopt(cfg,'mask',[]);
+if ~isempty(mask)
+    roundtime = round(cfg.time{1,1}, 3);
+maskstart = find(roundtime == mask(1));
+maskend = find(roundtime == mask(2));
+end
 
 % Get surrogate method & number of iterations
 surr_method = ft_getopt(cfg,'surr_method',[]);
@@ -159,8 +164,8 @@ disp('Filtering Phase...');
 %JC 6/9/20: making a new version of this that uses wavelets
 
 if ~isempty(mask)
-    phase_filtered = zeros(size(data,1),length(phase_freqs),length(data(:,mask(1):...
-        mask(2))));
+    phase_filtered = zeros(size(data,1),length(phase_freqs),size(data(:,maskstart:...
+        maskend),2));
 else
     phase_filtered = zeros(size(data,1),length(phase_freqs),length(data));
     
@@ -177,8 +182,8 @@ for phase = 1:length(phase_freqs)
 %         error('Could not filter ... Perhaps try a lower filter order');
 %     end
     if ~isempty(mask)
-        phase_filtered(:,phase,:) = ft_preproc_hilbert(filt(:,mask(1):...
-            mask(2)), 'angle');
+        phase_filtered(:,phase,:) = ft_preproc_hilbert(filt(:,maskstart:...
+            maskend), 'angle');
     else
         phase_filtered(:,phase,:) = ft_preproc_hilbert(filt, 'angle');
     end
@@ -193,8 +198,8 @@ disp('Filtering Amplitude...');
 %JC 6/9/20: making a new version of this that uses wavelets
 
 if ~isempty(mask)
-    amp_filtered = zeros(size(data,1),length(amp_freqs),length(data(:,mask(1):...
-        mask(2))));
+    amp_filtered = zeros(size(data,1),length(amp_freqs),size(data(:,maskstart:...
+        maskend),2));
 else
     amp_filtered = zeros(size(data,1),length(amp_freqs),length(data));
 end
@@ -263,8 +268,8 @@ for amp = 1:length(amp_freqs)
 %     
     % Take abs (and mask values if required)
     if ~isempty(mask)
-        amp_filtered(:,amp,:) = ft_preproc_hilbert(filt(:,mask(1):...
-            mask(2)), 'abs');
+        amp_filtered(:,amp,:) = ft_preproc_hilbert(filt(:,maskstart:...
+            maskend), 'abs');
     else
         amp_filtered(:,amp,:) = ft_preproc_hilbert(filt, 'abs');
     end

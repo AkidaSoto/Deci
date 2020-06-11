@@ -21,6 +21,7 @@ end
 
 
 params.Fs = 1/(dat.time{1,1}(2)-dat.time{1,1}(1));
+params.time = dat.time;
 % params.cfg = freq.cfg;
 % params.cfg.method = 'wavelet';
 % params.cfg.output      = 'fourier';
