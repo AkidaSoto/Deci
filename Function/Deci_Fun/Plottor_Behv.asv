@@ -284,7 +284,7 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
                 
                 RTsem{fig} = nanstd(RT{fig},[],1)/sqrt(size(RT{fig},1));
                 RT{fig} =  nanmean(RT{fig},1);
-                
+                Sub.Acc = {'SubjAvg'};
             else
                 
 %                 if Deci.Plot.Behv.RT.Collapse.Block && Deci.Plot.Behv.RT.Collapse.Trial
@@ -452,7 +452,7 @@ if ~isempty(Deci.Plot.Behv.Acc)
         
         fignum = 1;
         
-        for subj = 1:size(Acc{fig},1)
+        for subj = 1:length(Sub.Acc)
             
             a(fig,subj) = figure;
             a(fig,subj).Visible = 'on';
@@ -537,18 +537,12 @@ if ~isempty(Deci.Plot.Behv.Acc)
                         hold on
                     else
                         h = gca;
-                        boxplot(squeeze(Acc{fig}(:,))*100);
+                        boxplot(squeeze(Acc{fig})*100);
                         h.CLim = [0 100];
                         
-                        if ~Deci.Plot.Behv.Acc.Collapse.Block && length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==1
-                            h.XLabel.String = 'Block #';
-                            xticks(1:length(AccBlock))
-                        elseif ~Deci.Plot.Behv.Acc.Collapse.Trial && length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==1
-                            h.XLabel.String = 'Trial #';
-                        end
-                        
-                        h.YLabel.String = 'Trial #';
-                        title(h,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Subtitle{fig}{draw}],'Interpreter','none');
+                        title(['Acc Total for ' Sub.Acc{subj} ': ' Deci.Plot.Behv.Acc.Title{fig} ' '],'Interpreter','none')
+                        xticklabels(Deci.Plot.Behv.Acc.Subtitle{fig})
+                        ylabel('Accuracy (Percent)')
                         hold on
                     end
                     
@@ -583,7 +577,7 @@ if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
         
         fignum = 1;
         
-        for subj = 1:size(RT{fig},1)
+        for subj = 1:length(Sub.RT)
             
             
             d(fignum,subj) = figure;
@@ -647,19 +641,33 @@ if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
                 end
              
              else
-                 h = subplot(size(RT{fig},2),1,draw);
-                 boxplot(squeeze(RT{fig}(:,draw,:,:))*100);
-                 h.CLim = [0 100];
                  
-                 if ~Deci.Plot.Behv.RT.Collapse.Block && length(find(size(squeeze(RT{fig}(subj,draw,:,:))) ~= 1)) ==1
-                     h.XLabel.String = 'Block #';
-                 elseif ~Deci.Plot.Behv.RT.Collapse.Trial && length(find(size(squeeze(RT{fig}(subj,draw,:,:))) ~= 1)) ==1
-                     h.XLabel.String = 'Trial #';
+                 if length(find(size(squeeze(RT{fig}(subj,draw,:,:))) ~= 1)) ==2
+                     h = subplot(size(RT{fig},2),1,draw);
+                     boxplot(squeeze(RT{fig}(:,draw,:,:))*100);
+                     h.CLim = [0 100];
+                     
+                     if ~Deci.Plot.Behv.RT.Collapse.Block && length(find(size(squeeze(RT{fig}(subj,draw,:,:))) ~= 1)) ==1
+                         h.XLabel.String = 'Block #';
+                     elseif ~Deci.Plot.Behv.RT.Collapse.Trial && length(find(size(squeeze(RT{fig}(subj,draw,:,:))) ~= 1)) ==1
+                         h.XLabel.String = 'Trial #';
+                     end
+                     
+                     h.YLabel.String = 'Reaction Time (ms)';
+                     title(h,[Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Subtitle{fig}{draw}],'Interpreter','none');
+                     hold on
+                     
+                     
+                 else
+                     h = gca;
+                     boxplot(squeeze(RT{fig}));
+                     h.CLim = [0 100];
+                     
+                     title(['Reaction Time Total for ' Sub.RT{subj} ': ' Deci.Plot.Behv.RT.Title{fig} ' '],'Interpreter','none')
+                     xticklabels(Deci.Plot.Behv.RT.Subtitle{fig})
+                     ylabel('Reaction Time (ms)')
+                     hold on
                  end
-                 
-                 h.YLabel.String = 'Reaction Time';
-                 title(h,[Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Subtitle{fig}{draw}],'Interpreter','none');
-                 hold on
              end
              
              

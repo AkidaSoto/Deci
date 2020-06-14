@@ -245,7 +245,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
             if ~Deci.Plot.Behv.Acc.BaW
             Accsem{fig} =  nanstd(Acc{fig},[],1)/sqrt(size(Acc{fig},1));
             Acc{fig} =  nanmean(Acc{fig},1);
-            
+            Sub.Acc = {'SubjAvg'};
             else
 
 %                 if Deci.Plot.Behv.Acc.Collapse.Block && Deci.Plot.Behv.Acc.Collapse.Trial
@@ -284,7 +284,7 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
                 
                 RTsem{fig} = nanstd(RT{fig},[],1)/sqrt(size(RT{fig},1));
                 RT{fig} =  nanmean(RT{fig},1);
-                
+                Sub.RT = {'SubjAvg'};
             else
                 
 %                 if Deci.Plot.Behv.RT.Collapse.Block && Deci.Plot.Behv.RT.Collapse.Trial
