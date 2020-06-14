@@ -17,9 +17,36 @@ for brains = 1:length(params.Brain)
     switch params.Brain{brains}
         case 'Magnitude'
             brain = abs(freq.fourierspctrm);
+            
+            if params.bsl.do
+                Bsl = brain;
+                toi = freq.time >= round(params.bsl.time(1),4) & freq.time <= round(params.bsl.time(2),4);
+                
+                    Bsl = nanmean(Bsl(:,:,:,toi),4);
+                    Bsl = repmat(Bsl,[1 1 size(Bsl,4)]);
+                
+                switch params.bsl.type
+                    case 'none'
+                    case 'absolute'
+                        brain =  brain - Bsl;
+                    case 'relative'
+                        brain=  brain ./ Bsl;
+                    case 'relchange'
+                        brain = ( brain - Bsl) ./ Bsl;
+                    case 'db'
+                        brain = 10*log10( brain ./ Bsl);
+                end
+                               
+            end
+            
         case 'Phase'
             brain = angle(freq.fourierspctrm);
     end
+    
+    
+
+    
+    
     
     for behaviors = 1:length(params.Behavior)
         
@@ -40,8 +67,12 @@ for brains = 1:length(params.Brain)
             
             for ti = 1:length(toi)
                 %compute phase snychronization
-                b_time = squeeze(mean(brain(:,:,foi,toi(ti)-time_window_idx:toi(ti)+time_window_idx),4));
                 
+                if params.slidingwindow
+                b_time = squeeze(mean(brain(:,:,foi,toi(ti)-time_window_idx:toi(ti)+time_window_idx),4));
+                else
+                b_time =  brain(:,:,foi,ti);
+                end
                 switch params.Brain{brains}
                     case 'Magnitude'
                         

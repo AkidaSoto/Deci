@@ -134,8 +134,10 @@ for cond = 1:length(Deci.Plot.Draw)
     if Deci.Plot.Stat.do
         tacfg = cfg;
         tacfg.parameter = 'stat';
+        
         StatData{cond}.mask = double(StatData{cond}.mask);
         StatData{cond}.mask(StatData{cond}.mask == 0) = .2;
+        
         tacfg.clim = 'maxmin';
         tacfg.maskparameter ='mask';
         tacfg.colormap = Deci.Plot.ColorMap;
@@ -169,7 +171,7 @@ for cond = 1:length(Deci.Plot.Draw)
             if Deci.Plot.Stat.do
                 pcfg.clim = 'maxmin';
                 pcfg.maskparameter ='mask';
-                Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(StatData{cond}.mask',[size(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.(info.parameter),1) 1 length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.freq) length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time)]);
+                Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(permute(StatData{cond}.mask,[1 3 4 2]),[1 length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.freq) length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time)]);
             end
             
             pcfg.imagetype = Deci.Plot.ImageType;
