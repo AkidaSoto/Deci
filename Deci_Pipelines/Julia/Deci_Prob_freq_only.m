@@ -4,16 +4,15 @@
 %
 % 0. MainMenu
 
-%addpath(genpath('/projectnb/crc-nak/chartove/Julia/Deci'))
-%addpath(genpath('/projectnb/crc-nak/chartove/Julia/OurFieldTrip'))
-addpath(genpath('C:\Users\User\Documents\GitHub\PACmeg'))
+addpath(genpath('/projectnb/crc-nak/chartove/Julia/Deci'))
+addpath(genpath('/projectnb/crc-nak/chartove/Julia/OurFieldTrip'))
 
 Deci = [];
 Deci.Folder.Raw         = ['G:\Julia\New_Datasets\3_9_2020'];              % Raw Data Folder Directory
 Deci.SubjectList        = 'gui';                                                % Cell Array of strings, 'all' or 'gui'
-Deci.Step               = 4;                                            % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
+Deci.Step               = 5;                                            % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
 Deci.Proceed            = false;                                                                  % Continue to next step when current step is done?
-Deci.PCom               = false;                                                       % Activates Parallel Computing for PP and Analysis only
+Deci.PCom               = true;                                                       % Activates Parallel Computing for PP and Analysis only
 Deci.Folder.Version     = ['G:\Julia\ProcessedData'];        % Output Folder Directory
 
 %% 1. Trial Definitions
@@ -28,24 +27,22 @@ Deci.DT.Toi        = [-4 5];
 %MrkMake('C:\Users\User\Desktop\Prob_Stim\RawData',{{'111' '113' '115'} {'112' '114' '116'}},{'110' '117'},[-1/1000 1/1000])
 
 Deci.DT.Block.Markers = {[100]};
-
 %% 2. PreProcessing Steps
 Deci.PP.filter.bpfreq = [.5 100];
 Deci.PP.filter.bpfilter = 'yes';
 Deci.PP.filter.detrend = 'yes';
 
 Deci.ICA.do = true;
-
 %% 3. Artifact Rejection
 Deci.Art.do = true;
-Deci.Art.crittoilim = [-.5 1.5]; %it was glitching when Deci.Analysis.Toi didn't match this
+Deci.Art.crittoilim = [-.5 1.5];
 Deci.Art.AddComponents =  true;
 
 %Deci.Art.More.channel = {'FCz'};
 
 %% 4. Analysis
 Deci.Analysis.Laplace       = false;
-Deci.Analysis.LaplaceFile = ['standard_1020.elc'];	% Uses Captrak .bvct file with same name in RawData Folder
+Deci.Analysis.LaplaceFile = ['standard_1020.elc']; % Uses Captrak .bvct file with same name in RawData Folder
 Deci.Analysis.Locks         = [1];                                                          % Which Lock to Analyze
 Deci.Analysis.LocksTitle    = {'Fdb Onset'};                      % Folder Title to save each Lock as
 Deci.Analysis.DownSample    = 500;                                              % Downsample Pre-Analysis
@@ -54,16 +51,13 @@ Deci.Analysis.Conditions    = {[22] [23]};
 Deci.Analysis.CondTitle     = {'Cor' 'Inc'};
 
 Deci.Analysis.Channels = {'FCz'};
-Deci.Analysis.Toi           = [-1 2];       %glitches if -1 2 which is what it was before                                      % Time Range to save
-Deci.Analysis.Toilim        = [-3 5];
+Deci.Analysis.Toi           = [-1 2];                                                  % Time Range to save
+Deci.Analysis.Toilim        = [-2 3];
 
 
-Deci.Analysis.Connectivity.Sets = {{{'FCz'} {'FCz'} 'lowf' 'beta' 'mi'}}; %...
-%{{{'FCz'} {'FCz'} 'theta' 'beta' 'mi'}};
-%{{'FCz'} {'FCz'} 'theta' 'lowgamma' 'nmcoupling'}};
+Deci.Analysis.Connectivity.Sets = {{{'FCz'} {'FCz'} 'theta' 'beta' 'mi'} ...
+    {{'FCz'} {'FCz'} 'theta' 'lowgamma' 'nmcoupling'}};
 Deci.Analysis.Connectivity.DownSample = 100;
-
-%connectivity statistics
 Deci.Analysis.Connectivity.Zscore.do = false;
 Deci.Analysis.Connectivity.Zscore.Runs = 500;
 Deci.Analysis.Connectivity.keeptrials = 'no';
@@ -73,43 +67,29 @@ Deci.Analysis.Connectivity.Params = {{Deci.Analysis.Connectivity}};
 
 %% 5. Plotting
 
+%%  6. Run
+
 if Deci.Step == 4
     Deci_Wavelet;
     
     Deci.Analysis.Freq.method        = 'wavelet';                                                  % Currently only uses 'wavelet' and 'hilbert'
     Deci.Analysis.Freq.foi           = exp(linspace(log(2),log(100),25));                           % Frequency of Interest
-    Deci.Analysis.Freq.width         = exp(linspace(log(3),log(13),25));			%number of cycles
-    Deci.Analysis.Freq.gwidth        = 4;											%width of gaussian
+    Deci.Analysis.Freq.width         = exp(linspace(log(3),log(13),25));
+    Deci.Analysis.Freq.gwidth        = 4;                                                          % Gwidth
     
     Deci.Analysis.ERP.do  = false;
     Deci.Analysis.Freq.do  = true;
-    Deci.Analysis.Freq.Extra.do = true;
     Deci.Analysis.Extra.do  = false;
-    Deci.Analysis.Connectivity.do = true;
-    
-    Deci.Analysis.Freq.Extra.Corr.phase_freqs = 2*(1.3.^[0:5]);
-    Deci.Analysis.Freq.Extra.Corr.amp_freqs = round(12*(1.15.^[0:15]));
-    Deci.Analysis.Freq.Extra.Corr.filt_order = 2;
-    Deci.Analysis.Freq.Extra.Corr.amp_bandw_method = 'number';
-    Deci.Analysis.Freq.Extra.Corr.amp_bandw = 7.5;
-    Deci.Analysis.Freq.Extra.Corr.method = 'tort';
-    Deci.Analysis.Freq.Extra.Corr.surr_method = 'swap_blocks';
-    Deci.Analysis.Freq.Extra.Corr.surr_N = 100;
-    Deci.Analysis.Freq.Extra.Corr.avg_PAC = 'yes';
-    
-    Deci.Analysis.Freq.Extra.do = true;
-    Deci.Analysis.Freq.Extra.list = [true];
-    Deci.Analysis.Freq.Extra.Functions = {'Deci_PACmeg_wrapper'};
-    Deci.Analysis.Freq.Extra.Params = {{Deci.Analysis.Freq.Extra.Corr}};
+    Deci.Analysis.Connectivity.do = false;
     
     Deci_Backend(Deci);
     Deci = rmfield(Deci,'Analysis');
 else
     
-    Deci.Run.Behavior = true;
+    Deci.Run.Behavior = false;
     Deci.Run.Freq =true;
     Deci.Run.ERP =false;
-    Deci.Run.Extra = true;
+    Deci.Run.Extra = false;
     
     Deci.Plot.BslRef ='Fdb Onset';
     Deci.Plot.Lock = 'Fdb Onset';
@@ -135,55 +115,43 @@ else
     Deci.Plot.Square.Toi     = [];                   % Time of Interest
     Deci.Plot.Square.Channel = [{'FCz'}];                % Channel of Interest
     
-    Deci.Plot.Wire.do    =true;
+    Deci.Plot.Wire.do    =false;
     Deci.Plot.Wire.Foi     = [3 8];           % Frequency of Interest
     Deci.Plot.Wire.Toi     = [];                   % Time of Interest
     Deci.Plot.Wire.Channel = [{'FCz'}];              % Channel of Interest
     
-    Deci.Plot.Bar.do    =true;
+    Deci.Plot.Bar.do    =false;
     Deci.Plot.Bar.Foi     =  [3 8];                 % Frequency of Interest
     Deci.Plot.Bar.Toi     = [.5 1];                   % Time of Interest
-    Deci.Plot.Bar.Channel =  [{'FCz'}];
+    Deci.Plot.Bar.Channel =  [{'Cz'}];
     
-    Deci.Plot.Freq.Type    = 'TotalPower'; %this can be TotalPower, ITPC, or TotalPowerVar
+    Deci.Plot.Freq.Type    = 'TotalPower';
     
-    %set the baseline reference time
     if  strcmpi(Deci.Plot.BslRef, 'Response Onset')
         Deci.Plot.Bsl     = [-.5 -.3];
     else
         Deci.Plot.Bsl     = [-.5 0];
     end
     
-    if Deci.Run.Extra
-        Deci.Plot.BslType = 'absolute';
-        Deci.Plot.Roi = 'maxabs';
-        Deci.Plot.ColorMap = flip(CoolMap);
+    if  Deci.Plot.Square.do
+        Omnibus = true;
         
-        Deci.Plot.Stat.do = false;
-        Deci.Plot.Stat.Type = 'Anova/T-test';
-        Deci.Plot.Stat.alpha = .05;
-        Deci.Plot.Stat.correctm = 'fdr';
-        
-        
-        
-    elseif  Deci.Plot.Square.do
-        Omnibus = false;
-        
-        %statistics
         Deci.Plot.Stat.do = true;
-        if Omnibus == true %F statistic
+        if Omnibus == true
             Deci.Plot.Stat.Comp = 'Bsl';
             Deci.Plot.Stat.alpha = .05;
-            Deci.Plot.Stat.correctm = 'fdr';
+            Deci.Plot.Stat.correctm = 'no';
             Deci.Plot.BslType = 'relchange';
             Deci.Plot.Stat.FPlots =  false;
-        else %bootstrap
+        else
             Deci.Plot.Stat.do = true;
             Deci.Plot.Stat.Type = 'Randomize Permutation';
             Deci.Plot.Stat.alpha = .05;
         end
         Deci.Plot.Stat.FPlots =  false;
-    elseif Deci.Plot.Topo.do
+    end
+    
+    if Deci.Plot.Topo.do
         Perma = true;
         
         if Perma == true
@@ -191,14 +159,18 @@ else
             Deci.Plot.Stat.alpha = .05;
             Deci.Plot.Stat.FPlots =  false;
         end
-    elseif Deci.Plot.Wire.do
+    end
+    
+    if Deci.Plot.Wire.do
         Deci.Plot.Stat.do = true;
         Deci.Plot.Stat.Type = 'Anova/T-test';
         Deci.Plot.Stat.alpha = .05;
         Deci.Plot.Stat.FPlots =  false;
         Deci.Plot.Stat.correctm = 'no';
         Deci.Plot.BslType = 'relchange';
-    elseif Deci.Plot.Bar.do
+    end
+    
+    if Deci.Plot.Bar.do
         Deci.Plot.Stat.do = true;
         Deci.Plot.Stat.Type = 'Anova/T-test';
         Deci.Plot.Stat.alpha = .05;
@@ -209,21 +181,13 @@ else
     
     % conn plots
     
-    Deci.Plot.Extra.Conn.List = Deci.Analysis.Connectivity.Sets([true]);
-    Deci.Plot.Extra.Conn.toi = [];
-    
-    %frequency low vs frequency high
+    Deci.Plot.Extra.Conn.List = Deci.Analysis.Connectivity.Sets([true true]);
     Deci.Plot.Extra.Conn.FL_FH.do =  true;
     Deci.Plot.Extra.Conn.FL_FH.toi = [];
     
-    Deci.Plot.Extra.Conn.CL_CH.do =  true;
-    Deci.Plot.Extra.Conn.CL_CH.toi = [];
-    
-    %frequency vs time
     Deci.Plot.Extra.Conn.FL_time.do =  true;
     Deci.Plot.Extra.Conn.FH_time.do =  true;
     
-    %channel vs time
     Deci.Plot.Extra.Conn.CL_time.do =  true;
     Deci.Plot.Extra.Conn.CH_time.do =  true;
     
@@ -231,7 +195,6 @@ else
     Deci.Plot.Extra.Functions = { 'Plottor_Conn'};
     Deci.Plot.Extra.Params = {{Deci.Plot.Extra.Conn}};
     
-    %behavioral plots
     Deci.Plot.Behv = [];
     Deci.Plot.Behv.Source = 'Definition';
     Deci.Plot.Behv.Static = [];
@@ -263,9 +226,5 @@ else
     % Deci.Plot.Behv.RT.Collapse.Block = false;
     % Deci.Plot.Behv.RT.Collapse.Subject = false;
     
-    
-    %%  6. Run
     Deci_Backend(Deci);
 end
-
-
