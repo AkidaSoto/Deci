@@ -120,7 +120,7 @@ SheetNames = {};
         
          if ismember(1, params.ModelNum)
             Model1.LB = [0 1e-6];
-            Model1.UB = [1 3];
+            Model1.UB = [1 30];
             Model1.init =rand(1,length(Model1.LB)).*(Model1.UB-Model1.LB)+Model1.LB;
             
             
@@ -205,7 +205,7 @@ SheetNames = {};
         
         if ismember(5, params.ModelNum)
             Model5.LB = [0 1e-6 0];
-            Model5.UB = [1 3 1];
+            Model5.UB = [1 30 1];
             Model5.init =rand(1,length(Model5.LB)).*(Model5.UB-Model5.LB)+Model5.LB;
             
             
@@ -284,14 +284,14 @@ SheetNames = {};
 
 
 [Best,I] = nanmin(LLE,[],2);
-[Best2,I2] = nanmax(LLE2,[],2);
+[Best2,I2] = nanmin(LLE2,[],2);
 
 
 for m = 1:length(I2)
     if ismember(m,params.ModelNum)
     BestMod(m) = Value(m,I2(m));
     BestOut(m) = out(m,I2(m));
-    PseudoR(m) = 1 - [Best(m)/[length(cat(1,Actions{:}))*log(.05)]];
+    PseudoR(m) = 1 - [-Best(m)/[length(cat(1,Actions{:}))*log(.05)]];
     
     end
 end
@@ -790,7 +790,7 @@ end
                 % formula outputs a nan and so we have to
                 % compensate for that.
                 if isnan(P{block}(end))
-                    P{block}(end) = wout{block}(Act,which) > wout{block}(Act,isnt);
+                    P{block}(end) = H{block}(Act,which) > H{block}(Act,isnt);
                 end
                 
                 
