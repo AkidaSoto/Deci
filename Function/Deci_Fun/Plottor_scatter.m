@@ -1,7 +1,7 @@
 function Plottor_2std(Deci,params)
 
 
-params = Exist(params,'std',params.std);
+params = Exist(params,'std','std');
 params = Exist(params,'type',@mean);
 
 for subject_list = 1:length(Deci.SubjectList)
@@ -10,7 +10,9 @@ for subject_list = 1:length(Deci.SubjectList)
     
     switch Deci.Plot.Behv.Source
         case 'PostArt'
-            load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info']);
+            load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'info');
+            data = info;
+            
             if isfield(data,'condinfo')  %replacer starting 12/22, lets keep for ~4 months
                 
                 data.postart.locks = data.condinfo{1};
@@ -152,14 +154,15 @@ for subject_list = 1:length(Deci.SubjectList)
                     
                     eveTotal = nan([1 length(find(any(ismember(eve,AccBlock(blk)),2)))]);
                     
-                    maxt = max(sum(ismember(eve,[draws{:}]),2));
-                    trl = find([[sum(ismember(eve,[draws{:}]),2)] == maxt]);
+                    maxt = length(find(cellfun(@(c) any(ismember([draws{:}],c)), Deci.DT.Markers)));
+                    trl = [[sum(ismember(eve,[draws{:}]),2)] == maxt];
                     
                     eveTotal(trl) = 0;
                     
+                    
                     subdraws = Deci.Analysis.Conditions(Deci.Plot.Behv.Acc.Subtotal{fig}{draw});
-                    maxt2 = max(sum(ismember(eve,[subdraws{:}]),2));
-                    subtrl = [[sum(ismember(eve,[subdraws{:}]),2) ] == maxt2];
+                    subtrl = [[sum(ismember(eve,[subdraws{:}]),2) ] == maxt];
+                    eveTotal([subtrl & trl]) = 1;
                     
                     eveTotal(subtrl) = 1;
                     

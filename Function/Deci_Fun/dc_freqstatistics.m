@@ -205,26 +205,26 @@ else
   end
 end
 
-if ~isstruct(stat)
-  % only the probability was returned as a single matrix, reformat into a structure
-  stat = struct('prob', stat);
-end
+% if ~isstruct(stat)
+%   % only the probability was returned as a single matrix, reformat into a structure
+%   stat = struct('prob', stat);
+% end
 
 % the statistical output contains multiple elements, e.g. F-value, beta-weights and probability
-fn = fieldnames(stat);
-
-for i=1:length(fn)
-  if numel(stat.(fn{i}))==prod(datsiz)
-    % reformat into the same dimensions as the input data
-    stat.(fn{i}) = reshape(stat.(fn{i}), [datsiz 1]);
-  end
-end
+% fn = fieldnames(stat);
+% 
+% for i=1:length(fn)
+%   if numel(stat.(fn{i}))==prod(datsiz)
+%     % reformat into the same dimensions as the input data
+%     stat.(fn{i}) = reshape(stat.(fn{i}), [datsiz 1]);
+%   end
+% end
 
 % describe the dimensions of the output data
-stat.dimord = cfg.dimord;
-
-% copy the descripive fields into the output
-stat = copyfields(varargin{1}, stat, {'freq', 'time', 'label'});
+% stat.dimord = cfg.dimord;
+% 
+% % copy the descripive fields into the output
+% stat = copyfields(varargin{1}, stat, {'freq', 'time', 'label'});
 
 % these were only present to inform the low-level functions
 cfg = removefields(cfg, {'dim', 'dimord'});

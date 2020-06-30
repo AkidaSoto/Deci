@@ -2,7 +2,7 @@
 function Plottor_Freq(Deci)
 
 %% Deci Checks
-Dims = {'Topo' 'Square' 'Wire' 'Bar'};
+Dims = {'Topo' 'Square' 'Wire' 'Bar' 'MTopo'};
 [Deci, info] = dc_plotcheck(Deci,Dims);
 info.isfreq = true;
 info.isconn = false;
@@ -63,5 +63,9 @@ end
 
 if Deci.Plot.Bar.do
     dc_plotbar(Deci,Subjects,info)
+end
+
+if Deci.Plot.MTopo.do
+    dc_plotmtopo(Deci,Subjects,info);
 end
 end

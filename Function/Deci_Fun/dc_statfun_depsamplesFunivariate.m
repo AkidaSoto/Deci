@@ -140,7 +140,7 @@ s.dfdenom = tbl{5,3};
 if strcmp(cfg.computecritval,'yes')
   
 
-s.critval = arrayfun(@(c) finv(.95,c,tbl{5,3}),[tbl{2:4,3}]);
+s.critval = arrayfun(@(c) finv(.95,c,tbl{5,3}),[tbl{2,3}]);
   
 end
 
@@ -154,6 +154,6 @@ if strcmp(cfg.computeprob,'yes')
       error('For a dependent samples F-statistic, it does not make sense to calculate a two-sided p-value.');
   end;
   if cfg.tail==1
-    s.prob = 1-fcdf(s.stat,s.dfnum,s.dfdenom);
+    s.prob = cell2mat(arrayfun(@(c) 1-fcdf(s.stat(:,c),s.dfnum(c),s.dfdenom),1:length(s.dfnum),'un',0));
   end;
 end

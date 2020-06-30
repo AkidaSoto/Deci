@@ -130,7 +130,7 @@ SheetNames = {};
                 optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
             
             [LLE(1,init),out{1,init}] = SimpleQ(params.Start{1},params.Actions,Actions,Rewards, Value{1,init}(1),Value{1,init}(2));
-            LLE2(1,init) = aicbic(-LLE(1,init),[2]);
+            LLE2(1,init) = aicbic(LLE(1,init),[2]);
             
             if init == 1
                 ColNames{1} = {'1_Classic_Alp' '1_Classic_Beta'};
@@ -151,7 +151,7 @@ SheetNames = {};
                 optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
             
             [LLE(2,init),out{2,init}] = Model2Pes(params.Start{1},params.Actions,Actions,Rewards, Value{2,init}(1),Value{2,init}(2),Value{2,init}(3));
-            LLE2(2,init) = aicbic(-LLE(2,init),[3]);
+            LLE2(2,init) = aicbic(LLE(2,init),[3]);
             
              if init == 1
                 ColNames{2} = {'2_2PEs_AlpR' '2_2PEs_AlpP' '2_2PEs_Beta'};
@@ -173,7 +173,7 @@ SheetNames = {};
                 optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
             
             [LLE(3,init),out{3,init}] = Model2Pes([Value{3,init}(1) Value{3,init}(2)],params.Actions,Actions,Rewards, Value{3,init}(3),Value{3,init}(4),Value{3,init}(5));
-            LLE2(3,init) = aicbic(-LLE(3,init),[5]);
+            LLE2(3,init) = aicbic(LLE(3,init),[5]);
             
             if init == 1
                 ColNames{3} = {'3_2PEsM_QOpt' '3_2PEsM_QWst' '3_2PEsM_AlpR' '3_2PEsM_AlpP' '3_2PesM_Beta'};
@@ -193,7 +193,7 @@ SheetNames = {};
                 optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
             
             [LLE(4,init),out{4,init}] = Model2Q(params.Start{1},params.Actions,Actions,Rewards, Value{4,init}(1),Value{4,init}(2),Value{4,init}(3));
-            LLE2(4,init) = aicbic(-LLE(4,init),[3]);
+            LLE2(4,init) = aicbic(LLE(4,init),[3]);
             
             if init == 1
                 ColNames{4} = {'4_2Qs_AlpR' '4_2Qs_AlpP' '4_2Qs_Beta'};
@@ -215,7 +215,7 @@ SheetNames = {};
                 optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
             
             [LLE(5,init),out{5,init}] = NormalizedQ(params.Start{1},params.Actions,Actions,Rewards, Value{5,init}(1),Value{5,init}(2),Value{5,init}(3));
-            LLE2(5,init) = aicbic(-LLE(5,init),[3]);
+            LLE2(5,init) = aicbic(LLE(5,init),[3]);
             
             
             if init == 1
@@ -239,7 +239,7 @@ SheetNames = {};
                 optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
             
             [LLE(6,init),out{6,init}] = ActorCritic(params.Start{2},params.Start{3},params.Actions,Actions,Rewards, Value{6,init}(1),Value{6,init}(2),Value{6,init}(3),Value{6,init}(4));
-            LLE2(6,init) = aicbic(-LLE(6,init),[4]);
+            LLE2(6,init) = aicbic(LLE(6,init),[4]);
             
             if init == 1
                 ColNames{6} = {'6_ActorCritic_AlpC' '6_ActorCritic_AlpA' '6_ActorCritic_Beta' '6_ActorCritic_d'};
@@ -265,7 +265,7 @@ SheetNames = {};
                 optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
             
             [LLE(7,init),out{7,init}] = HybridModel(params.Start{1},params.Start{2},params.Start{3},params.Actions,Actions,Rewards, Value{7,init}(1),Value{7,init}(2),Value{7,init}(3),Value{7,init}(4),Value{7,init}(5),Value{7,init}(6));
-            LLE2(7,init) = aicbic(-LLE(7,init),[6]);
+            LLE2(7,init) = aicbic(LLE(7,init),[6]);
             
             
             if init == 1

@@ -104,13 +104,16 @@ for ConnList = 1:length(Params.List)
                         
                         sub_freq{foicmb} = conn;
                         
-                        toi = round(conn.time,4) >= Deci.Plot.Extra.Conn.toi(1) & round(conn.time,4) <= Deci.Plot.Extra.Conn.toi(2);
                         
-                        try
-                            Foi(subject_list,:) = conn.freq;
-                        catch
-                            error(['mismatch in frequencies at subject #' subject_list ', confirm and try reanalyzing?']);
+                        if isfield(conn,'time')
+                        toi = round(conn.time,4) >= Deci.Plot.Extra.Conn.toi(1) & round(conn.time,4) <= Deci.Plot.Extra.Conn.toi(2);
                         end
+                        
+%                         try
+%                             Foi(subject_list,:) = conn.freq;
+%                         catch
+%                             error(['mismatch in frequencies at subject #' subject_list ', confirm and try reanalyzing?']);
+%                         end
                         
                     end
                     
@@ -199,7 +202,7 @@ for ConnList = 1:length(Params.List)
     display(['Using Ref: ' Deci.Plot.BslRef ' at times ' strrep(regexprep(num2str(Deci.Plot.Bsl),' +',' '),' ','-')]);
     
     
-    if ~strcmp(Deci.Plot.BslType,'none')
+    if ~strcmp(Deci.Plot.BslType,'none') && isfield(sub_cond{subject_list,Conditions},'time')
         
         for  subject_list = 1:length(Deci.SubjectList)
             
@@ -285,11 +288,11 @@ for ConnList = 1:length(Params.List)
                 end
                 
                 
-                toi2 = bsl_cond{subject_list,Conditions}.time >= round(Deci.Plot.Bsl(1),4) & bsl_cond{subject_list,Conditions}.time <= round(Deci.Plot.Bsl(2),4);
                 
-                bsl_cond{subject_list,Conditions}.(param) = nanmean(bsl_cond{subject_list,Conditions}.(param)(:,:,:,toi2),4);
-                bsl_cond{subject_list,Conditions}.(param) = repmat(bsl_cond{subject_list,Conditions}.(param),[1 1 1 size(sub_cond{subject_list,Conditions}.(param),4)]);
-                
+                    toi2 = bsl_cond{subject_list,Conditions}.time >= round(Deci.Plot.Bsl(1),4) & bsl_cond{subject_list,Conditions}.time <= round(Deci.Plot.Bsl(2),4);
+                    
+                    bsl_cond{subject_list,Conditions}.(param) = nanmean(bsl_cond{subject_list,Conditions}.(param)(:,:,:,toi2),4);
+                    bsl_cond{subject_list,Conditions}.(param) = repmat(bsl_cond{subject_list,Conditions}.(param),[1 1 1 size(sub_cond{subject_list,Conditions}.(param),4)]);
                 
                 switch Deci.Plot.BslType
                     case 'none'
@@ -303,9 +306,10 @@ for ConnList = 1:length(Params.List)
                         sub_cond{subject_list,Conditions}.(param) = 10*log10( sub_cond{subject_list,Conditions}.(param) ./ bsl_cond{subject_list,Conditions}.(param));
                 end
                 
+                if isfield(conn,'time')
                 sub_cond{subject_list,Conditions}.time = sub_cond{subject_list,Conditions}.time(toi);
                 sub_cond{subject_list,Conditions}.(param) = sub_cond{subject_list,Conditions}.(param)(:,:,:,toi);
-                
+                end
             end
             
         end
@@ -393,9 +397,11 @@ for ConnList = 1:length(Params.List)
             if Params.FL_FH.do && all(ismember({'freqlow' 'freqhigh'},dim))
                 FL_FH{subjs,conds} = ConnData{subjs,conds};
                 
+                if isfield(FL_FH{subjs,conds},'time')
                 flfhtoi = FL_FH{subjs,conds}.time  >= round(Deci.Plot.Extra.Conn.FL_FH.toi(1),4) & FL_FH{subjs,conds}.time <= round(Deci.Plot.Extra.Conn.FL_FH.toi(2),4);
                 FL_FH{subjs,conds}.time = FL_FH{subjs,conds}.time(flfhtoi);
                 FL_FH{subjs,conds}.(param) = FL_FH{subjs,conds}.param(:,:,:,flfhtoi);
+                end
                 
                 FL_FH{subjs,conds}.(param) = permute(mean(FL_FH{subjs,conds}.(param),[find(~ismember(dim,{'freqlow' 'freqhigh'}))],'omitnan'),[find(ismember(dim,{'freqlow' 'freqhigh'})) find(~ismember(dim,{'freqlow' 'freqhigh'}))]);
                 FL_FH{subjs,conds}.dimord = 'freqlow_freqhigh';
@@ -440,17 +446,20 @@ for ConnList = 1:length(Params.List)
             if Params.CL.do
                 CL{subjs,conds} = ConnData{subjs,conds};
                 
-                cltoi = CL{subjs,conds}.time  >= round(Deci.Plot.Extra.Conn.CL.toi(1),4) & CL{subjs,conds}.time <= round(Deci.Plot.Extra.Conn.CL.toi(2),4);
-                CL{subjs,conds}.time = CL{subjs,conds}.time(cltoi);
-                CL{subjs,conds}.(param) = CL{subjs,conds}.(param)(:,:,:,cltoi);
+                if isfield(CL{subjs,conds},'time')
+                    cltoi = CL{subjs,conds}.time  >= round(Deci.Plot.Extra.Conn.CL.toi(1),4) & CL{subjs,conds}.time <= round(Deci.Plot.Extra.Conn.CL.toi(2),4);
+                    %CL{subjs,conds}.time = CL{subjs,conds}.time(cltoi);
+                    CL{subjs,conds} =rmfield(CL{subjs,conds},'time');
+                    CL{subjs,conds}.(param) = CL{subjs,conds}.(param)(:,:,:,cltoi);
+                end
                 
-                CL{subjs,conds}.(param) = permute(mean(CL{subjs,conds}.(param),[find(~ismember(dim,{'chanlow'}))],'omitnan'),[find(ismember(dim,{'chanlow'})) find(~ismember(dim,{'chanlow'}))]);
-                CL{subjs,conds}.dimord = 'chanlow';
+                CL{subjs,conds}.(param) = permute(mean(CL{subjs,conds}.(param),[find(~ismember(dim,{'chan','chanlow'}))],'omitnan'),[find(ismember(dim,{'chan','chanlow'})) find(~ismember(dim,{'chan','chanlow'}))]);
+                CL{subjs,conds}.dimord = 'chan';
                 
                 if Deci.Plot.Stat.do
                     CL_Stat{subjs,conds} = StatsData{subjs,conds};
-                    CL_Stat{subjs,conds}.(param) = permute(mean(CL_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','chanlow'}))],'omitnan'),[find(ismember(dimstat,{'subj','chanlow'})) find(~ismember(dimstat,{'subj','chanlow'}))]);
-                    CL_Stat{subjs,conds}.dimord = 'subj_chanlow';
+                    CL_Stat{subjs,conds}.(param) = permute(mean(CL_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','chan','chanlow'}))],'omitnan'),[find(ismember(dimstat,{'subj','chan','chanlow'})) find(~ismember(dimstat,{'subj','chan','chanlow'}))]);
+                    CL_Stat{subjs,conds}.dimord = 'subj_chan';
                 end
                 
                 CL_do = true;
@@ -463,17 +472,19 @@ for ConnList = 1:length(Params.List)
             if Params.CH.do
                 CH{subjs,conds} = ConnData{subjs,conds};
                 
+                if isfield(CH{subjs,conds},'time')
                 chtoi = CH{subjs,conds}.time  >= round(Deci.Plot.Extra.Conn.CH.toi(1),4) & CH{subjs,conds}.time <= round(Deci.Plot.Extra.Conn.CH.toi(2),4);
                 CH{subjs,conds}.time = CH{subjs,conds}.time(chtoi);
                 CH{subjs,conds}.(param) = CH{subjs,conds}.(param)(:,:,:,chtoi);
+                end
                 
-                CH{subjs,conds}.(param) = permute(mean(CH{subjs,conds}.(param),[find(~ismember(dim,{'chanlow'}))],'omitnan'),[find(ismember(dim,{'chanlow'})) find(~ismember(dim,{'chanlow'}))]);
-                CH{subjs,conds}.dimord = 'chanlow';
+                CH{subjs,conds}.(param) = permute(mean(CH{subjs,conds}.(param),[find(~ismember(dim,{'chanhigh'}))],'omitnan'),[find(ismember(dim,{'chanhigh'})) find(~ismember(dim,{'chanhigh'}))]);
+                CH{subjs,conds}.dimord = 'chan';
                 
                 if Deci.Plot.Stat.do
                     CH_Stat{subjs,conds} = StatsData{subjs,conds};
-                    CH_Stat{subjs,conds}.(param) = permute(mean(CH_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','chanlow'}))],'omitnan'),[find(ismember(dimstat,{'subj','chanlow'})) find(~ismember(dimstat,{'subj','chanlow'}))]);
-                    CH_Stat{subjs,conds}.dimord = 'subj_chanlow';
+                    CH_Stat{subjs,conds}.(param) = permute(mean(CH_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','chanhigh'}))],'omitnan'),[find(ismember(dimstat,{'subj','chanhigh'})) find(~ismember(dimstat,{'subj','chanhigh'}))]);
+                    CH_Stat{subjs,conds}.dimord = 'subj_chan';
                 end
                 
                 CH_do = true;
@@ -529,6 +540,8 @@ for ConnList = 1:length(Params.List)
                     CL_time_Stat{subjs,conds} = StatsData{subjs,conds};
                     CL_time_Stat{subjs,conds}.(param) = permute(mean(CL_time_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','chan' 'time' 'chanlow'}))],'omitnan'),[find(ismember(dimstat,{'subj','chan' 'time' 'chanlow'})) find(~ismember(dimstat,{'subj','chan' 'time' 'chanlow'}))]);
                     CL_time_Stat{subjs,conds}.dimord = 'subj_chan_time';
+                    
+                    %CL_time_Stat{subjs,conds}.label = CL_time_Stat{subjs,conds}.chanlow;
                 end
                 
                 CLtime = true;
@@ -781,16 +794,20 @@ for ConnList = 1:length(Params.List)
                     
                     chan.powspctrm = chan.([param]);
                     chan.dimord = 'chan';
-                    chan.label = chan.chanlow;
-                    chan.freq = mean(chan.freq);
-                    chan.time = mean(chan.time);
-                    chan.mask = CL_StatData{cond}.mask;
                     
-                    pcfg = cfg;
+                    if ~isfield(chan,'label')
+                        chan.label = chan.chanlow;
+                    end
+%                     chan.freq = mean(chan.freq);
+%                     chan.time = mean(chan.time);
+                    
+                     pcfg = cfg;
+                    if Deci.Plot.Stat.do
+                        pcfg.clim = 'maxmin';
+                        pcfg.maskparameter ='mask';
+                        chan.mask = permute(CL_StatData{cond}.mask,[1 3 2]);
+                    end
 
-                    pcfg.clim = 'maxmin';
-                    pcfg.maskparameter ='mask';
-   
                     pcfg.imagetype = Deci.Plot.ImageType;
                     pcfg.comment = 'no';
                     pcfg.style = 'fill';
@@ -798,6 +815,7 @@ for ConnList = 1:length(Params.List)
                     pcfg.colormap = Deci.Plot.ColorMap;
                     pcfg.colorbar = 'yes';
                     pcfg.contournum = 15;
+                    pcfg.parameter = 'powspctrm';
                     
                     ft_topoplotER(pcfg,chan)
                     
@@ -1308,14 +1326,14 @@ for ConnList = 1:length(Params.List)
                     if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
                         subby_cl(r).CLim = Deci.Plot.Roi;
                     elseif strcmp(Deci.Plot.Roi,'maxmin')
-                        if ~ isempty(subby_cl(r).Children.UserData)
-                            subby_cl(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),subby_cl(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),subby_cl(:)))];
+                        if ~isempty(subby_cl(r).Children.findobj('Type','Contour').UserData)
+                            subby_cl(r).CLim = [min(arrayfun(@(c) min(abs(c.Children.findobj('Type','Contour').ZData(:))),subby_cl(:))) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').ZData(:))),subby_cl(:)))];
                         else
-                            subby_cl(r).CLim= [min(arrayfun(@(c) min(c.Children.ZData(:)),subby_cl(:))) max(arrayfun(@(c) max(c.Children.ZData(:)),subby_cl(:)))];
+                           subby_cl(r).CLim = [min(arrayfun(@(c) min(abs(c.Children.findobj('Type','Contour').ZData(:))),subby_cl(:))) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').ZData(:))),subby_cl(:)))];
                         end
                     elseif strcmp(Deci.Plot.Roi,'maxabs')
                         if ~isempty(subby_cl(r).Children.findobj('Type','Contour').UserData)
-                            subby_cl(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),subby_cl(:))) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),subby_cl(:)))];
+                            subby_cl(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').ZData(:))),subby_cl(:))) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').ZData(:))),subby_cl(:)))];
                         else
                             subby_cl(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').ZData(:))),subby_cl(:))) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').ZData(:))),subby_cl(:)))];
                         end

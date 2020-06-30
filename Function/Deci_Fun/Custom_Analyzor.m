@@ -1,4 +1,4 @@
-function Analyzor(Deci,subject_list)
+function Custom_Analyzor(Deci,subject_list)
 disp('----------------------');
 display(['Starting Analyzor for Subject #' num2str(subject_list) ': ' Deci.SubjectList{subject_list}]);
 display(' ')
@@ -158,21 +158,10 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     else
         display('Not Applying Artifact Rejection')
     end
-    
-    if Deci.Analysis.Behavioral
-    dataplaceholder.events = data.event(ccfg.trials,:);
-    dataplaceholder.trl = data.trl(ccfg.trials,:);
-    dataplaceholder.trialnum = data.trialnum(ccfg.trials,:);
-        
-      
-    else
     dataplaceholder = ft_selectdata(ccfg,data);
-    end
     
-    if isfield(data,'trial')
-        if length(dataplaceholder.trial) < 40
-            display('!!!Trial Count for this condition is < 40, which is abnormally low!!!')
-        end
+    if length(dataplaceholder.trial) < 40
+        display('!!!Trial Count for this condition is < 40, which is abnormally low!!!')
     end
     
     %% do Extra Analyses
@@ -184,6 +173,14 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             end
         end
     end
+    
+    
+    Trlinfo = feval(Deci.Analysis.CustomAnalysis.Function,Deci,info,dataplaceholder,Deci.Analysis.CustomAnalysis.Params{1}{1});
+    
+end
+
+
+for Cond = 1:length(Deci.Analysis.Conditions)
     %% Loop Through Locks
     
     if Deci.Analysis.Freq.do || Deci.Analysis.Connectivity.do || Deci.Analysis.ERP.do || Deci.Analysis.Source.do || Deci.Analysis.Freq.Extra.do

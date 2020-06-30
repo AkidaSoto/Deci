@@ -7,7 +7,9 @@ for subject_list = 1:length(Deci.SubjectList)
     
     switch Deci.Plot.Behv.Source
         case 'PostArt'
-            load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}]);
+            load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'info');
+            
+            data = info;
             
             if isfield(data,'condinfo')  %replacer starting 12/22, lets keep for ~4 months
                 data.postart.locks = data.condinfo{1};
@@ -218,6 +220,7 @@ end
 
 %% sort
 
+Deci.Plot.Behv.Acc = Exist(Deci.Plot.Behv.Acc,'BaW',false);
 for fig = find(Deci.Plot.Behv.Acc.Figure)
     
     clear fAcc
@@ -239,8 +242,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
         
         Sub.Acc = Deci.SubjectList;
         if Deci.Plot.Behv.Acc.Collapse.Subject
-            
-            Deci.Plot.Behv.Acc = Exist(Deci.Plot.Behv.Acc,'BaW',false);
+
             
             if ~Deci.Plot.Behv.Acc.BaW
             Accsem{fig} =  nanstd(Acc{fig},[],1)/sqrt(size(Acc{fig},1));
@@ -259,7 +261,10 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
     end
 end
 
+Deci.Plot.Behv.RT = Exist(Deci.Plot.Behv.RT,'BaW',false);
 for fig = find(Deci.Plot.Behv.RT.Figure)
+    
+    
     clear fRT
     if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
         
@@ -278,7 +283,7 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
         Sub.RT = Deci.SubjectList;
         if Deci.Plot.Behv.RT.Collapse.Subject
             
-            Deci.Plot.Behv.RT = Exist(Deci.Plot.Behv.RT,'BaW',false);
+            
             
             if ~Deci.Plot.Behv.RT.BaW
                 
@@ -299,6 +304,9 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     end
     
 end
+
+   
+
 
 %% Table outputs for SPSS
 
@@ -434,28 +442,26 @@ if Deci.Plot.Behv.WriteExcel
     end
 end
 
-if Deci.Plot.Behv.Acc.BaW
-    Sub.Acc = {'SubjAvg'};
-    
-end
-
-if Deci.Plot.Behv.RT.BaW
-    Sub.RT = {'SubjAvg'};
-    
-end
 
 
 %% plot
 
 if ~isempty(Deci.Plot.Behv.Acc)
+    
+    if Deci.Plot.Behv.Acc.BaW
+        Sub.Acc = {'SubjAvg'};
+        
+    end
+    
+    
     for fig = find(Deci.Plot.Behv.Acc.Figure)
         
         fignum = 1;
         
         for subj = 1:length(Sub.Acc)
             
-            a(fig,subj) = figure;
-            a(fig,subj).Visible = 'on';
+            a(fignum,subj) = figure;
+            a(fignum,subj).Visible = 'on';
             
             
             for draw = 1:size(Acc{fig},2)
@@ -572,6 +578,11 @@ end
 
 
 if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
+    
+    if Deci.Plot.Behv.RT.BaW
+    Sub.RT = {'SubjAvg'};
+   
+end 
     
     for fig = find(Deci.Plot.Behv.RT.Figure)
         

@@ -58,21 +58,30 @@ for conds = 1:size(Subjects,2)
         tcfg = [];
         tcfg.nanmean = Deci.Plot.nanmean;
         
-        tcfg.latency = Deci.Plot.Topo.Toi;
+        tcfg.latency = Deci.Plot.MTopo.Toi;
         
         if info.isfreq
-        tcfg.frequency = Deci.Plot.Topo.Foi;
+        tcfg.frequency = Deci.Plot.MTopo.Foi;
         end
         
-        tcfg.channel = Deci.Plot.Topo.Channel;
+        tcfg.channel = Deci.Plot.MTopo.Channel;
         
         Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+        
+        if rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs) ~= 0
+           Segdata{subj,conds}.powspctrm = permute(mean(reshape(Segdata{subj,conds}.powspctrm(:,:,:,1:end-rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs)),[size(Segdata{subj,conds}.powspctrm,1) size(Segdata{subj,conds}.powspctrm,2) size(Segdata{subj,conds}.powspctrm,3) numel(Segdata{subj,conds}.time(1:end-rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs)))/Deci.Plot.MTopo.ToiSegs Deci.Plot.MTopo.ToiSegs]),4),[1 2 3 5 4]);
+           Segdata{subj,conds}.time = mean(reshape(Segdata{subj,conds}.time(1:end-rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs)),[numel(Segdata{subj,conds}.time(1:end-rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs)))/Deci.Plot.MTopo.ToiSegs Deci.Plot.MTopo.ToiSegs]),1);
+           
+        
+        else
+           Segdata{subj,conds}.time = mean(reshape(Segdata{subj,conds}.time,[numel(Segdata{subj,conds}.time)/Deci.Plot.MTopo.ToiSegs Deci.Plot.MTopo.ToiSegs]),2);
+        end
+            
         
         if info.isfreq
         tcfg.avgoverfreq = 'yes';
         end
         
-        tcfg.avgovertime = 'yes';
         SegStatdata{subj,conds} = ft_selectdata(tcfg,Segdata{subj,conds});
         
         if strcmpi(Deci.Plot.FreqYScale,'log')
@@ -165,31 +174,41 @@ for cond = 1:length(Deci.Plot.Draw)
             
             set(0, 'CurrentFigure', topo(subj))
             topo(subj).Visible = 'on';
-            topfig(subj,subcond)    =  subplot(length(Deci.Plot.Draw{cond}),1,subcond);
             
-            pcfg = cfg;
-            if Deci.Plot.Stat.do
-                pcfg.clim = 'maxmin';
-                pcfg.maskparameter ='mask';
-                Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(permute(StatData{cond}.mask,[1 3 4 2]),[1 1 length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time)]);
-            end
-            
-            pcfg.imagetype = Deci.Plot.ImageType;
-            pcfg.comment = 'no';
-            pcfg.style = 'fill';
-            pcfg.markersymbol = '.';
-            pcfg.colormap = Deci.Plot.ColorMap;
-            pcfg.colorbar = 'yes';
-            pcfg.contournum = 15;
-            ft_topoplotER(pcfg, Segdata{subj,Deci.Plot.Draw{cond}(subcond)});
-            
-            if Deci.Plot.Draw{cond}(subcond) <= size(info.trllen,2)
-                title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(info.trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')']);
+            for time = 1:Deci.Plot.MTopo.ToiSegs
                 
-            else
-                title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
+                topfig(subj,subcond,time)    =  subplot(length(Deci.Plot.Draw{cond}),Deci.Plot.MTopo.ToiSegs,sub2ind([Deci.Plot.MTopo.ToiSegs length(Deci.Plot.Draw{cond})],time,subcond));
+                
+                pcfg = cfg;
+                if Deci.Plot.Stat.do
+                    pcfg.clim = 'maxmin';
+                    pcfg.maskparameter ='mask';
+                    Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = permute(StatData{cond}.mask(:,:,time,:),[1 4 3 2]);
+                end
+                
+                scfg.latency = [Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time(time) Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time(time)];
+                scfg.avgoverfreq = 'yes';
+                scfg.acgoverrpt = 'yes';
+                mtopo = ft_selectdata(scfg,Segdata{subj,Deci.Plot.Draw{cond}(subcond)});
+                
+                
+                pcfg.imagetype = Deci.Plot.ImageType;
+                pcfg.comment = 'no';
+                pcfg.style = 'fill';
+                pcfg.markersymbol = '.';
+                pcfg.colormap = Deci.Plot.ColorMap;
+                pcfg.colorbar = 'no';
+                pcfg.contournum = 15;
+                ft_topoplotER(pcfg, mtopo);
+                
+                title([num2str(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time(time)) 's']);
+                
+                if time  ==1
+                    topfig(subj,subcond,time).YLabel.Visible = 'on';
+                    topfig(subj,subcond,time).YLabel.String = Deci.Plot.Subtitle{cond}{subcond};
+                end
+                
             end
-            
         end
         
     end
