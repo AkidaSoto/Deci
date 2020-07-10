@@ -47,7 +47,7 @@ ntrials = numel(data.trial);
 trllength = cellfun(@(c) size(c,2),data.trial);
 
 if any(logical(diff(trllength)))
-   error('dc_freq is assumed to work only for trials will all equal length') 
+   error('dc_freq is assumed to work only for trials with all equal length') 
 end
 
 if strcmp(cfg.pad, 'maxperlen')
