@@ -22,10 +22,14 @@ for freq = 1:length(freqin)
             freqout(freq,:) =[30 55];
         case 'highgamma'
             freqout(freq,:) = [55 80];
+        case 'gamma'
+            freqout(freq,:) = [30 80];
         case 'all'
             freqout(freq,:) = [1 100];
         case 'beta2'
             freqout(freq,:) = [17 20]; % 4/27 LP added 'beta2'
+        case 'lowf'
+            freqout(freq,:) = [1 10]; %JC 4/29/20 added 'low'
     end
 end
 

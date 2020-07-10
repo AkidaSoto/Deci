@@ -1,5 +1,5 @@
 function Analyzor(Deci,subject_list)
-display('----------------------');
+disp('----------------------');
 display(['Starting Analyzor for Subject #' num2str(subject_list) ': ' Deci.SubjectList{subject_list}]);
 display(' ')
 
@@ -127,10 +127,10 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     if ~all(ismember(Deci.Analysis.Conditions{Cond},events))
         
         if isfield(Deci.DT,'Type')
-        
-        if ~strcmpi(Deci.DT.Type,'EEG_Polymerase')
-            display(['Using unique Trial Def:' Deci.DT.Type])
-        end
+            
+            if ~strcmpi(Deci.DT.Type,'EEG_Polymerase')
+                display(['Using unique Trial Def:' Deci.DT.Type])
+            end
         end
         error('1 or More Marker Codes not found in events. If using own DT, make sure Step 4 contains updated DT.Markers field')
     end
@@ -158,10 +158,21 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     else
         display('Not Applying Artifact Rejection')
     end
-    dataplaceholder = ft_selectdata(ccfg,data);
     
-    if length(dataplaceholder.trial) < 40
-        display('!!!Trial Count for this condition is < 40, which is abnormally low!!!')
+    if Deci.Analysis.Behavioral
+    dataplaceholder.events = data.event(ccfg.trials,:);
+    dataplaceholder.trl = data.trl(ccfg.trials,:);
+    dataplaceholder.trialnum = data.trialnum(ccfg.trials,:);
+        
+      
+    else
+    dataplaceholder = ft_selectdata(ccfg,data);
+    end
+    
+    if isfield(data,'trial')
+        if length(dataplaceholder.trial) < 40
+            display('!!!Trial Count for this condition is < 40, which is abnormally low!!!')
+        end
     end
     
     %% do Extra Analyses
@@ -308,6 +319,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     if Deci.Analysis.Freq.Extra.do
                         for funs = find(Deci.Analysis.Freq.Extra.list)
                             if Deci.Analysis.Freq.Extra.list(funs)
+                                %JC 6/2/20: i'm editing this to also pass "dat" to the function
                                 feval(Deci.Analysis.Freq.Extra.Functions{funs},Deci,info,freqplaceholder,Deci.Analysis.Freq.Extra.Params{funs}{:});
                             end
                         end
@@ -374,7 +386,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             end
                             
                             if isequal(size(freqcmb), [2 1])
-                               freqcmb = freqcmb'; 
+                                freqcmb = freqcmb';
                             end
                             
                             for choicmb = 1:size(chancmb,1)
@@ -447,7 +459,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                                     evalc('surr = ft_connectivityanalysis(conncfg,conndata)');
                                                     
                                                     zdata(s,:,:) = surr.([conntype{conoi} 'spctrm']);
-
+                                                    
                                                 end
                                                 
                                                 disp(['Finished Zscore in ' num2str(toc) 's']);
@@ -456,8 +468,8 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                                 % z-score
                                                 pscore = [];
                                                 for f = 1:size(zdata,2)
-                                                    for t = 1:size(zdata,3)
-                                                        pscore(f,t) = (conn.([conntype{conoi} 'spctrm'])(f, t) - mean(zdata(:,f, t),1)) ./ std(zdata(:,f, t),[],1);
+                                                    for dim3 = 1:size(zdata,3)
+                                                        pscore(f,dim3) = (conn.([conntype{conoi} 'spctrm'])(f, dim3) - mean(zdata(:,f, dim3),1)) ./ std(zdata(:,f, dim3),[],1);
                                                     end
                                                 end
                                                 
@@ -481,7 +493,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                             else
                                                 conncfg.method = conntype{conoi};
                                             end
-  
+                                            
                                             Deci.Analysis.Connectivity = Exist(Deci.Analysis.Connectivity, 'keeptrials','no');
                                             conncfg.keeptrials = Deci.Analysis.Connectivity.keeptrials;
                                             
@@ -504,17 +516,35 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                                 clear surr
                                                 
                                                 % z-score
-                                                pscore = [];
-                                                for fl = 1:size(zdata,2)
-                                                    for fh = 1:size(zdata,4)
-                                                        for t = 1:size(zdata,4)
-                                                            pscore(fl,fh,t) = (conn.crsspctrm(fl,fh,t) - mean(zdata(:,fl,fh,t),1)) ./ std(zdata(:,fl,fh, t),[],1);
+                                                pscore = conn.crsspctrm;  %edited by JC 4/29/20 to accomodate mi without time var
+                                                
+                                                for dim1 = 1:size(conn.crsspctrm,1)
+                                                    for dim2 = 1:size(conn.crsspctrm,2)
+                                                        
+                                                        if size(conn.crsspctrm,3) == 1
+                                                           pscore(dim1,dim2) = (conn.crsspctrm(dim1,dim2) - mean(zdata(:,:,dim1,dim2),1)) ./ std(zdata(:,:,dim1, dim2),[],1);
+                                                                       
+                                                        else
+                                                            
+                                                            for dim3 = 1:size(conn.crsspctrm,3)
+                                                                
+                                                                if size(conn.crsspctrm,4) > 1
+                                                                    for dim4 = 1:size(conn.crsspctrm,4)
+                                                                        pscore(dim1,dim2,dim3,dim4) = (conn.crsspctrm(dim1,dim2) - mean(zdata(:,:,dim1,dim2),1)) ./ std(zdata(:,:,dim1, dim2),[],1);
+                                                                        
+                                                                    end
+                                                                    
+                                                                else
+                                                                    pscore(dim1,dim2,dim3) = (conn.crsspctrm(dim1,dim2,dim3) - mean(zdata(:,dim1,dim2,dim3),1)) ./ std(zdata(:,dim1,dim2, dim3),[],1);
+                                                                    
+                                                                end
+                                                            end
                                                         end
                                                     end
                                                 end
                                                 
                                                 conn.crsspctrm = normcdf(-abs(pscore), 0, 1) .* 2; % p-value from z-score
-                                                
+                                            
                                             end
                                             
                                             conn.trllength = trllength;
@@ -523,7 +553,8 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                             mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}]);
                                             save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep strjoin([chancmb(choicmb,:) freqcmb(foicmb,:) conntype(conoi)],'_')],'conn','-v7.3');
                                             clear conn
-                                            
+                                        else
+                                            error('parameters for connectivity cannot be computed.')
                                         end
                                         
                                         %                                         %lcfg.latency = params.toi;

@@ -7,7 +7,9 @@ for subject_list = 1:length(Deci.SubjectList)
     
     switch Deci.Plot.Behv.Source
         case 'PostArt'
-            load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}]);
+            load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'info');
+            
+            data = info;
             
             if isfield(data,'condinfo')  %replacer starting 12/22, lets keep for ~4 months
                 data.postart.locks = data.condinfo{1};
@@ -218,6 +220,7 @@ end
 
 %% sort
 
+Deci.Plot.Behv.Acc = Exist(Deci.Plot.Behv.Acc,'BaW',false);
 for fig = find(Deci.Plot.Behv.Acc.Figure)
     
     clear fAcc
@@ -239,17 +242,29 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
         
         Sub.Acc = Deci.SubjectList;
         if Deci.Plot.Behv.Acc.Collapse.Subject
+
+            
+            if ~Deci.Plot.Behv.Acc.BaW
             Accsem{fig} =  nanstd(Acc{fig},[],1)/sqrt(size(Acc{fig},1));
             Acc{fig} =  nanmean(Acc{fig},1);
-            
             Sub.Acc = {'SubjAvg'};
+            else
+
+%                 if Deci.Plot.Behv.Acc.Collapse.Block && Deci.Plot.Behv.Acc.Collapse.Trial
+%                     error('Either Block or Trial has to be not collapsed to do Box and Whiskers')
+%                 end
+                
+            end
         end
         
         %save([Deci.Folder.Version filesep 'Plot' filesep 'SimAcc'],'Acc','fullAcc');
     end
 end
 
+Deci.Plot.Behv.RT = Exist(Deci.Plot.Behv.RT,'BaW',false);
 for fig = find(Deci.Plot.Behv.RT.Figure)
+    
+    
     clear fRT
     if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
         
@@ -267,9 +282,21 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
         
         Sub.RT = Deci.SubjectList;
         if Deci.Plot.Behv.RT.Collapse.Subject
-            RTsem{fig} = nanstd(RT{fig},[],1)/sqrt(size(RT{fig},1));
-            RT{fig} =  nanmean(RT{fig},1);
-            Sub.RT = {'SubjAvg'};
+            
+            
+            
+            if ~Deci.Plot.Behv.RT.BaW
+                
+                RTsem{fig} = nanstd(RT{fig},[],1)/sqrt(size(RT{fig},1));
+                RT{fig} =  nanmean(RT{fig},1);
+                Sub.RT = {'SubjAvg'};
+            else
+                
+%                 if Deci.Plot.Behv.RT.Collapse.Block && Deci.Plot.Behv.RT.Collapse.Trial
+%                     error('Either Block or Trial has to be not collapsed to do Box and Whiskers')
+%                 end
+                
+            end
             
         end
         
@@ -277,6 +304,9 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     end
     
 end
+
+   
+
 
 %% Table outputs for SPSS
 
@@ -412,76 +442,119 @@ if Deci.Plot.Behv.WriteExcel
     end
 end
 
+
+
 %% plot
 
 if ~isempty(Deci.Plot.Behv.Acc)
+    
+    if Deci.Plot.Behv.Acc.BaW
+        Sub.Acc = {'SubjAvg'};
+        
+    end
+    
+    
     for fig = find(Deci.Plot.Behv.Acc.Figure)
         
         fignum = 1;
         
-        for subj = 1:size(Acc{fig},1)
+        for subj = 1:length(Sub.Acc)
             
-            a(fig,subj) = figure;
-            a(fig,subj).Visible = 'on';
+            a(fignum,subj) = figure;
+            a(fignum,subj).Visible = 'on';
             
             
             for draw = 1:size(Acc{fig},2)
                 
                 
-                if length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==1
+                if ~Deci.Plot.Behv.Acc.BaW
                     
-                    top = squeeze(Acc{fig}(subj,draw,:,:))*100 + squeeze(Accsem{fig}(subj,draw,:,:))*100;
-                    bot = squeeze(Acc{fig}(subj,draw,:,:))*100 - squeeze(Accsem{fig}(subj,draw,:,:))*100;
-                    
-                    shapes = [1:length(Acc{fig}(subj,draw,:,:)) length(Acc{fig}(subj,draw,:,:)):-1:1];
-                    shapes(isnan([top' fliplr(bot')])) = nan;
-                    
-                    pgon = polyshape(shapes,[top' fliplr(bot')],'Simplify', false);
-                    b = plot(pgon,'HandleVisibility','off');
-                    hold on
-                    b.EdgeAlpha = 0;
-                    b.FaceAlpha = .15;
-                    
-                    h = plot(squeeze(Acc{fig}(subj,draw,:))*100);
-                    h.Parent.YLim = [0 100];
-                    h.Color = b.FaceColor;
-                    h.LineWidth = 1;
-                    hold on;
-                    title(h.Parent,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{fig}],'Interpreter','none');
-                    
-                    if ~Deci.Plot.Behv.Acc.Collapse.Block && length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==1
-                        h.Parent.XLabel.String = 'Block #';
-                        xticks(1:length(AccBlock))
-                    elseif ~Deci.Plot.Behv.Acc.Collapse.Trial && length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==1
+                    if length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==1
+                        
+                        top = squeeze(Acc{fig}(subj,draw,:,:))*100 + squeeze(Accsem{fig}(subj,draw,:,:))*100;
+                        bot = squeeze(Acc{fig}(subj,draw,:,:))*100 - squeeze(Accsem{fig}(subj,draw,:,:))*100;
+                        
+                        shapes = [1:length(Acc{fig}(subj,draw,:,:)) length(Acc{fig}(subj,draw,:,:)):-1:1];
+                        shapes(isnan([top' fliplr(bot')])) = nan;
+                        
+                        pgon = polyshape(shapes,[top' fliplr(bot')],'Simplify', false);
+                        b = plot(pgon,'HandleVisibility','off');
+                        hold on
+                        b.EdgeAlpha = 0;
+                        b.FaceAlpha = .15;
+                        
+                        h = plot(squeeze(Acc{fig}(subj,draw,:))*100);
+                        h.Parent.YLim = [0 100];
+                        h.Color = b.FaceColor;
+                        h.LineWidth = 1;
+                        hold on;
+                        title(h.Parent,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{fig}],'Interpreter','none');
+                        
+                        if ~Deci.Plot.Behv.Acc.Collapse.Block && length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==1
+                            h.Parent.XLabel.String = 'Block #';
+                            xticks(1:length(AccBlock))
+                        elseif ~Deci.Plot.Behv.Acc.Collapse.Trial && length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==1
+                            h.Parent.XLabel.String = 'Trial #';
+                        end
+                        
+                        h.Parent.YLabel.String = 'Percent (%)';
+                        legend(h.Parent,[ Deci.Plot.Behv.Acc.Subtitle{fig}]);
+                        
+                    elseif length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==2
+                        
+                        subplot(size(Acc{fig},2),1,draw)
+                        h = imagesc(squeeze(Acc{fig}(subj,draw,:,:))*100);
+                        h.Parent.CLim = [0 100];
+                        h.Parent.YLabel.String = 'Block #';
                         h.Parent.XLabel.String = 'Trial #';
+                        title(h.Parent,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Subtitle{fig}{draw}],'Interpreter','none');
+                        
+                    else
+                        disp(['Acc Total for ' Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{fig} ' ' num2str(squeeze(Acc{fig}(subj,draw,:,:))*100) '%' ' +- ' num2str(squeeze(Accsem{fig}(subj,draw,:,:))*100)]);
+                        
+                        if draw == 1
+                            CleanBars(Acc{fig}(subj,:,:,:),Accsem{fig}(subj,:,:,:))
+                            ylim([0 1]);
+                            title(['Acc Total for ' Sub.Acc{subj} ': ' Deci.Plot.Behv.Acc.Title{fig} ' '],'Interpreter','none')
+                            legend([Deci.Plot.Behv.Acc.Subtitle{fig}])
+                            xticklabels(Sub.Acc{subj})
+                            ylabel('Accuracy (Percent)')
+                            %disp(num2str(squeeze(Acc(subj,draw,:,:))*100))
+                        end
+                        
                     end
                     
-                    h.Parent.YLabel.String = 'Percent (%)';
-                    legend(h.Parent,[ Deci.Plot.Behv.Acc.Subtitle{fig}]);
-                    
-                elseif length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==2
-                    
-                    subplot(size(Acc{fig},2),1,draw)
-                    h = imagesc(squeeze(Acc{fig}(subj,draw,:,:))*100);
-                    h.Parent.CLim = [0 100];
-                    h.Parent.YLabel.String = 'Block #';
-                    h.Parent.XLabel.String = 'Trial #';
-                    title(h.Parent,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Subtitle{fig}{draw}],'Interpreter','none');
-                    
                 else
-                    disp(['Acc Total for ' Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{fig} ' ' num2str(squeeze(Acc{fig}(subj,draw,:,:))*100) '%' ' +- ' num2str(squeeze(Accsem{fig}(subj,draw,:,:))*100)]);
                     
-                    if draw == 1
-                        CleanBars(Acc{fig}(subj,:,:,:),Accsem{fig}(subj,:,:,:))
-                        ylim([0 1]);
+                    if length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==2
+                        h = subplot(size(Acc{fig},2),1,draw);
+                        boxplot(squeeze(Acc{fig}(:,draw,:,:))*100);
+                        h.CLim = [0 100];
+                        
+                        if ~Deci.Plot.Behv.Acc.Collapse.Block && length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==1
+                            h.XLabel.String = 'Block #';
+                            xticks(1:length(AccBlock))
+                        elseif ~Deci.Plot.Behv.Acc.Collapse.Trial && length(find(size(squeeze(Acc{fig}(subj,draw,:,:))) ~= 1)) ==1
+                            h.XLabel.String = 'Trial #';
+                        end
+                        
+                        h.YLabel.String = 'Trial #';
+                        title(h,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Subtitle{fig}{draw}],'Interpreter','none');
+                        hold on
+                    else
+                        h = gca;
+                        boxplot(squeeze(Acc{fig})*100);
+                        h.CLim = [0 100];
+                        
                         title(['Acc Total for ' Sub.Acc{subj} ': ' Deci.Plot.Behv.Acc.Title{fig} ' '],'Interpreter','none')
-                        legend([Deci.Plot.Behv.Acc.Subtitle{fig}])
-                        xticklabels(Sub.Acc{subj})
+                        xticklabels(Deci.Plot.Behv.Acc.Subtitle{fig})
                         ylabel('Accuracy (Percent)')
-                        %disp(num2str(squeeze(Acc(subj,draw,:,:))*100))
+                        hold on
                     end
                     
                 end
+                
+                
                 
                 
             end
@@ -506,20 +579,27 @@ end
 
 if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
     
+    if Deci.Plot.Behv.RT.BaW
+    Sub.RT = {'SubjAvg'};
+   
+end 
+    
     for fig = find(Deci.Plot.Behv.RT.Figure)
         
         fignum = 1;
         
-        for subj = 1:size(RT{fig},1)
+        for subj = 1:length(Sub.RT)
             
             
             d(fignum,subj) = figure;
             d(fignum,subj).Visible = 'on';
             
             
+            
             for draw = 1:size(RT{fig},2)
                 
                 
+             if ~Deci.Plot.Behv.RT.BaW
                 if length(find(size(squeeze(RT{fig}(subj,draw,:,:))) ~= 1)) ==1
                     
                     
@@ -570,7 +650,39 @@ if ~isempty(Deci.Plot.Behv.RT) &&  ~isempty(find(Deci.Plot.Behv.RT.Figure))
                         ylabel('Reaction Time (ms)')
                     end
                 end
-                
+             
+             else
+                 
+                 if length(find(size(squeeze(RT{fig}(subj,draw,:,:))) ~= 1)) ==2
+                     h = subplot(size(RT{fig},2),1,draw);
+                     boxplot(squeeze(RT{fig}(:,draw,:,:))*100);
+                     h.CLim = [0 100];
+                     
+                     if ~Deci.Plot.Behv.RT.Collapse.Block && length(find(size(squeeze(RT{fig}(subj,draw,:,:))) ~= 1)) ==1
+                         h.XLabel.String = 'Block #';
+                     elseif ~Deci.Plot.Behv.RT.Collapse.Trial && length(find(size(squeeze(RT{fig}(subj,draw,:,:))) ~= 1)) ==1
+                         h.XLabel.String = 'Trial #';
+                     end
+                     
+                     h.YLabel.String = 'Reaction Time (ms)';
+                     title(h,[Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Subtitle{fig}{draw}],'Interpreter','none');
+                     hold on
+                     
+                     
+                 else
+                     h = gca;
+                     boxplot(squeeze(RT{fig}));
+                     h.CLim = [0 100];
+                     
+                     title(['Reaction Time Total for ' Sub.RT{subj} ': ' Deci.Plot.Behv.RT.Title{fig} ' '],'Interpreter','none')
+                     xticklabels(Deci.Plot.Behv.RT.Subtitle{fig})
+                     ylabel('Reaction Time (ms)')
+                     hold on
+                 end
+             end
+             
+             
+             
             end
             
             if length(find(size(squeeze(RT{fig}(subj,draw,:,:))) ~= 1)) ==2

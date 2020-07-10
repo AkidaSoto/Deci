@@ -10,7 +10,7 @@ addpath(genpath('/projectnb/crc-nak/chartove/Julia/OurFieldTrip'))
 Deci = [];
 Deci.Folder.Raw         = ['G:\Julia\New_Datasets\3_9_2020'];              % Raw Data Folder Directory
 Deci.SubjectList        = 'gui';                                                % Cell Array of strings, 'all' or 'gui'
-Deci.Step               = 5;                                            % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
+Deci.Step               = 4;                                            % Which Step to implement 1-TD, 2-PP, 3-Art, 4-Analysis, 5-Plot
 Deci.Proceed            = false;                                                                  % Continue to next step when current step is done?
 Deci.PCom               = true;                                                       % Activates Parallel Computing for PP and Analysis only
 Deci.Folder.Version     = ['G:\Julia\ProcessedData'];        % Output Folder Directory
@@ -74,8 +74,6 @@ Deci.Analysis.Connectivity.Params = {{Deci.Analysis.Connectivity}};
 
 %% 5. Plotting
 
-%%  6. Run
-
 if Deci.Step == 4
         Deci_Wavelet;
         
@@ -96,9 +94,9 @@ if Deci.Step == 4
         Deci = rmfield(Deci,'Analysis');
 else
     
-    Deci.Run.Behavior = false;
-    Deci.Run.Freq =false;
-    Deci.Run.ERP =false;
+    Deci.Run.Behavior = true;
+    Deci.Run.Freq =true;
+    Deci.Run.ERP =true;
     Deci.Run.Extra = true;
     
     Deci.Plot.BslRef ='Fdb Onset';
@@ -125,17 +123,17 @@ else
     Deci.Plot.Square.Toi     = [];                   % Time of Interest
     Deci.Plot.Square.Channel = [{'FCz'}];                % Channel of Interest
     
-    Deci.Plot.Wire.do    =false;
+    Deci.Plot.Wire.do    =true;
     Deci.Plot.Wire.Foi     = [3 8];           % Frequency of Interest
     Deci.Plot.Wire.Toi     = [];                   % Time of Interest
     Deci.Plot.Wire.Channel = [{'FCz'}];              % Channel of Interest
     
-    Deci.Plot.Bar.do    =false;
+    Deci.Plot.Bar.do    =true;
     Deci.Plot.Bar.Foi     =  [3 8];                 % Frequency of Interest
     Deci.Plot.Bar.Toi     = [.5 1];                   % Time of Interest
     Deci.Plot.Bar.Channel =  [{'Cz'}];
     
-    Deci.Plot.Freq.Type    = 'ITPC'; 
+    Deci.Plot.Freq.Type    = 'TotalPower'; %this can be TotalPower, ITPC, or TotalPowerVar
     
     if  strcmpi(Deci.Plot.BslRef, 'Response Onset')
         Deci.Plot.Bsl     = [-.5 -.3];
@@ -189,22 +187,27 @@ else
         Deci.Plot.BslType = 'relchange';
     end
 
-    % conn plots
+% conn plots
     
 Deci.Plot.Extra.Conn.List = Deci.Analysis.Connectivity.Sets([true true]);
+
+%frequency low vs frequency high
 Deci.Plot.Extra.Conn.FL_FH.do =  true;
 Deci.Plot.Extra.Conn.FL_FH.toi = [];
 
+%frequency vs time
 Deci.Plot.Extra.Conn.FL_time.do =  true;
 Deci.Plot.Extra.Conn.FH_time.do =  true;
 
+%channel vs time
 Deci.Plot.Extra.Conn.CL_time.do =  true;
 Deci.Plot.Extra.Conn.CH_time.do =  true;
 
 Deci.Plot.Extra.List = [true];
 Deci.Plot.Extra.Functions = { 'Plottor_Conn'};
 Deci.Plot.Extra.Params = {{Deci.Plot.Extra.Conn}};
-   
+
+%behavioral plots
 Deci.Plot.Behv = [];
 Deci.Plot.Behv.Source = 'Definition';
 Deci.Plot.Behv.Static = [];
@@ -236,6 +239,8 @@ Deci.Plot.Behv.Acc.Collapse.Subject = true ;
 % Deci.Plot.Behv.RT.Collapse.Block = false;
 % Deci.Plot.Behv.RT.Collapse.Subject = false;
 
+
+%%  6. Run
 Deci_Backend(Deci);
 end
 

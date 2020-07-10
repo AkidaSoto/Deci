@@ -1,7 +1,7 @@
 function dc_pmask(mainfig)
 
 ButtonH=uicontrol('Parent', mainfig,'Style','pushbutton','String','p Mask','Position',[10 10 100 25],'Visible','on','Callback',@pmask);
-ButtonH.UserData = @ones;
+%ButtonH.UserData = @ones;
 
     function pmask(PushButton, EventData)
         
@@ -22,15 +22,43 @@ ButtonH.UserData = @ones;
                     imag.UserData = logical(~isnan(imag.CData));
                 end
                 
+                if length(size(imag.AlphaData)) < length(size(imag.UserData))
+                    
+                end
+                
                 placeholder = imag.UserData;
                 imag.UserData = imag.AlphaData;
                 imag.AlphaData = placeholder;
             else
+                
                 imag =  Axes(a).Children.findobj('Type','contour');
-                placeholder = imag.UserData;
-                imag.UserData = imag.ZData;
-                imag.ZData = placeholder;
+                
+
+                if isempty(PushButton.UserData) 
+                    PushButton.UserData = 2;
+                end
+                
+                if PushButton.UserData > size(imag.UserData,3)
+                    PushButton.UserData = 1;
+                end
+                
+                
+                %placeholder = imag.UserData;
+                imag.ZData = imag.UserData(:,:,PushButton.UserData);
+                %imag.ZData = placeholder;
+                
+                
+                if PushButton.UserData ~= 1
+                PushButton.String =  ['p mask ' num2str(PushButton.UserData-1)];
+                else
+                PushButton.String =  ['p mask off'];
+                end
+
+               
+                
             end
         end
+        
+       PushButton.UserData = PushButton.UserData + 1;
     end
 end

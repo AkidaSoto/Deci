@@ -205,7 +205,8 @@ for cond = 1:length(Deci.Plot.Draw)
                         plotlock.Color(4) = .2;
                         
                         if Deci.Plot.GrandAverage
-                            lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                            %this was breaking - JC 5/24/20
+                            lockstd = [info.lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
                             if [locktime - lockstd] < xlims(1)
                                 lockpstd(1) = xlims(1);
                             else

@@ -1,4 +1,4 @@
-function [stat, cfg] = clusterstat(cfg, statrnd, statobs, varargin)
+function [stat, cfg] = clusterstat(cfg, statrnd, statobs,prand,pobs, varargin)
 
 % SUBFUNCTION for computing cluster statistic for N-D volumetric source data
 % or for channel-freq-time data
