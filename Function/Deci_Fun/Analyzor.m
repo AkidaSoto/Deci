@@ -375,7 +375,10 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                 chancmb = [chanl; chanh]';
                             else
                                 chancmb = [chanl chanh];
+                                
+                                if size(chancmb,1) ~= 1
                                 chancmb = chancmb(combvec(1:length(chanl),[1:length(chanh)]+length(chanl)))';
+                                end
                             end
                             
                             if isequal(freqlow,freqhigh)
@@ -389,7 +392,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                 freqcmb = freqcmb';
                             end
                             
-                            for choicmb = 1:size(chancmb,1)
+                            for choicmb = 1:size(chancmb, 1)
                                 
                                 for foicmb = 1:size(freqcmb,1)
                                     

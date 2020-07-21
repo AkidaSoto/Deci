@@ -15,15 +15,15 @@ for Conditions = 1:size(Subjects,2)
             for Channel = 1:length(info.Chois)
                 
                 load([Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep info.Chois{Channel} '.mat'],info.variable);
-                evalc(['var =' info.variable]);
+                evalc(['vari =' info.variable]);
                 
-                if isfield(var,'freq')
-                    foi = var.freq >= round(info.Fois(1),4) & var.freq <= round(info.Fois(2),4);
+                if isfield(vari,'freq')
+                    foi = vari.freq >= round(info.Fois(1),4) & vari.freq <= round(info.Fois(2),4);
                     
-                    var.freq = var.freq(foi);
-                    var.(info.parameter) = var.(info.parameter)(:,foi,:);
+                    vari.freq = vari.freq(foi);
+                    vari.(info.parameter) = vari.(info.parameter)(:,foi,:);
                     
-                    Chans{Channel} = var;
+                    Chans{Channel} = vari;
                     
                 end
             end
@@ -31,7 +31,7 @@ for Conditions = 1:size(Subjects,2)
             acfg.parameter = info.parameter;
             acfg.appenddim = 'chan';
             
-            if isfield(var,'freq')
+            if isfield(vari,'freq')
                 Bsl{subject_list,Conditions} = rmfield(ft_appendfreq(acfg,Chans{:}),'cfg');
             else
                 Bsl{subject_list,Conditions} = rmfield(ft_appendtimelock(acfg,Chans{:}),'cfg');
