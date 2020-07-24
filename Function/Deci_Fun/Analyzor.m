@@ -54,7 +54,7 @@ if Deci.Analysis.Laplace
     display('Laplace Transform Applied')
 end
 
-if ~strcmpi(Deci.Analysis.Channels,'all')
+if ~ismember(Deci.Analysis.Channels,{'all','Reinhart-All'})
     cfg = [];
     cfg.channel = Deci.Analysis.Channels;
     evalc('data = ft_selectdata(cfg,data)');
