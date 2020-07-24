@@ -167,7 +167,7 @@ for cond = 1:length(Deci.Plot.Draw)
             axis tight
             
             
-            if Deci.Plot.Draw{cond}(subcond) <= size(info.lockers,2)
+            if Deci.Plot.Draw{cond}(subcond) <= size(info.lockers,2) && ~Deci.Plot.GroupLevel
                 xlims = xlim;
                 ylims = ylim;
                 

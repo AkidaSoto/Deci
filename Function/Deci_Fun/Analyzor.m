@@ -54,7 +54,7 @@ if Deci.Analysis.Laplace
     display('Laplace Transform Applied')
 end
 
-if ~strcmpi(Deci.Analysis.Channels,'all')
+if ~ismember(Deci.Analysis.Channels,{'all','Reinhart-All'})
     cfg = [];
     cfg.channel = Deci.Analysis.Channels;
     evalc('data = ft_selectdata(cfg,data)');
@@ -375,7 +375,10 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                 chancmb = [chanl; chanh]';
                             else
                                 chancmb = [chanl chanh];
+                                
+                                if size(chancmb,1) ~= 1
                                 chancmb = chancmb(combvec(1:length(chanl),[1:length(chanh)]+length(chanl)))';
+                                end
                             end
                             
                             if isequal(freqlow,freqhigh)
@@ -389,7 +392,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                 freqcmb = freqcmb';
                             end
                             
-                            for choicmb = 1:size(chancmb,1)
+                            for choicmb = 1:size(chancmb, 1)
                                 
                                 for foicmb = 1:size(freqcmb,1)
                                     

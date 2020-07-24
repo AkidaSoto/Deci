@@ -59,7 +59,10 @@ for ConnList = 1:length(Params.List)
             chancmb = [chanl; chanh]';
         else
             chancmb = [chanl chanh];
+            
+            if size(chancmb,1) ~= 1
             chancmb = chancmb(combvec(1:length(chanl),[1:length(chanh)]+length(chanl)))';
+            end
         end
         
         if ismember(conntype(conoi),{'plv','wpli_debiased','wpli'})
@@ -657,10 +660,11 @@ for ConnList = 1:length(Params.List)
                 cl_fig(subj) = figure;
                 
                 
-                CL_StatData{cond}.mask = double(CL_StatData{cond}.mask);
-                CL_StatData{cond}.mask(CL_StatData{cond}.mask == 0) = .2;
-                
+
                 if Deci.Plot.Stat.do
+                    CL_StatData{cond}.mask = double(CL_StatData{cond}.mask);
+                    CL_StatData{cond}.mask(CL_StatData{cond}.mask == 0) = .2;
+                    
                     dc_pmask(cl_fig)
                 end
                 suptitle([SubjectList{subj} ' ' Deci.Plot.Title{cond} ' ' conntype{conoi}  ]); %' at time range '  regexprep(num2str(minmax(FL_FH{1,1}.time)),' +',' - ') 's']);
@@ -730,10 +734,11 @@ for ConnList = 1:length(Params.List)
                     
                     h = imagesc(subby_flfh(subj,subcond),unique(freq.freqlow),unique(freq.freqhigh),freq.(param)(ufreqlow,ufreqhigh)');
                     
+                     if Deci.Plot.Stat.do
                     set(h, 'AlphaDataMapping', 'scaled');
                     h.AlphaData = double(FLFH_StatData{cond}.mask)';
                     h.AlphaData(h.AlphaData == 0) = .2;
-                    
+                     end
                     
                     axis tight
                     colorbar;
@@ -760,8 +765,12 @@ for ConnList = 1:length(Params.List)
                     
                     h = imagesc(subby_clch(subj,subcond),1:length(chan.chanlow),1:length(chan.chanhigh),chan.(param)');
                     set(h, 'AlphaDataMapping', 'scaled');
-                    h.AlphaData = double(CLCH_StatData{cond}.mask)';
-                    h.AlphaData(h.AlphaData == 0) = .2;
+                    
+                    
+                    if Deci.Plot.Stat.do
+                        h.AlphaData = double(CLCH_StatData{cond}.mask)';
+                        h.AlphaData(h.AlphaData == 0) = .2;
+                    end
                     
                     subby_clch(subj,subcond).XTick = 1:length(chan.chanlow);
                     subby_clch(subj,subcond).XTickLabel = chan.chanlow;
@@ -841,9 +850,13 @@ for ConnList = 1:length(Params.List)
                     [~,h] = contourf(subby_fltime(subj,subcond),freq.time,unique(freq.(dim{ismember(dim,{'freq' 'freqlow'})})),freq.(param)(ufreqlow,:));
                     
                     h.LineColor = 'none';
-                    h.UserData = h.ZData;
-                    h.ZData = h.ZData.*[double(FLtime_StatData{cond}.mask)];
                     
+                     if Deci.Plot.Stat.do
+                    FLtime_StatData{cond}.mask = double(FLtime_StatData{cond}.mask);
+                    FLtime_StatData{cond}.mask(FLtime_StatData{cond}.mask == 0) = nan;
+                    h.UserData = cat(3,h.ZData.*[FLtime_StatData{cond}.mask],h.ZData); 
+                    h.ZData =  h.ZData.*[FLtime_StatData{cond}.mask];
+                     end
                     
                     colorbar;
                     colormap(Deci.Plot.ColorMap)
@@ -1008,10 +1021,12 @@ for ConnList = 1:length(Params.List)
                         subby_cltime(subj,subcond).YTick = 1:length(freq.label);
                     end
                     
+                     if Deci.Plot.Stat.do
                     set(h, 'AlphaDataMapping', 'scaled');
                     h.AlphaData = double(CLtime_StatData{cond}.mask)';
                     h.AlphaData(h.AlphaData == 0) = .2;
-                    
+                     end
+                     
                     colormap(Deci.Plot.ColorMap)
                     colorbar;
                     if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
@@ -1085,9 +1100,11 @@ for ConnList = 1:length(Params.List)
                     h = imagesc(subby_chtime(subj,subcond),freq.time,1:length(unique(freq.labelcmb(:,2))),freq.(param));
                     
                     set(h, 'AlphaDataMapping', 'scaled');
+                     if Deci.Plot.Stat.do
                     h.AlphaData = double(CHtime_StatData{cond}.mask)';
                     h.AlphaData(h.AlphaData == 0) = .2;
-                    
+                     end
+                     
                     colorbar;
                     colormap(Deci.Plot.ColorMap)
                     subby_chtime(subj,subcond).YTickLabel = freq.chanhigh;
