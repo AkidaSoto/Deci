@@ -131,7 +131,7 @@ for cond = 1:length(Deci.Plot.Draw)
             end
             
             if Deci.Plot.Stat.do
-                Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = squeeze(StatData{cond}.mask);
+                Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = StatData{cond}.mask;
             end
         end
         
@@ -159,7 +159,7 @@ for cond = 1:length(Deci.Plot.Draw)
             diffy = diff(ylim);
             hold on
             for z = 1:size(sigs,2)
-            plot(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time,sigs(:,z)*modfunc(mod,diffy*[.01*z]),'HandleVisibility','off','LineWidth',5,'Color',colors{z});
+            plot(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time,sigs(:,z)*modfunc(mod,diffy*[.02*z]),'HandleVisibility','off','LineWidth',5,'Color',colors{z});
             end
         end
         
@@ -182,16 +182,16 @@ for cond = 1:length(Deci.Plot.Draw)
         plot([0 0], ylim, 'k--','HandleVisibility','off'); % vert. l
         end
         
-%         if Deci.Plot.Stat.do
-%             boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
-%             for bb = 1:length(boxes)
-%                 if ~isempty(boxes)
-%                     boxes(bb).FaceAlpha = .35;
-%                     uistack(boxes(bb),'bottom')
-%                     boxes(bb).HandleVisibility = 'off';
-%                 end
-%             end
-%         end
+        if Deci.Plot.Stat.do
+            boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
+            for bb = 1:length(boxes)
+                if ~isempty(boxes)
+                    boxes(bb).FaceAlpha = .35;
+                    uistack(boxes(bb),'bottom')
+                    boxes(bb).HandleVisibility = 'off';
+                end
+            end
+        end
         
         if max(Deci.Plot.Draw{cond}) <= size(info.trllen,2)
             legend(arrayfun(@(a,b) [ Deci.Plot.Freq.Type ' ' a{1} ' (' num2str(b) ')'] ,Deci.Plot.Subtitle{cond},info.trllen(subj,Deci.Plot.Draw{cond}),'UniformOutput',false));

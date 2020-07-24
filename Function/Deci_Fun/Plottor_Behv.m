@@ -7,9 +7,16 @@ for subject_list = 1:length(Deci.SubjectList)
     
     switch Deci.Plot.Behv.Source
         case 'PostArt'
+            
+            info = [];
             load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'info');
             
-            data = info;
+            if isempty(info)
+                load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data');
+                data = rmfield(data,'trial');
+            else
+                data = info;
+            end
             
             if isfield(data,'condinfo')  %replacer starting 12/22, lets keep for ~4 months
                 data.postart.locks = data.condinfo{1};
