@@ -171,7 +171,7 @@ for cond = 1:length(Deci.Plot.Draw)
             if Deci.Plot.Stat.do
                 pcfg.clim = 'maxmin';
                 pcfg.maskparameter ='mask';
-                Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(permute(StatData{cond}.mask,[1 3 4 2]),[1 1 length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time)]);
+                Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = StatData{cond}.mask;
             end
             
             pcfg.imagetype = Deci.Plot.ImageType;
