@@ -8,7 +8,7 @@ ButtonH=uicontrol('Parent', mainfig,'Style','pushbutton','String','p Mask','Posi
         Axes = PushButton.Parent.Children.findobj('Type','Axes');
         Axes = Axes(arrayfun(@(c) ~isempty(c.String), [Axes.Title]));
         
-        for a = 1:length(Axes)
+        for a = 1:length(unique([PushButton.Parent.Children.findobj('Type','Axes').UserData]))
             
             imag = Axes(a).Children.findobj('Type','Image');
             
@@ -31,34 +31,38 @@ ButtonH=uicontrol('Parent', mainfig,'Style','pushbutton','String','p Mask','Posi
                 imag.AlphaData = placeholder;
             else
                 
-                imag =  Axes(a).Children.findobj('Type','contour');
+                %imag =  Axes(a).Children.findobj('Type','contour');
                 
-
-                if isempty(PushButton.UserData) 
-                    PushButton.UserData = 2;
-                end
+                imag = [PushButton.Parent.Children.findobj('Type','Axes').findobj('UserData',a)];
                 
-                if PushButton.UserData > size(imag.UserData,3)
+                if isempty(PushButton.UserData)
                     PushButton.UserData = 1;
                 end
                 
+                if PushButton.UserData > length(unique([PushButton.Parent.Children.findobj('Type','Axes').UserData]))
+                    PushButton.UserData = 1;
+                end
                 
-                %placeholder = imag.UserData;
-                imag.ZData = imag.UserData(:,:,PushButton.UserData);
-                %imag.ZData = placeholder;
-                
+                if PushButton.UserData == a
+                    arrayfun(@(c) axes(c),imag);
+                end
+                %                 %placeholder = imag.UserData;
+                %                 imag.ZData = imag.UserData(:,:,PushButton.UserData);
+                %                 %imag.ZData = placeholder;
+                %
+
                 
                 if PushButton.UserData ~= 1
-                PushButton.String =  ['p mask ' num2str(PushButton.UserData-1)];
+                    PushButton.String =  ['p mask ' num2str(PushButton.UserData-1)];
                 else
-                PushButton.String =  ['p mask off'];
+                    PushButton.String =  ['p mask off'];
                 end
-
-               
+                
+                
                 
             end
         end
         
-       PushButton.UserData = PushButton.UserData + 1;
+        PushButton.UserData = PushButton.UserData + 1;
     end
 end

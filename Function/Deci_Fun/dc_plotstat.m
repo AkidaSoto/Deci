@@ -115,11 +115,13 @@ for conds = 1:length(Deci.Plot.Draw)
         tmp.prob = cell2mat(cellfun(@(c) c.prob,StatData{conds},'UniformOutput',false));
         tmp.stat = cell2mat(cellfun(@(c) c.stat,StatData{conds},'UniformOutput',false));
         tmp.mask = cell2mat(cellfun(@(c) c.mask,StatData{conds},'UniformOutput',false));
+        %tmp.critval = cell2mat(cellfun(@(c) c.critval,StatData{conds},'UniformOutput',false));
         
     else
         tmp.prob = StatData{conds}.prob;
         tmp.stat = StatData{conds}.stat;
         tmp.mask = StatData{conds}.mask;
+        %tmp.critval = StatData{conds}.critval;
 
     end
     

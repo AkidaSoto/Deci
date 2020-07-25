@@ -123,19 +123,32 @@ for cond = 1:length(Deci.Plot.Draw)
         tacfg.parameter = 'stat';
         StatData{cond}.mask = double(StatData{cond}.mask);
         StatData{cond}.mask(StatData{cond}.mask == 0) = .2;
-        tacfg.maskparameter = 'mask';
+        StatData{cond}.freq = Segdata{1}.freq;
+        StatData{cond}.time = Segdata{1}.time;
+        StatData{cond}.label = {'all'}; 
+        
         tacfg.colormap = Deci.Plot.ColorMap;
         
         if Deci.Plot.Stat.FPlots
             squaret(cond) = figure;
+            squaret(cond).Position = Deci.Plot.Size;
             squaret(cond).Visible = 'on';
-            
-            ft_singleplotTFR(tacfg,StatData{cond})
-            title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
-            dc_pmask(squaret(cond))
-            
+            StatData{cond}.dimord = 'chan_freq_time';
+            tacfg.imagetype = Deci.Plot.ImageType;
+            tacfg.colormap = Deci.Plot.ColorMap;
+            tacfg.clim = 'maxmin';
+            tacfg.colorbar = 'yes';
+            tacfg.maskparameter = 'mask';
+            ft_singleplotTFR(tacfg,StatData{cond});
+            %squaret(cond).SizeChangedFcn = {@(m,c) set(m,'Position',c.Position),m,c)
+           
             ylabel('F score');
             xlabel('time');
+            title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
+            
+            dc_pmask(squaret(cond))
+            
+
         end
     end
     
@@ -164,7 +177,7 @@ for cond = 1:length(Deci.Plot.Draw)
             pcfg.imagetype = Deci.Plot.ImageType;
             pcfg.colormap = Deci.Plot.ColorMap;
             evalc('ft_singleplotTFR(pcfg,Segdata{subj,Deci.Plot.Draw{cond}(subcond)})');
-            axis tight
+            
             
             
             if Deci.Plot.Draw{cond}(subcond) <= size(info.lockers,2) && ~Deci.Plot.GroupLevel
@@ -196,6 +209,8 @@ for cond = 1:length(Deci.Plot.Draw)
                             end
                             
                             lockpgon = polyshape([lockpstd fliplr(lockpstd)],sort([ylims ylims]),'Simplify', false);
+                            
+
                             lockb = plot(lockpgon,'HandleVisibility','off');
                             hold on
                             lockb.EdgeAlpha = 0;
@@ -216,9 +231,13 @@ for cond = 1:length(Deci.Plot.Draw)
                 end
                 ylim(ylims)
                 title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(info.trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')']);
+            
             else
                 title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
             end
+            
+           
+            
         end
     end
 

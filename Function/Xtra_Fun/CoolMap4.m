@@ -2,7 +2,7 @@ function cm = CoolMap4
 
 black1 = [0 29 63];
 magenta = [0,96,200];
-Silver = [249,239,255];
+Silver = [136, 255, 136];
 Teal = [169,0,0];
 black2 = [55 0 0];
 
