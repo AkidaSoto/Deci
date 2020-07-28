@@ -108,6 +108,12 @@ for cond = 1:length(Deci.Plot.Draw)
             wiret(cond).Visible = 'on';
             plot(squeeze(Segdata{1}.time),squeeze(StatData{cond}.stat))
             title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
+        
+            if ~isempty(StatData{cond}.stat(logical(StatData{cond}.mask)))
+               thresh = min(StatData{cond}.stat(logical(StatData{cond}.mask)));
+               hold on
+               plot([Segdata{1}.time(1) Segdata{1}.time(end)],[thresh thresh],'k');
+            end
         end
     end
     
