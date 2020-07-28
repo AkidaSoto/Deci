@@ -106,7 +106,7 @@ for cond = 1:length(Deci.Plot.Draw)
         if Deci.Plot.Stat.FPlots
             wiret(cond)  = figure;
             wiret(cond).Visible = 'on';
-            plot(squeeze(StatData{cond}.time),squeeze(StatData{cond}.stat))
+            plot(squeeze(Segdata{1}.time),squeeze(StatData{cond}.stat))
             title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
         end
     end
