@@ -141,13 +141,33 @@ for cond = 1:length(Deci.Plot.Draw)
             tacfg.clim = 'maxmin';
             tacfg.colorbar = 'yes';
             tacfg.maskparameter = 'mask';
-            ft_singleplotTFR(tacfg,StatData{cond});
-            %squaret(cond).SizeChangedFcn = {@(m,c) set(m,'Position',c.Position),m,c)
-           
-            ylabel('F score');
-            xlabel('time');
-            title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
             
+            
+            for stat = 1:size(StatData{cond}.mask,4)
+                
+                statsub(stat)    =  subplot(size(StatData{cond}.mask,4),1,sub2ind([1 size(StatData{cond}.mask,4)],1,stat));
+                tempdata = StatData{cond};
+                tempdata.stat = tempdata.stat(:,:,:,stat);
+                tempdata.mask = tempdata.mask(:,:,:,stat);
+                tempdata.time = Segdata{1}.time;
+                
+                tacfg.colorbar = 'yes';
+                
+                statsub(stat).YAxis.Label.Visible = 'on';
+                statsub(stat).YAxis.Label.String = ['Test #' num2str(stat)];
+                statsub(stat).YAxis.Label.Rotation = 0;
+                
+                tacfg.contournum = 15;
+                
+                
+                ft_singleplotTFR(tacfg,tempdata);
+                %squaret(cond).SizeChangedFcn = {@(m,c) set(m,'Position',c.Position),m,c)
+                
+                ylabel('F score');
+                xlabel('time');
+                title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
+            end
+
             dc_pmask(squaret(cond))
             
             childs =  squaret(cond).Children.findobj('Type','Axes');
@@ -182,12 +202,19 @@ for cond = 1:length(Deci.Plot.Draw)
             if Deci.Plot.Stat.do
                 pcfg.clim = 'maxmin';
                 pcfg.maskparameter ='mask';
-                Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(StatData{cond}.mask,[length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
+                Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = StatData{cond}.mask; %repmat(,[length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
             end
+            
+            scfg.avgoverchan = 'yes';
+            
+            if size(Subjects,1) > 1
+            scfg.avgoverrpt = 'yes';
+            end
+            tsquare = ft_selectdata(scfg,Segdata{subj,Deci.Plot.Draw{cond}(subcond)});
             
             pcfg.imagetype = Deci.Plot.ImageType;
             pcfg.colormap = Deci.Plot.ColorMap;
-            evalc('ft_singleplotTFR(pcfg,Segdata{subj,Deci.Plot.Draw{cond}(subcond)})');
+            evalc('ft_singleplotTFR(pcfg,tsquare)');
             
             
             

@@ -79,12 +79,16 @@ for subject_list = 1:length(Deci.SubjectList)
                         if sum(ismember(Deci.Plot.Behv.Static,[draws{:}])) == 1
                             
                             eve = RTevents(logical(sum(ismember(RTevents,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
+                            rteve = data.trialinfo(logical(sum(ismember(RTevents,Deci.Plot.Behv.Static(ismember(Deci.Plot.Behv.Static,[draws{:}]))),2)),:);
                         else
                             eve = RTevents;
+                            rteve = data.trialinfo;
                         end
                     else
                         eve = RTevents;
+                        rteve = data.trialinfo;
                     end
+                    rteve = rteve(find(any(ismember(eve,RTBlock(blk)),2)),:);
                     eve = eve(find(any(ismember(eve,RTBlock(blk)),2)),:);
                     
                     
@@ -94,7 +98,7 @@ for subject_list = 1:length(Deci.SubjectList)
                     maxt = length(find(cellfun(@(c) any(ismember([draws{:}],c)), Deci.DT.Markers)));
                     trl = [sum(ismember(eve,[draws{:}]),2) == maxt];
                     
-                    eveTotal(trl) =  [-data.trialinfo(trl,Deci.Plot.Behv.RT.Locks(2)) - -data.trialinfo(trl,Deci.Plot.Behv.RT.Locks(1))];
+                    eveTotal(trl) =  [-rteve(trl,Deci.Plot.Behv.RT.Locks(2)) - -rteve(trl,Deci.Plot.Behv.RT.Locks(1))];
                     
                     if size(eveTotal,2) ~= size(RT{fig},4) && size(RT{fig},1) ~= 0
                         

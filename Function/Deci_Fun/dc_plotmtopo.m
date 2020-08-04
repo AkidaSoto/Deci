@@ -241,12 +241,12 @@ for cond = 1:length(Deci.Plot.Draw)
                 if Deci.Plot.Stat.do
                     pcfg.clim = 'maxmin';
                     pcfg.maskparameter ='mask';
-                    Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = StatData{cond}.mask %permute((:,:,time,:),[1 4 3 2]);
+                    Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = StatData{cond}.mask(:,:,time,:); %permute((:,:,time,:),[1 4 3 2]);
                 end
                 
                 scfg.latency = [Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time(time) Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time(time)];
                 scfg.avgoverfreq = 'yes';
-                scfg.acgoverrpt = 'yes';
+                scfg.avgoverrpt = 'yes';
                 mtopo = ft_selectdata(scfg,Segdata{subj,Deci.Plot.Draw{cond}(subcond)});
                 
                 

@@ -44,6 +44,7 @@ ButtonH=uicontrol('Parent', mainfig,'Style','pushbutton','String','p Mask','Posi
                 end
                 
                 if PushButton.UserData == a
+                    arrayfun(@(c) axes(c),[PushButton.Parent.Children.findobj('Type','Axes').findobj('UserData',1)])
                     arrayfun(@(c) axes(c),imag);
                 end
                 %                 %placeholder = imag.UserData;

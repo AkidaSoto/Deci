@@ -225,7 +225,7 @@ for cond = 1:length(Deci.Plot.Draw)
             
             scfg.avgovertime = 'yes';
             scfg.avgoverfreq = 'yes';
-            scfg.acgoverrpt = 'yes';
+            scfg.avgoverrpt = 'yes';
             mtopo = ft_selectdata(scfg,Segdata{subj,Deci.Plot.Draw{cond}(subcond)});
             
             ft_topoplotER(pcfg, mtopo);
