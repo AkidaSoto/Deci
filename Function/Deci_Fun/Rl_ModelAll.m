@@ -1,8 +1,9 @@
-function [out] = dc_RLmodel(Deci,info,dat,params)
-% dc_RLmodel is ran once for all block per state (ex:  All blocks for Reward) per subject.
+% RL_ModelALL Runs all 3 types of model
+    %1.) Per individual per condition
+    %2.) All individuals per condition
+    %3.) All individuals all conditions
 
 % 7 types of models are currently available
-
 %1.) Classic model with 2 parameters, alpha and beta
 %2.) Classic model with 2 alphas for - and + Pe
 %3.) Classic model with 2 alphas for - and + Pe, letting intial Q vary
@@ -815,5 +816,3 @@ end
         out.QPe = PE_QL;
         out.QAC = PE_AC;
     end
-
-end

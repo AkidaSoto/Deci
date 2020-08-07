@@ -1,9 +1,9 @@
 function cm = CoolMap
 
 black1 = [0 29 63];
-magenta = [0,96,200];
-Silver = [249,239,255];
-Teal = [169,0,0];
+magenta = [255,0,255];
+Silver = [0,255,0];
+Teal = [0,0,255];
 black2 = [55 0 0];
 
 for i = 1:3

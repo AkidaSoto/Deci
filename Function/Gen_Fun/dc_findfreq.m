@@ -22,6 +22,8 @@ for freq = 1:length(freqin)
             freqout(freq,:) =[30 55];
         case 'highgamma'
             freqout(freq,:) = [55 80];
+        case 'gamma'
+            freqout(freq,:) = [30 80];
         case 'all'
             freqout(freq,:) = [1 100];
         case 'beta2'

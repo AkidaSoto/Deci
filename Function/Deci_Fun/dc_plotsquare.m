@@ -108,6 +108,7 @@ if Deci.Plot.GrandAverage
                     SegStatdata{subj,conds}.freq = log(SegStatdata{subj,conds}.freq);
                 end
             end
+            
         end
      end
     
@@ -123,19 +124,62 @@ for cond = 1:length(Deci.Plot.Draw)
         tacfg.parameter = 'stat';
         StatData{cond}.mask = double(StatData{cond}.mask);
         StatData{cond}.mask(StatData{cond}.mask == 0) = .2;
-        tacfg.maskparameter = 'mask';
+        StatData{cond}.freq = Segdata{1}.freq;
+        StatData{cond}.time = Segdata{1}.time;
+        StatData{cond}.label = {'all'}; 
+        StatData{cond}.dimord = 'chan_freq_time';
+        
         tacfg.colormap = Deci.Plot.ColorMap;
         
         if Deci.Plot.Stat.FPlots
             squaret(cond) = figure;
+            squaret(cond).Position = Deci.Plot.Size;
             squaret(cond).Visible = 'on';
             
-            ft_singleplotTFR(tacfg,StatData{cond})
-            title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
+            tacfg.imagetype = Deci.Plot.ImageType;
+            tacfg.colormap = Deci.Plot.ColorMap;
+            tacfg.clim = 'maxmin';
+            tacfg.colorbar = 'yes';
+            tacfg.maskparameter = 'mask';
+            
+            
+            for stat = 1:size(StatData{cond}.mask,4)
+                
+                statsub(stat)    =  subplot(size(StatData{cond}.mask,4),1,sub2ind([1 size(StatData{cond}.mask,4)],1,stat));
+                tempdata = StatData{cond};
+                tempdata.stat = tempdata.stat(:,:,:,stat);
+                tempdata.mask = tempdata.mask(:,:,:,stat);
+                tempdata.time = Segdata{1}.time;
+                
+                tacfg.colorbar = 'yes';
+                
+                statsub(stat).YAxis.Label.Visible = 'on';
+                statsub(stat).YAxis.Label.String = ['Test #' num2str(stat)];
+                statsub(stat).YAxis.Label.Rotation = 0;
+                
+                tacfg.contournum = 15;
+                
+                
+                ft_singleplotTFR(tacfg,tempdata);
+                %squaret(cond).SizeChangedFcn = {@(m,c) set(m,'Position',c.Position),m,c)
+                
+                ylabel('F score');
+                xlabel('time');
+                title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
+            end
+
             dc_pmask(squaret(cond))
             
-            ylabel('F score');
-            xlabel('time');
+            childs =  squaret(cond).Children.findobj('Type','Axes');
+            for r = 1:length(childs)
+                childs(r).CLim = minmax([squaret(cond).Children.findobj('Type','Axes').CLim]);
+                
+                if strcmpi(Deci.Plot.FreqYScale,'log')
+                childs(r).YTickLabels = round(exp(childs(r).YTick),1);
+                end
+            end
+
+            
         end
     end
     
@@ -158,16 +202,23 @@ for cond = 1:length(Deci.Plot.Draw)
             if Deci.Plot.Stat.do
                 pcfg.clim = 'maxmin';
                 pcfg.maskparameter ='mask';
-                Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(StatData{cond}.mask,[length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
+                Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = StatData{cond}.mask; %repmat(,[length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
             end
+            
+            scfg.avgoverchan = 'yes';
+            
+            if size(Subjects,1) > 1
+            scfg.avgoverrpt = 'yes';
+            end
+            tsquare = ft_selectdata(scfg,Segdata{subj,Deci.Plot.Draw{cond}(subcond)});
             
             pcfg.imagetype = Deci.Plot.ImageType;
             pcfg.colormap = Deci.Plot.ColorMap;
-            evalc('ft_singleplotTFR(pcfg,Segdata{subj,Deci.Plot.Draw{cond}(subcond)})');
-            axis tight
+            evalc('ft_singleplotTFR(pcfg,tsquare)');
             
             
-            if Deci.Plot.Draw{cond}(subcond) <= size(info.lockers,2)
+            
+            if Deci.Plot.Draw{cond}(subcond) <= size(info.lockers,2) && ~Deci.Plot.GroupLevel
                 xlims = xlim;
                 ylims = ylim;
                 
@@ -196,6 +247,8 @@ for cond = 1:length(Deci.Plot.Draw)
                             end
                             
                             lockpgon = polyshape([lockpstd fliplr(lockpstd)],sort([ylims ylims]),'Simplify', false);
+                            
+
                             lockb = plot(lockpgon,'HandleVisibility','off');
                             hold on
                             lockb.EdgeAlpha = 0;
@@ -216,40 +269,33 @@ for cond = 1:length(Deci.Plot.Draw)
                 end
                 ylim(ylims)
                 title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(info.trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')']);
+            
             else
                 title([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}{subcond}]);
             end
+            
+           
+            
         end
     end
 
     for subj = 1:size(AvgData,1)
         set(0, 'CurrentFigure', square(subj))
-        suptitle([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond}]);
-        for r = 1:length(subby(:))
+        
+        childs = square(subj).Children.findobj('Type','Axes');
+        
+       
+        for r = 1:length(childs)
             if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
-                subby(r).CLim = Deci.Plot.Roi;
+                childs(r).CLim = Deci.Plot.Roi;
             elseif strcmp(Deci.Plot.Roi,'maxmin')
-                if isempty(subby(r).Children.UserData)
-                    subby(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),subby(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),subby(:)))];
-                else
-                    subby(r).CLim = [min(arrayfun(@(c) min(c.Children.ZData(:)),subby(:))) max(arrayfun(@(c) max(c.Children.ZData(:)),subby(:)))];
-                end
-                
-                %subby(r).Children.LevelList = [linspace(subby(r).CLim(1),subby(r).CLim(2),12)];
-                
+                    childs(r).CLim = minmax([square(subj).Children.findobj('Type','Axes').CLim]);
             elseif strcmp(Deci.Plot.Roi,'maxabs')
-                if ~isempty(subby(r).Children.UserData)
-                    subby(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby(:))) max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby(:)))];
-                else
-                    subby(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby(:))) max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby(:)))];
-                    
-                end
-                %(r).Children.LevelListMode = 'auto';
-                
-                %subby(r).Children.LevelList = [linspace(subby(r).CLim(1),subby(r).CLim(2),12)];
-                
+                    childs(r).CLim = [-1*max(abs(minmax([square(subj).Children.findobj('Type','Axes').CLim]))) max(abs(minmax([square(subj).Children.findobj('Type','Axes').CLim])))];
             end
         end
+        
+        suptitle([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond}]);
         
         if strcmpi(Deci.Plot.FreqYScale,'log')
             for r = 1:length(subby(:))

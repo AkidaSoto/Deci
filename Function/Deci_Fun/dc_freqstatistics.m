@@ -210,7 +210,7 @@ if ~isstruct(stat)
   stat = struct('prob', stat);
 end
 
-% the statistical output contains multiple elements, e.g. F-value, beta-weights and probability
+%the statistical output contains multiple elements, e.g. F-value, beta-weights and probability
 fn = fieldnames(stat);
 
 for i=1:length(fn)
@@ -221,10 +221,10 @@ for i=1:length(fn)
 end
 
 % describe the dimensions of the output data
-stat.dimord = cfg.dimord;
-
-% copy the descripive fields into the output
-stat = copyfields(varargin{1}, stat, {'freq', 'time', 'label'});
+% stat.dimord = cfg.dimord;
+% 
+% % copy the descripive fields into the output
+% stat = copyfields(varargin{1}, stat, {'freq', 'time', 'label'});
 
 % these were only present to inform the low-level functions
 cfg = removefields(cfg, {'dim', 'dimord'});

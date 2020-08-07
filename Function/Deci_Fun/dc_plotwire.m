@@ -106,8 +106,14 @@ for cond = 1:length(Deci.Plot.Draw)
         if Deci.Plot.Stat.FPlots
             wiret(cond)  = figure;
             wiret(cond).Visible = 'on';
-            plot(squeeze(StatData{cond}.time),squeeze(StatData{cond}.stat))
+            plot(squeeze(Segdata{1}.time),squeeze(StatData{cond}.stat))
             title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
+        
+            if ~isempty(StatData{cond}.stat(logical(StatData{cond}.mask)))
+               thresh = min(StatData{cond}.stat(logical(StatData{cond}.mask)));
+               hold on
+               plot([Segdata{1}.time(1) Segdata{1}.time(end)],[thresh thresh],'k');
+            end
         end
     end
     
@@ -131,7 +137,7 @@ for cond = 1:length(Deci.Plot.Draw)
             end
             
             if Deci.Plot.Stat.do
-                Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = repmat(StatData{cond}.mask,[length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
+                Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask = squeeze(StatData{cond}.mask);
             end
         end
         
@@ -144,10 +150,23 @@ for cond = 1:length(Deci.Plot.Draw)
         if Deci.Plot.Stat.do
             %pcfg.maskparameter ='mask'
             
-            sigs  =squeeze(mean(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask));
+            sigs  = Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask;
             sigs(sigs == 0) = nan;
-            sigs = sigs .* Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time';
-            plot(sigs, zeros(size(sigs)),'HandleVisibility','off','LineWidth',5,'Color','k');
+            sigs = sigs .* Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.mask;
+            
+            colors = {'r' 'g' 'b'};
+            
+            mod = min(cell2mat(arrayfun(@(c) min(mean(c.powspctrm,1),[],'all'),[Segdata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)));
+            modfunc = @minus;
+            if max(cell2mat(arrayfun(@(c) max(abs(mean(c.powspctrm,1)),[],'all'),[Segdata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false))) < 0
+                mod = max(cell2mat(arrayfun(@(c) max(mean(c.powspctrm,1),[],'all'),[Segdata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)));
+            modfunc = @plus;
+            end
+            diffy = diff(ylim);
+            hold on
+            for z = 1:size(sigs,2)
+            plot(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time,sigs(:,z)*modfunc(mod,diffy*[.01*z]),'HandleVisibility','off','LineWidth',5,'Color',colors{z});
+            end
         end
         
         %pcfg.ylim = ylim;
@@ -164,18 +183,21 @@ for cond = 1:length(Deci.Plot.Draw)
         axis tight
         hold on
         plot([Segdata{cond}.time(1), Segdata{cond}.time(end)], [0 0], 'k--','HandleVisibility','off'); % hor. line
-        plot([0 0], ylim, 'k--','HandleVisibility','off'); % vert. l
         
-        if Deci.Plot.Stat.do
-            boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
-            for bb = 1:length(boxes)
-                if ~isempty(boxes)
-                    boxes(bb).FaceAlpha = .35;
-                    uistack(boxes(bb),'bottom')
-                    boxes(bb).HandleVisibility = 'off';
-                end
-            end
+        if ~strcmpi(Deci.Plot.BslType,'none')
+        plot([0 0], ylim, 'k--','HandleVisibility','off'); % vert. l
         end
+        
+%         if Deci.Plot.Stat.do
+%             boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
+%             for bb = 1:length(boxes)
+%                 if ~isempty(boxes)
+%                     boxes(bb).FaceAlpha = .35;
+%                     uistack(boxes(bb),'bottom')
+%                     boxes(bb).HandleVisibility = 'off';
+%                 end
+%             end
+%         end
         
         if max(Deci.Plot.Draw{cond}) <= size(info.trllen,2)
             legend(arrayfun(@(a,b) [ Deci.Plot.Freq.Type ' ' a{1} ' (' num2str(b) ')'] ,Deci.Plot.Subtitle{cond},info.trllen(subj,Deci.Plot.Draw{cond}),'UniformOutput',false));
@@ -190,7 +212,7 @@ for cond = 1:length(Deci.Plot.Draw)
         
         
         for subcond = 1:length(Deci.Plot.Draw{cond})
-            if Deci.Plot.Draw{cond}(subcond) <= size(info.lockers,2)
+            if Deci.Plot.Draw{cond}(subcond) <= size(info.lockers,2) && ~Deci.Plot.GroupLevel
                 xlims = xlim;
                 ylims = ylim;
                 

@@ -308,8 +308,10 @@ for subject_list = 1:length(Deci.SubjectList)
         if isfield(data,'unmixing')
         data = rmfield(rmfield(data,'unmixing'),'topolabel');
         end
-        save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
-        data = rmfield(data,'trial');
+        
+        info = rmfield(data,'trial');
+        save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info','-v7.3')
+        
         %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
 end
 

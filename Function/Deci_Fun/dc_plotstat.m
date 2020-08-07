@@ -27,7 +27,14 @@ for conds = 1:length(Deci.Plot.Draw)
                 
                 if length(Deci.Plot.Draw{conds}) > 2
                     Deci.Plot.Stat.tail = 1;
-                    Deci.Plot.Stat.statistic = 'depsamplesFmultivariate';
+                    
+                    Deci.Plot.Stat = Exist(Deci.Plot.Stat,'twoway',false);
+                    
+                    if Deci.Plot.Stat.twoway
+                        Deci.Plot.Stat.statistic = 'dc_statfun_depsamplesFunivariate';
+                    else
+                        Deci.Plot.Stat.statistic = 'ft_statfun_depsamplesFunivariate';
+                    end
                     Deci.Plot.Stat.clustertail      = 1;
                 else
                     Deci.Plot.Stat.statistic = 'depsamplesT';
@@ -76,6 +83,8 @@ for conds = 1:length(Deci.Plot.Draw)
                 
             else
                 [StatData{conds}.mask] = permute(ones(size(SegStatdata{:,Deci.Plot.Draw{conds}(1)}.(info.parameter)(1,:,:,:))),[2 3 4 1]);
+                [StatData{conds}.prob] = permute(ones(size(SegStatdata{:,Deci.Plot.Draw{conds}(1)}.(info.parameter)(1,:,:,:))),[2 3 4 1]);
+                [StatData{conds}.stat] = permute(ones(size(SegStatdata{:,Deci.Plot.Draw{conds}(1)}.(info.parameter)(1,:,:,:))),[2 3 4 1]);
             end
             
         case 'Bsl'
@@ -102,6 +111,21 @@ for conds = 1:length(Deci.Plot.Draw)
             end
     end
     
+    if iscell(StatData{conds})
+        tmp.prob = cell2mat(cellfun(@(c) c.prob,StatData{conds},'UniformOutput',false));
+        tmp.stat = cell2mat(cellfun(@(c) c.stat,StatData{conds},'UniformOutput',false));
+        tmp.mask = cell2mat(cellfun(@(c) c.mask,StatData{conds},'UniformOutput',false));
+        %tmp.critval = cell2mat(cellfun(@(c) c.critval,StatData{conds},'UniformOutput',false));
+        
+    else
+        tmp.prob = StatData{conds}.prob;
+        tmp.stat = StatData{conds}.stat;
+        tmp.mask = StatData{conds}.mask;
+        %tmp.critval = StatData{conds}.critval;
+
+    end
+    
+    StatData{conds} = tmp;
 end
 
 end
