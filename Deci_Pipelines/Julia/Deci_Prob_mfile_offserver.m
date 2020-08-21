@@ -122,11 +122,11 @@ else
     Deci.Analysis.CondTitle     = {'Cor' 'Inc' 'AllFeedback'};
     Deci.Plot.CondTitle     = {'Cor' 'Inc' 'AllFeedback'};
     
-    Deci.Plot.Math         = {'x2-x1'};           % Condition Math done after Bsl, Condition Indexes are appended on.
-    Deci.Plot.Draw         = {[1:2] [4]};                   % Cell array of Condition Index for each figure
+    Deci.Plot.Math         = {'x1-x2','x1-x3','x2-x3'};           % Condition Math done after Bsl, Condition Indexes are appended on.
+    Deci.Plot.Draw         = {[1:2] [4:6]};                   % Cell array of Condition Index for each figure
     Deci.Plot.Figures      = [true true];                             % Which figure to plot currently
     Deci.Plot.Title        = {'All Trials' 'Subtraction'};          % Title for each figure
-    Deci.Plot.Subtitle     = {{'Cor' 'Inc'} {'Inc - Cor'}};     % Cell array of strings of subtitles for each Condition
+    Deci.Plot.Subtitle     = {{'Cor' 'Inc'} {'Cor - Inc' 'Cor-All' 'Inc-All'}};     % Cell array of strings of subtitles for each Condition
     
     
     Deci.Plot.Topo.do    =false;

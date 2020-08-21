@@ -46,6 +46,11 @@ for conds = 1:size(Subjects,2)
         
         tcfg.avgoverchan = 'yes';
         tcfg.avgoverfreq = 'yes';
+
+        if Deci.Plot.GrandAverage
+            tcfg.avgoverrpt = 'yes';
+        end
+
         SegStatdata{subj,conds} = ft_selectdata(tcfg,Segdata{subj,conds});
         
         if strcmpi(Deci.Plot.FreqYScale,'log')
@@ -82,6 +87,7 @@ if Deci.Plot.GrandAverage
                 Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
                 
                 tcfg.avgoverchan = 'yes';
+
                 SegStatdata{subj,conds} = ft_selectdata(tcfg,Segdata{subj,conds});
                 
                 if strcmpi(Deci.Plot.FreqYScale,'log')
