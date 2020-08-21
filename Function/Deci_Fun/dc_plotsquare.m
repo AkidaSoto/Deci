@@ -207,9 +207,10 @@ for cond = 1:length(Deci.Plot.Draw)
             
             scfg.avgoverchan = 'yes';
             
-            if size(Subjects,1) > 1
+            if Deci.Plot.GrandAverage
             scfg.avgoverrpt = 'yes';
             end
+            
             tsquare = ft_selectdata(scfg,Segdata{subj,Deci.Plot.Draw{cond}(subcond)});
             
             pcfg.imagetype = Deci.Plot.ImageType;

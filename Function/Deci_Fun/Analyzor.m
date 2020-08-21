@@ -195,6 +195,11 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             info.Lock = Lock;
             
             cfg.offset = locks(ccfg.trials,Deci.Analysis.Locks(Lock));
+            
+            if all(isnan(cfg.offset)) || isempty(cfg.offset)
+                continue
+            end
+            
             cfg.toilim = Deci.Analysis.Toilim;
             evalc('dat = ft_datashift2(cfg,dataplaceholder)');
             
