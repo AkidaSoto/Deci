@@ -71,10 +71,6 @@ for conds = 1:size(Subjects,2)
         if info.isfreq
         tcfg.avgoverfreq = 'yes';
         end
-
-        if Deci.Plot.GrandAverage
-            tcfg.avgoverrpt = 'yes';
-        end
         
         tcfg.avgovertime = 'yes';
         SegStatdata{subj,conds} = ft_selectdata(tcfg,Segdata{subj,conds});
@@ -229,7 +225,12 @@ for cond = 1:length(Deci.Plot.Draw)
             
             scfg.avgovertime = 'yes';
             scfg.avgoverfreq = 'yes';
-            %scfg.avgoverrpt = 'yes';
+           
+            
+            if Deci.Plot.GrandAverage
+                scfg.avgoverrpt = 'yes';
+            end
+            
             mtopo = ft_selectdata(scfg,Segdata{subj,Deci.Plot.Draw{cond}(subcond)});
             
             ft_topoplotER(pcfg, mtopo);

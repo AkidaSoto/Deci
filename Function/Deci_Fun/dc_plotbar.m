@@ -49,11 +49,7 @@ for conds = 1:size(Subjects,2)
         tcfg.avgoverchan = 'yes';
         tcfg.avgoverfreq = 'yes';
         tcfg.avgovertime = 'yes';
-        
-        
-        if Deci.Plot.GrandAverage
-            tcfg.avgoverrpt = 'yes';
-        end
+
 
         SegStatdata{subj,conds} = ft_selectdata(tcfg,Segdata{subj,conds});
         

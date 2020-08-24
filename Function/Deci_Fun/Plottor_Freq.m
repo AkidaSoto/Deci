@@ -42,10 +42,10 @@ if Deci.Plot.GrandAverage
         info.trllen = nanmean(info.trllen,1);
     end
     
-    if any(~isnan(info.lockers))
+    %if any(~isnan(info.lockers))
         info.lockersstd = nanstd(info.lockers,[],1);
         info.lockers = nanmean(info.lockers,1);
-    end
+    %end
 end
 
 %% Plot Types

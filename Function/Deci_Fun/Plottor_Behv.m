@@ -14,6 +14,10 @@ for subject_list = 1:length(Deci.SubjectList)
             if isempty(info)
                 load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data');
                 data = rmfield(data,'trial');
+                
+                info = data;
+                
+                save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'info');
             else
                 data = info;
             end
