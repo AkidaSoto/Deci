@@ -111,12 +111,14 @@ for cond = 1:length(Deci.Plot.Draw)
         tcfg = cfg;
         tcfg.parameter = 'stat';
         StatData{cond}.mask= double(StatData{cond}.mask);
-        StatData{cond}.mask(StatData{cond}.mask == 0) = .2;
+        StatData{cond}.mask(StatData{cond}.mask == 0) = nan;
         
         if Deci.Plot.Stat.FPlots
             bart(cond)  = figure;
             bart(cond).Visible = 'on';
-            bar(barstat{cond}.stat)
+            bar(diag(squeeze(StatData{cond}.stat)),'stacked')
+            hold on
+            plot(1:length(squeeze(StatData{cond}.stat)),squeeze(StatData{cond}.mask).*squeeze(StatData{cond}.stat) + 1,'*k','HandleVisibility','off')
             title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
         end
         

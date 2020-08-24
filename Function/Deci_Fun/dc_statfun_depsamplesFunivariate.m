@@ -121,10 +121,19 @@ if strcmp(cfg.computestat,'yes')
    
    for c = 1:size(dat,1)
    
-    tbl = rm_anova2(dat(c,:),design(2,:),double(design(1,:)<3),rem(design(1,:),2),{'Inherent' 'Contextual'});
+       if length(unique(design(1,:))) == 4
+           tbl = rm_anova2(dat(c,:),design(2,:),double(design(1,:)<3),rem(design(1,:),2),{'Inherent' 'Contextual'});
+           FValues(c,:) = [tbl{2:4,5}];
+           s.prob(c,:) = [tbl{2:4,6}];
+       elseif length(unique(design(1,:))) == 8
+           tbl = rm_anova3(dat(c,:),design(2,:),double(ismember(design(1,:),[1 2 5 6])),double(ismember(design(1,:),[1 2 3 4])),double(ismember(design(1,:),[1 4 5 8])),{'Inherent' 'Contextual','Magnitude'});
+           FValues(c,:) = [tbl{2:7,5}];
+           s.prob(c,:) = [tbl{2:7,6}];
+       else
+           error('Cannot find fitting anova for design')
+       end
+       
 
-    FValues(c,:) = [tbl{2:4,5}];
-    s.prob(c,:) = [tbl{2:4,6}];
     
    end
    
@@ -132,16 +141,23 @@ if strcmp(cfg.computestat,'yes')
     
 end;
 
-tbl = rm_anova2(dat(1,:),design(2,:),double(design(1,:)<3),rem(design(1,:),2),{'Inherent' 'Contextual'})  ;
-
-s.dfnum = [tbl{2:4,3}];
-s.dfdenom = tbl{5,3};
-
-if strcmp(cfg.computecritval,'yes')
-  
-
-s.critval = arrayfun(@(c) finv(.95,c,tbl{5,3}),[tbl{2,3}]);
-  
+if length(unique(design(1,:))) == 4
+    tbl = rm_anova2(dat(1,:),design(2,:),double(design(1,:)<3),rem(design(1,:),2),{'Inherent' 'Contextual'})  ;
+    s.dfnum = [tbl{2:4,3}];
+    s.dfdenom = tbl{5,3};
+    
+    if strcmp(cfg.computecritval,'yes')
+        s.critval = arrayfun(@(c) finv(.95,c,tbl{5,3}),[tbl{2,3}]);
+    end
+    
+elseif length(unique(design(1,:))) == 8
+    tbl = rm_anova3(dat(1,:),design(2,:),double(ismember(design(1,:),[1 2 5 6])),double(ismember(design(1,:),[1 2 3 4])),double(ismember(design(1,:),[1 4 5 8])),{'Inherent' 'Contextual','Magnitude'});
+    s.dfnum = [tbl{2:7,3}];
+    s.dfdenom = [tbl{8,3}];
+    
+    if strcmp(cfg.computecritval,'yes')
+        s.critval = arrayfun(@(c) finv(.95,c,tbl{8,3}),[tbl{2,3}]);
+    end
 end
 
 if strcmp(cfg.computeprob,'yes')

@@ -163,7 +163,7 @@ for cond = 1:length(Deci.Plot.Draw)
                 ft_singleplotTFR(tacfg,tempdata);
                 %squaret(cond).SizeChangedFcn = {@(m,c) set(m,'Position',c.Position),m,c)
                 
-                ylabel('F score');
+                ylabel('Freq');
                 xlabel('time');
                 title([Deci.Plot.Stat.Type ' ' Deci.Plot.Title{cond} ' Square (alpha = ' num2str(Deci.Plot.Stat.alpha) ')']);
             end
