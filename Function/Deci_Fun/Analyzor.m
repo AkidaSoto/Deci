@@ -381,7 +381,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             else
                                 chancmb = [chanl chanh];
                                 
-                                if size(chancmb,1) ~= 1
+                                if size(chancmb,2) ~= 1
                                 chancmb = chancmb(combvec(1:length(chanl),[1:length(chanh)]+length(chanl)))';
                                 end
                             end

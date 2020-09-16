@@ -1,6 +1,8 @@
 function dc_plottopo(Deci,Subjects,info)
 
 
+warning('off','MATLAB:handle_graphics:exceptions:SceneNode');
+
 cfg        = [];
 cfg.layout = Deci.Layout.eye;
 cfg.channel = 'all';
@@ -99,6 +101,41 @@ end
 
 if Deci.Plot.Stat.do
     StatData = dc_plotstat(Deci,SegStatdata,info);
+    
+    
+    
+    % Two-Way Data Management
+    
+    if Deci.Plot.Stat.twoway.do
+        for cond = 1:length(Deci.Plot.Draw)
+            
+            if length(Deci.Plot.Draw{cond}) == 4
+                
+                anovadata = [Segdata{1,Deci.Plot.Draw{cond}}];
+                Segdata{1,end+1} = Segdata{1};
+                Segdata{1,end}.powspctrm = mean(cat(5,anovadata([3 4]).powspctrm),5) - mean(cat(5,anovadata([1 2]).powspctrm),5);
+                Deci.Plot.Draw{end+1} = length(Segdata);
+                StatData{end+1} = structfun(@(c) c(:,1,:),StatData{cond},'UniformOutput',false);
+                
+                Segdata{1,end+1} = Segdata{1};
+                Segdata{1,end}.powspctrm = mean(cat(5,anovadata([1 3]).powspctrm),5) - mean(cat(5,anovadata([2 4]).powspctrm),5);    
+                Deci.Plot.Draw{end+1} = length(Segdata);
+                StatData{end+1} = structfun(@(c) c(:,2,:),StatData{cond},'UniformOutput',false);
+
+                Segdata{1,end+1} = Segdata{1};
+                Segdata{1,end}.powspctrm =   [[anovadata(3).powspctrm] - [anovadata(4).powspctrm]]  -  [[anovadata(1).powspctrm] - [anovadata(2).powspctrm]];
+                Deci.Plot.Draw{end+1} = length(Segdata);
+                StatData{end+1} = structfun(@(c) c(:,3,:),StatData{cond},'UniformOutput',false);
+                
+                Deci.Plot.Title(end+1:end+3)        = Deci.Plot.Stat.twoway.Title;
+                Deci.Plot.Subtitle(end+1:end+3)   = Deci.Plot.Stat.twoway.Subtitle;
+                
+            end
+        end
+        
+        
+    end
+    
 end
 
 
@@ -309,7 +346,7 @@ for cond = 1:length(Deci.Plot.Draw)
             end
         end
         
-         suptitle(Deci.Plot.Title{subj});
+         suptitle(Deci.Plot.Title{cond});
     end
     
 end

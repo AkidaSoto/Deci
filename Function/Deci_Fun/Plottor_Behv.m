@@ -17,7 +17,7 @@ for subject_list = 1:length(Deci.SubjectList)
                 
                 info = data;
                 
-                save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'info');
+                save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info');
             else
                 data = info;
             end

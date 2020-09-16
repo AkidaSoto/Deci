@@ -77,6 +77,39 @@ end
 
 if Deci.Plot.Stat.do
      StatData = dc_plotstat(Deci,SegStatdata,info);
+     
+     
+         % Two-Way Data Management
+    
+    if Deci.Plot.Stat.twoway.do
+        for cond = 1:length(Deci.Plot.Draw)
+            
+            if length(Deci.Plot.Draw{cond}) == 4 && ~strcmpi(Deci.Plot.Stat.Comp,'Bsl')
+                
+                anovadata = [Segdata{1,Deci.Plot.Draw{cond}}];
+                Segdata{1,end+1} = Segdata{1};
+                Segdata{1,end}.powspctrm = mean(cat(5,anovadata(3:4).powspctrm),5) - mean(cat(5,anovadata(1:2).powspctrm),5);
+                Deci.Plot.Draw{end+1} = length(Segdata);
+                StatData{end+1} = structfun(@(c) c(:,:,:,1),StatData{cond},'UniformOutput',false);
+                
+                Segdata{1,end+1} = Segdata{1};
+                Segdata{1,end}.powspctrm = mean(cat(5,anovadata(2:4).powspctrm),5) - mean(cat(5,anovadata([1 3]).powspctrm),5);    
+                Deci.Plot.Draw{end+1} = length(Segdata);
+                StatData{end+1} = structfun(@(c) c(:,:,:,2),StatData{cond},'UniformOutput',false);
+
+                Segdata{1,end+1} = Segdata{1};
+                Segdata{1,end}.powspctrm =   [[anovadata(4).powspctrm] - [anovadata(3).powspctrm]]  -  [[anovadata(2).powspctrm] - [anovadata(1).powspctrm]];
+                Deci.Plot.Draw{end+1} = length(Segdata);
+                StatData{end+1} = structfun(@(c) c(:,:,:,3),StatData{cond},'UniformOutput',false);
+                
+                Deci.Plot.Title(end+1:end+3)        = Deci.Plot.Stat.twoway.Title;
+                Deci.Plot.Subtitle(end+1:end+3)   = Deci.Plot.Stat.twoway.Subtitle;
+                
+            end
+        end
+        
+        
+    end
 end
 
 %% Plot
@@ -285,19 +318,19 @@ for cond = 1:length(Deci.Plot.Draw)
         
         childs = square(subj).Children.findobj('Type','Axes');
         
+        k = [square.Children];
        
         for r = 1:length(childs)
             if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
                 childs(r).CLim = Deci.Plot.Roi;
             elseif strcmp(Deci.Plot.Roi,'maxmin')
-                    childs(r).CLim = minmax([square(subj).Children.findobj('Type','Axes').CLim]);
+                    childs(r).CLim = minmax([k.findobj('Type','Axes').CLim]);
             elseif strcmp(Deci.Plot.Roi,'maxabs')
-                    childs(r).CLim = [-1*max(abs(minmax([square(subj).Children.findobj('Type','Axes').CLim]))) max(abs(minmax([square(subj).Children.findobj('Type','Axes').CLim])))];
+                    childs(r).CLim = [-1*max(abs(minmax([k.findobj('Type','Axes').CLim]))) max(abs(minmax([k.findobj('Type','Axes').CLim])))];
             end
         end
         
-        suptitle([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond}]);
-        
+
         if strcmpi(Deci.Plot.FreqYScale,'log')
             for r = 1:length(subby(:))
                 subby(r).YTickLabels = round(exp(subby(r).YTick),1);
@@ -308,6 +341,11 @@ for cond = 1:length(Deci.Plot.Draw)
             %mkdir([Deci.Folder.Plot filesep Deci.Plot.Title{cond}]);
             %saveas(square(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_square'],Deci.Plot.Save.Format);
         end
+    end
+    
+    for subj = 1:size(AvgData,1)
+         set(0, 'CurrentFigure', square(subj))
+       suptitle([Deci.SubjectList{subj} ' ' Deci.Plot.Freq.Type ' ' Deci.Plot.Title{cond}]); 
     end
     
 end

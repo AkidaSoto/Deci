@@ -60,7 +60,7 @@ for ConnList = 1:length(Params.List)
         else
             chancmb = [chanl chanh];
             
-            if size(chancmb,1) ~= 1
+            if size(chancmb,2) ~= 1
                 chancmb = chancmb(combvec(1:length(chanl),[1:length(chanh)]+length(chanl)))';
             end
         end
@@ -349,6 +349,80 @@ for ConnList = 1:length(Params.List)
         end
         
         
+        %% Hemifield
+%         if Deci.Plot.Hemiflip.do
+%             display(' ')
+%             display(['Applying Hemifield Flipping'] )
+%             
+%             Deci.Plot.Hemiflip = Exist(Deci.Plot.Hemiflip,'Type','Subtraction');
+%             
+%             for conds = 1:size(sub_cond,2)
+%                 for subj = 1:size(sub_cond,1)
+%                     
+%                     hcfg.parameter = 'avg';
+%                     hcfg.operation = 'x2 - x1';
+%                     
+%                     ContraCfg.channel = dc_getchans('even');
+%                     
+%                     ismember(sub_cond{subj,conds}.chanhigh,ContraCfg.channel);
+%                     
+%                     ContraData{subj,conds} = ft_selectdata(ContraCfg,sub_cond{subj,conds});
+%                     ContraData{subj,conds} = hemifieldflip(ContraData{subj,conds},);
+%                     
+%                     IpsiCfg.channel = dc_getchans('odd');
+%                     IpsiData{subj,conds} = ft_selectdata(IpsiCfg,sub_cond{subj,conds});
+%                     
+%                     if strcmpi(Deci.Plot.Hemiflip.Type,'Subtraction')
+%                         sub_cond{subj,conds} = ft_math(hcfg,IpsiData{subj,conds},ContraData{subj,conds});
+%                     end
+%                 end
+%                 
+%             end
+%             
+%             if strcmpi(Deci.Plot.Hemiflip.Type,'Both')
+%                 sub_cond = cat(2,IpsiData,ContraData);
+%                 
+%                 %Deci.SubjectList = cat(2,cellfun(@(c) [c ' Ipsilateral'],Deci.SubjectList,'un',0),cellfun(@(c) [c ' Contralateral'],Deci.SubjectList,'un',0));
+%                 
+%                 drawlength =  length(Deci.Plot.Draw) + length(Deci.Plot.Math);
+%                 
+%                 Deci.Plot.Draw =  cellfun(@(c) [c arrayfun(@(d) d+drawlength,c,'un',1)],Deci.Plot.Draw,'un',0);
+%                 Deci.Plot.Subtitle =  cellfun(@(c) [cellfun(@(d) [d ' Ipsilateral'],c,'un',0) cellfun(@(d) [d ' Contralateral'],c,'un',0)],Deci.Plot.Subtitle,'un',0);
+%                 
+%             else
+%                 Deci.Plot.Title = cellfun(@(c) [c ' Contra - Ipsilateral'],Deci.Plot.Title,'un',0);
+%             end
+%         end
+%         
+%         
+%         if Deci.Plot.LeftRight
+%             for conds = 1:size(sub_cond,2)
+%                 for subj = 1:size(sub_cond,1)
+%                     
+%                     Right = ismember(sub_cond{subj,conds}.chanhigh,dc_getchans('even'));
+%                     Left = ismember(sub_cond{subj,conds}.chanhigh,dc_getchans('odd'));
+%                     
+%                     Rights = sub_cond{subj,conds};
+%                     Rights.(param) = Rights.(param)(:,Right,)
+%                     
+%                     
+%                     sub_cond = cat(2,IpsiData,ContraData);
+%                     
+%                     %Deci.SubjectList = cat(2,cellfun(@(c) [c ' Ipsilateral'],Deci.SubjectList,'un',0),cellfun(@(c) [c ' Contralateral'],Deci.SubjectList,'un',0));
+%                     
+%                     drawlength =  length(Deci.Plot.Draw) + length(Deci.Plot.Math);
+%                     
+%                     Deci.Plot.Draw =  cellfun(@(c) [c arrayfun(@(d) d+drawlength,c,'un',1)],Deci.Plot.Draw,'un',0);
+%                     Deci.Plot.Subtitle =  cellfun(@(c) [cellfun(@(d) [d ' Ipsilateral'],c,'un',0) cellfun(@(d) [d ' Contralateral'],c,'un',0)],Deci.Plot.Subtitle,'un',0);
+%                     
+%                     Deci.Plot.Title = cellfun(@(c) [c ' Contra - Ipsilateral'],Deci.Plot.Title,'un',0);
+%                     
+%                 end
+%             end
+%         end
+        
+        %%
+        
         for conds = 1:size(sub_cond,2)
             
             if Deci.Plot.GrandAverage
@@ -434,6 +508,10 @@ for ConnList = 1:length(Params.List)
                     
                     if Deci.Plot.Stat.do
                         CL_CH_Stat{subjs,conds} = StatsData{subjs,conds};
+                        
+                        CL_CH_Stat{subjs,conds}.time = CL_CH_Stat{subjs,conds}.time(clchtoi);
+                        CL_CH_Stat{subjs,conds}.(param) = CL_CH_Stat{subjs,conds}.(param)(:,:,:,clchtoi);
+                        
                         CL_CH_Stat{subjs,conds}.(param) = permute(mean(CL_CH_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','chanlow' 'chanhigh'}))],'omitnan'),[find(ismember(dimstat,{'subj','chanlow' 'chanhigh'})) find(~ismember(dimstat,{'subj','chanlow' 'chanhigh'}))]);
                         CL_CH_Stat{subjs,conds}.dimord = 'subj_chanlow_chanhigh';
                     end

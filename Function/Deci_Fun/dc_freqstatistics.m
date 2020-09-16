@@ -118,10 +118,10 @@ tmpcfg = keepfields(cfg, {'frequency', 'avgoverfreq', 'latency', 'avgovertime', 
 % restore the provenance information
 [cfg, varargin{:}] = rollback_provenance(cfg, varargin{:});
 
-if strcmp(cfg.correctm, 'cluster') && length(varargin{1}.label)>1
-  % this is required for clustering with multiple channels
-  ft_checkconfig(cfg, 'required', 'neighbours');
-end
+% if strcmp(cfg.correctm, 'cluster') && length(varargin{1}.label)>1
+%   % this is required for clustering with multiple channels
+%   ft_checkconfig(cfg, 'required', 'neighbours');
+% end
 
 %dimord = getdimord(varargin{1}, cfg.parameter);
 dimord = varargin{1}.dimord;
