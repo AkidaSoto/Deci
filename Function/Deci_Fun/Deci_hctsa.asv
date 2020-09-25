@@ -25,11 +25,9 @@ for Cond = 1:length(Deci.Analysis.Conditions)
 end
 %% Do hctsa
 
-%Deci.Analysis.CondTitle     = {'GG Correct'20 'GG Incorrect'10  'G0 Correct'10 'G0 Incorrect'0 ...
-%                               'N0 Correct'0 'N0 Incorrect'-10 'NN Correct'-10 'NN Incorrect'20};  
+%Deci.Analysis.CondTitle     = {'GG Correct' 'GG Incorrect'  'G0 Correct' 'G0 Incorrect' ...
+%                               'N0 Correct' 'N0 Incorrect' 'NN Correct' 'NN Incorrect'};  
 
-
-%ismember(dataplaceholder{2}.label,{'FCz'})
 
 [~,sizen2]=size(dataplaceholder{2}.trial);
 [~,sizen1]=size(dataplaceholder{1}.trial);
