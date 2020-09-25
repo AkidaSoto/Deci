@@ -436,7 +436,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                         datahigh.label = labels;
                                         datahigh.dimord = 'rpttap_chan_freq_time';
                                         
-                                        if isequal(LF,HF) && ~isequal(chancmb(choicmb,1),chancmb(choicmb,2)) && ismember(conntype(conoi),{'plv','wpli_debiased','wpli'})
+                                        if isequal(LF,HF) && ~isequal(chancmb(choicmb,1),chancmb(choicmb,2)) && ismember(conntype(conoi),{'plv','wpli_debiased','wpli','amplcorr', 'psi', 'powcorr','coh'})
                                             
                                             conndata = ft_appendfreq(struct('parameter','fourierspctrm','appenddim','chan'),datalow,datahigh);
                                             conndata.cumtapcnt = Fourier.cumtapcnt;
@@ -446,10 +446,23 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                             Deci.Analysis.Connectivity = Exist(Deci.Analysis.Connectivity, 'keeptrials','no');
                                             conncfg.keeptrials = Deci.Analysis.Connectivity.keeptrials;
                                             
+                                            if ismember(conntype(conoi),{'coh'})
+                                               conncfg.complex     = 'imag';
+                                            else
+                                                conncfg.complex     = 'abs';
+                                            end
+                                            
                                             evalc('conn = ft_connectivityanalysis(conncfg,conndata)');
                                             
+                                            if ismember({'chancmb'},strsplit(conn.dimord,'_'))
                                             conn.([conntype{conoi} 'spctrm']) = permute(conn.([conntype{conoi} 'spctrm']),[2 3 1]);
+                                            else
+                                            conn.([conntype{conoi} 'spctrm']) = permute(conn.([conntype{conoi} 'spctrm']),[3 4 1 2]);    
+                                            end
+                                            
                                             conn.dimord = 'freq_time';
+                                            
+                                            
                                             
                                             if Deci.Analysis.Connectivity.Zscore.do
                                                 

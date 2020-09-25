@@ -58,7 +58,9 @@ for conds = 1:length(Deci.Plot.Draw)
                     [StatData{conds}] = ft_freqstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
                 elseif info.isconn
                     Deci.Plot.Stat.minnbchan = 1;
+                    Deci.Plot.Stat.neighbours = [];
                     [StatData{conds}] = dc_freqstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
+                    
                     %[StatData{conds}] = dc_connectivitystatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
                 else
                     [StatData{conds}] = ft_timelockstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});

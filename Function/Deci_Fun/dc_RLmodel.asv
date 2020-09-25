@@ -489,8 +489,7 @@ for subj = 1:size(a,1)
             end
             
             %remove last, because it's not needed.
-            q{block} = q{block}(1:end-1);
-            q_next{block} = q{block}(2:end);
+            q_next{block} = q{block}(1:end-1);
         end
         
     end
@@ -1079,13 +1078,8 @@ for subj = 1:size(a,1)
             end
             
             %remove last, because it's not needed.
-            
-            v{subj,cond,block} = vout{subj,cond,block}(1:end-1);
-            w{subj,cond,block} = wout{subj,cond,block}(1:end-1,1);
-            
-            
-            v_next{subj,cond,block} = vout{subj,cond,block}(2:end);
-            w_next{subj,cond,block} = wout{subj,cond,block}(2:end);
+            vout{subj,cond,block} = vout{subj,cond,block}(1:end-1);
+            wout{subj,cond,block} = wout{subj,cond,block}(1:end-1,1);
             
             %Normalize the Actors
             w_ph = w_chosen{subj,cond,block};
