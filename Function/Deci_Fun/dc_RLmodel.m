@@ -397,23 +397,27 @@ for Dim2 = 1:size(A_rep,2)
         
         % Let's save some data
         
-        mkdir([Deci.Folder.Version filesep 'Plot']);
-        if sum([Dim1,Dim2]) == 2
-            delete([Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx']);
+        if Deci.Analysis.Extra.QL.saveexcel
+            
+            mkdir([Deci.Folder.Version filesep 'Plot']);
+            if sum([Dim1,Dim2]) == 2
+                delete([Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx']);
+            end
+            
+            if sum([Dim1,Dim2]) == 2
+                writecell(['Subject' 'Cond' SheetNames(:)'],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_LLE','Range','A1');
+                writecell(['Subject' 'Cond' SheetNames(:)'],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_AIC','Range','A1');
+                writecell(['Subject' 'Cond' SheetNames(:)'],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_PseudoR','Range','A1');
+            end
+            
+            
+            writecell([Deci.SubjectList(Dim1) Deci.Analysis.CondTitle(Dim2) mat2cell([Best'],[1],ones([length([Best]) 1]))],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_LLE','Range',['A' num2str(sub2ind(size(A_rep),Dim1,Dim2)+1)]);
+            writecell([Deci.SubjectList(Dim1) Deci.Analysis.CondTitle(Dim2) mat2cell([Best2'],[1],ones([length([Best2]) 1]))],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_AIC','Range',['A' num2str(sub2ind(size(A_rep),Dim1,Dim2)+1)])
+            writecell([Deci.SubjectList(Dim1) Deci.Analysis.CondTitle(Dim2) mat2cell([PseudoR],[1],ones([length([PseudoR]) 1]))],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_PseudoR','Range',['A' num2str(sub2ind(size(A_rep),Dim1,Dim2)+1)])
+            
         end
         
-        if sum([Dim1,Dim2]) == 2
-            writecell(['Subject' 'Cond' SheetNames(:)'],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_LLE','Range','A1');
-            writecell(['Subject' 'Cond' SheetNames(:)'],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_AIC','Range','A1');
-            writecell(['Subject' 'Cond' SheetNames(:)'],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_PseudoR','Range','A1');
-        end
-        
-        
-        writecell([Deci.SubjectList(Dim1) Deci.Analysis.CondTitle(Dim2) mat2cell([Best'],[1],ones([length([Best]) 1]))],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_LLE','Range',['A' num2str(sub2ind(size(A_rep),Dim1,Dim2)+1)]);
-        writecell([Deci.SubjectList(Dim1) Deci.Analysis.CondTitle(Dim2) mat2cell([Best2'],[1],ones([length([Best2]) 1]))],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_AIC','Range',['A' num2str(sub2ind(size(A_rep),Dim1,Dim2)+1)])
-        writecell([Deci.SubjectList(Dim1) Deci.Analysis.CondTitle(Dim2) mat2cell([PseudoR],[1],ones([length([PseudoR]) 1]))],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_PseudoR','Range',['A' num2str(sub2ind(size(A_rep),Dim1,Dim2)+1)])
-        
-        if Deci.Analysis.Extra.QL.saveall
+        if Deci.Analysis.Extra.QL.saveparams
             for m = 1:length(I2)
                 if ismember(m,Deci.Analysis.Extra.QL.ModelNum)
                     
@@ -456,6 +460,7 @@ for subj = 1:size(a,1)
             
             %get the intial starting expected value
             qout{subj,cond,block}(1,:) = starting_q;
+            q{subj,cond,block}(1) = starting_q(1);
             
             %Now loop through the actions and find reward, Pe, Q(t+1) and P
             for Act = 1:length(a{subj,cond,block})
@@ -464,7 +469,7 @@ for subj = 1:size(a,1)
                 which = find(a{subj,cond,block}(Act) == possible_actions);
                 
                 %What is the expected value of that action?
-                q{block}(Act) = qout{subj,cond,block}(Act,which);
+                qout{subj,cond,block}(Act,which);
                 
                 %What is the Pe?
                 PE{subj,cond,block}(Act) = (r{subj,cond,block}(Act) - qout{subj,cond,block}(Act,which));
@@ -486,11 +491,14 @@ for subj = 1:size(a,1)
                 
                 %keep the unchosen action's expected value the same.
                 qout{subj,cond,block}(Act+1,find(a{subj,cond,block}(Act) ~= possible_actions))  = qout{subj,cond,block}(Act,find(a{subj,cond,block}(Act) ~= possible_actions));
+           
+                % Save Value;
+                q{block}(Act+1) = qout{subj,cond,block}(Act,which);
             end
             
             %remove last, because it's not needed.
-            q{block} = q{block}(1:end-1);
             q_next{block} = q{block}(2:end);
+            q{block} = q{block}(1:end-1);
         end
         
     end
@@ -506,10 +514,10 @@ if ~isfinite(LLE)
     LLE = -sum(numel(a{:})*log(.01));
 end
 
-out.q = q;
-out.q_next = q_next;
-out.P = P;
-out.Pe = PE;
+out.q = [q{:}];
+out.q_next = [q_next{:}];
+out.P = [P{:}];
+out.Pe = [PE{:}];
 
 end
 
@@ -569,7 +577,7 @@ for subj = 1:size(a,1)
             end
             
             %remove last, because it's not needed.
-            q{block} = qoutq{block}(1:end-1);
+            q{block} = qout{block}(1:end-1);
         end
     end
 end
@@ -1028,9 +1036,13 @@ for subj = 1:size(a,1)
             
             %get the intial starting expected value
             vout{subj,cond,block}(1) = starting_v;
-            
             %get the intial starting actor values
             wout{subj,cond,block}(1,:) = starting_w;
+            
+            v{subj,cond,block}(1) = starting_v(1);
+            %get the intial starting actor values
+            w{subj,cond,block}(1) = starting_w(1);
+            
             
             %Now loop through the actions and find reward, Pe, Q(t+1) and P
             for Act = 1:length(a{subj,cond,block})
@@ -1076,16 +1088,16 @@ for subj = 1:size(a,1)
                 w_chosen{subj,cond,block}(Act,1) = wout{subj,cond,block}(Act,which);
                 w_chosen{subj,cond,block}(Act,2) = wout{subj,cond,block}(Act,isnt);
                 
+                w{subj,cond,block}(Act+1) = wout{subj,cond,block}(Act,which);
+                v{subj,cond,block}(Act+1) = vout{subj,cond,block}(Act);
             end
             
             %remove last, because it's not needed.
+            v_next{subj,cond,block} = v{subj,cond,block}(2:end);
+            w_next{subj,cond,block} = w{subj,cond,block}(2:end);
             
-            v{subj,cond,block} = vout{subj,cond,block}(1:end-1);
-            w{subj,cond,block} = wout{subj,cond,block}(1:end-1,1);
-            
-            
-            v_next{subj,cond,block} = vout{subj,cond,block}(2:end);
-            w_next{subj,cond,block} = wout{subj,cond,block}(2:end);
+            v{subj,cond,block} = v{subj,cond,block}(1:end-1);
+            w{subj,cond,block} = w{subj,cond,block}(1:end-1);
             
             %Normalize the Actors
             w_ph = w_chosen{subj,cond,block};
@@ -1121,11 +1133,13 @@ if ~isfinite(LLE)
     LLE = -sum(numel(a{:})*log(.01));
 end
 
-out.v = vout;
-out.w = wout;
-out.w_c = w_chosen;
-out.P = P;
-out.Pe = PE;
+out.v = [v{:}];
+out.v_next = [v_next{:}];
+out.w = [w{:}];
+out.w_next = [w_next{:}];
+
+out.P = cat(1,P{:});
+out.Pe = [PE{:}];
 end
 
 function [LLE,out] = HybridModel2(starting_q,starting_w,starting_v,possible_actions,a,r,alpQ,alpC,alpA,beta,c)
@@ -1151,6 +1165,16 @@ for subj = 1:size(a,1)
             
             %get the intial starting actor values
             wout{subj,cond,block}(1,:) = starting_w;
+            
+            
+            %get the intial starting expected value
+            q{subj,cond,block}(1) = starting_q(1);
+            
+            %get the intial starting critic value
+            v{subj,cond,block}(1) = starting_v(1);
+            
+            %get the intial starting actor values
+            w{subj,cond,block}(1) = starting_w(1);
             
             %Now loop through the actions and find reward, Pe, Q(t+1) and P
             for Act = 1:length(a{subj,cond,block})
@@ -1216,13 +1240,21 @@ for subj = 1:size(a,1)
                 w_chosen{subj,cond,block}(Act,1) = wout{subj,cond,block}(Act,which);
                 w_chosen{subj,cond,block}(Act,2) = wout{subj,cond,block}(Act,isnt);
 
+                q{subj,cond,block}(Act+1) =  qout{subj,cond,block}(Act,which);
+                w{subj,cond,block}(Act+1) =  wout{subj,cond,block}(Act,which);
+                v{subj,cond,block}(Act+1) =  vout{subj,cond,block}(Act);
             end
             
             %remove last, because it's not needed.
-            qout{subj,cond,block} = qout{subj,cond,block}(1:end-1,1);
-            vout{subj,cond,block} = vout{subj,cond,block}(1:end-1);
-            wout{subj,cond,block} = wout{subj,cond,block}(1:end-1,1);
-            w_chosen{subj,cond,block} = w_chosen{subj,cond,block}(1:end-1,1);
+            
+            q_next{subj,cond,block} = q{subj,cond,block}(2:end);
+            v_next{subj,cond,block} = v{subj,cond,block}(2:end);
+            w_next{subj,cond,block} = w{subj,cond,block}(2:end);
+            
+            q{subj,cond,block} = q{subj,cond,block}(1:end-1);
+            v{subj,cond,block} = v{subj,cond,block}(1:end-1);
+            w{subj,cond,block} = w{subj,cond,block}(1:end-1);
+            
             
             %Normalize the Actors
             w_ph = w_chosen{subj,cond,block};
@@ -1249,7 +1281,7 @@ for subj = 1:size(a,1)
             end
             
             
-            
+            Hout{subj,cond,block} = H{subj,cond,block}(:,1);
             
         end
     end
@@ -1266,13 +1298,18 @@ if ~isfinite(LLE)
     LLE = -sum(numel(a{:})*log(.01));
 end
 
-out.q = qout;
-out.v = vout;
-out.w = wout;
-out.P = P;
-out.QPe = PE_QL;
-out.QAC = PE_AC;
-out.H = H;
+out.q = [q{:}];
+out.v = [v{:}];
+out.w = [w{:}];
+
+out.q_next = [q_next{:}];
+out.v_next = [v_next{:}];
+out.w_next = [w_next{:}];
+
+out.P = cat(1,P{:});
+out.QPe = [PE_QL{:}];
+out.ACPe = [PE_AC{:}];
+out.H = cat(1,Hout{:});
 end
 
 end

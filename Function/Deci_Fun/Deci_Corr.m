@@ -54,25 +54,8 @@ for brains = 1:length(params.Brain)
         
         Type = fieldnames(behavior);
         
-        if iscell(behavior.(Type{1}))
-            
-            if size(behavior.(Type{1}){1},1) == 1
-               behavior = cat(2,behavior.(Type{1}){:});
-               
-                if size(behavior,1) ~= 1
-                    behavior = behavior(:,1);
-                end
-            else
-                behavior = cat(1,behavior.(Type{1}){:});
-                
-                if size(behavior,2) ~= 1
-                    behavior = behavior(:,1);
-                end
-            end
-        end
-        
 
-        
+        behavior = behavior.(Type{1});   
         parameter = zscore(behavior);
         
         
@@ -91,10 +74,15 @@ for brains = 1:length(params.Brain)
                 else
                 b_time =  brain(:,:,foi,ti);
                 end
+                
+                if params.zscorebrain
+                   b_time = zscore(b_time); 
+                end
+                
                 switch params.Brain{brains}
                     case 'Magnitude'
                         
-                        [r,p] = corrcoef(zscore(b_time),parameter);
+                        [r,p] = corrcoef(b_time,parameter);
                         R(1,foi,ti) = r(1,2);
                         P(1,foi,ti) = p(1,2);
                         

@@ -93,12 +93,12 @@ if Deci.Plot.Stat.do
                 StatData{end+1} = structfun(@(c) c(:,:,:,1),StatData{cond},'UniformOutput',false);
                 
                 Segdata{1,end+1} = Segdata{1};
-                Segdata{1,end}.powspctrm = mean(cat(5,anovadata(2:4).powspctrm),5) - mean(cat(5,anovadata([1 3]).powspctrm),5);    
+                Segdata{1,end}.powspctrm = mean(cat(5,anovadata([1 3]).powspctrm),5) - mean(cat(5,anovadata([2 4]).powspctrm),5);     
                 Deci.Plot.Draw{end+1} = length(Segdata);
                 StatData{end+1} = structfun(@(c) c(:,:,:,2),StatData{cond},'UniformOutput',false);
 
                 Segdata{1,end+1} = Segdata{1};
-                Segdata{1,end}.powspctrm =   [[anovadata(4).powspctrm] - [anovadata(3).powspctrm]]  -  [[anovadata(2).powspctrm] - [anovadata(1).powspctrm]];
+                Segdata{1,end}.powspctrm =   [[anovadata(3).powspctrm] - [anovadata(4).powspctrm]]  -  [[anovadata(1).powspctrm] - [anovadata(2).powspctrm]];
                 Deci.Plot.Draw{end+1} = length(Segdata);
                 StatData{end+1} = structfun(@(c) c(:,:,:,3),StatData{cond},'UniformOutput',false);
                 
