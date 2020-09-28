@@ -50,11 +50,12 @@ for brains = 1:length(params.Brain)
     
     for behaviors = 1:length(params.Behavior)
         
-        behavior = load([Deci.Folder.Analysis filesep 'Extra' filesep params.Behavior{behaviors} filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.CondTitle{info.Cond}],params.Behavior{behaviors});
+        behavior = load([Deci.Folder.Analysis filesep 'Extra' filesep params.Behavior{behaviors} filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.CondTitle{info.Cond}]);
         
         Type = fieldnames(behavior);
-        behavior = behavior.(Type{1});
         
+
+        behavior = behavior.(Type{1});   
         parameter = zscore(behavior);
         
         
@@ -73,10 +74,15 @@ for brains = 1:length(params.Brain)
                 else
                 b_time =  brain(:,:,foi,ti);
                 end
+                
+                if params.zscorebrain
+                   b_time = zscore(b_time); 
+                end
+                
                 switch params.Brain{brains}
                     case 'Magnitude'
                         
-                        [r,p] = corrcoef(zscore(b_time),parameter);
+                        [r,p] = corrcoef(b_time,parameter);
                         R(1,foi,ti) = r(1,2);
                         P(1,foi,ti) = p(1,2);
                         

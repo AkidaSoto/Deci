@@ -60,7 +60,7 @@ for ConnList = 1:length(Params.List)
         else
             chancmb = [chanl chanh];
             
-            if size(chancmb,1) ~= 1
+            if size(chancmb,2) ~= 1
                 chancmb = chancmb(combvec(1:length(chanl),[1:length(chanh)]+length(chanl)))';
             end
         end
@@ -120,7 +120,7 @@ for ConnList = 1:length(Params.List)
                         
                     end
                     
-                    if ismember(conntype(conoi),{'plv','wpli_debiased','wpli'})
+                    if ismember(conntype(conoi),{'plv','wpli_debiased','wpli','coh'})
                         param = [conntype{conoi} 'spctrm'];
                         
                         sub_chan{choicmb} = sub_freq{foicmb};
@@ -156,7 +156,7 @@ for ConnList = 1:length(Params.List)
                     lockers(subject_list,Conditions,:) = nan;
                 end
                 
-                if ismember(conntype(conoi),{'plv','wpli_debiased','wpli'})
+                if ismember(conntype(conoi),{'plv','wpli_debiased','wpli','coh'})
                     param = [conntype{conoi} 'spctrm'];
                     
                     uchoi = unique(chancmb(:,1),'stable');
@@ -316,1054 +316,501 @@ for ConnList = 1:length(Params.List)
                 end
                 
             end
-        end
-        
-        
-        %% Math
-        if ~isempty(Deci.Plot.Math)
             
-            display(' ')
-            display(['Doing ' num2str(length(Deci.Plot.Math)) ' Maths'] )
-            
-            for conds = 1:length(Deci.Plot.Math)
-                for subj = 1:size(sub_cond,1)
-                    scfg.parameter = param;
-                    scfg.operation = Deci.Plot.Math{conds};
-                    
-                    arginstr = sprintf('x%i,', 1:length([sub_cond(subj,:)]));
-                    arginstr = arginstr(1:end-1); % remove the trailing ','
-                    eval(sprintf('operation = @(x) %s;',regexprep( scfg.operation,'x(\d*)','x{$1}')));
-                    
-                    MathData{subj} =  sub_cond{subj,1};
-                    MathData{subj}.(param) = feval(operation, cellfun(@(c) c.(param),sub_cond(subj,:),'un',0));
-                end
-                
-                sub_cond(:,size(sub_cond,2)+1) = MathData;
-            end
-        end
-        
-        %% Averaging
-        
-        if size(sub_cond,1) == 1
-            Deci.Plot.GrandAverage = false;
-        end
-        
-        
-        for conds = 1:size(sub_cond,2)
-            
-            if Deci.Plot.GrandAverage
-                
-                if any(~isnan(trllen))
-                    trlstd = nanstd(trllen,[],1);
-                    trllen = nanmean(trllen,1);
-                end
-                
-                if any(~isnan(lockers))
-                    lockersstd = nanstd(lockers,[],1);
-                    lockers = nanmean(lockers,1);
-                end
-                
-                Subjs = cellfun(@(c) c.(param),sub_cond(:,conds),'UniformOutput',false);
-                Subjs = cat(length(strsplit(sub_cond{1}.dimord,'_'))+1,Subjs{:});
-                %
-                Subjs = permute(Subjs,[length(strsplit(sub_cond{1}.dimord,'_'))+1 1:length(strsplit(sub_cond{1}.dimord,'_'))]);
-                StatsData{1,conds} = sub_cond{1,conds};
-                StatsData{1,conds}.(param) = Subjs;
-                StatsData{1,conds}.dimord = ['subj_' sub_cond{1,conds}.dimord];
-                
-                Subjs = permute(nanmean(Subjs,1),[2:length(strsplit(sub_cond{1}.dimord,'_'))+1 1]);
-                ConnData{1,conds} = sub_cond{1,conds};
-                ConnData{1,conds}.(param) = Subjs;
-                clear Subjs;
-            else
-                Deci.Plot.Stat.do = false;
-                ConnData(:,conds) = sub_cond(:,conds);
-            end
+        elseif strcmp(Deci.Plot.BslType,'none') && isfield(sub_cond{subject_list,Conditions},'time')
             
             
-            %% Data Management
-            
-            Deci.Plot.Extra.Conn.FL_FH = Exist(Deci.Plot.Extra.Conn.FL_FH,'toi',[-inf inf]);
-            Deci.Plot.Extra.Conn.CL_CH = Exist(Deci.Plot.Extra.Conn.CL_CH,'toi',[-inf inf]);
-            
-            
-            info.parameter = param;
-            
-            for subjs = 1:size(ConnData,1)
+            for  subject_list = 1:length(Deci.SubjectList)
                 
-                dim = strsplit(ConnData{subjs,conds}.dimord,'_');
-                
-                if Deci.Plot.Stat.do
-                    dimstat = strsplit(StatsData{subjs,conds}.dimord,'_');
+                for Conditions = 1:length(Deci.Plot.CondTitle)
+                    if isfield(conn,'time')
+                        sub_cond{subject_list,Conditions}.time = sub_cond{subject_list,Conditions}.time(toi);
+                        sub_cond{subject_list,Conditions}.(param) = sub_cond{subject_list,Conditions}.(param)(:,:,:,toi);
+                    end
+                    
                 end
-                
-                if Params.FL_FH.do && all(ismember({'freqlow' 'freqhigh'},dim))
-                    FL_FH{subjs,conds} = ConnData{subjs,conds};
-                    
-                    if isfield(FL_FH{subjs,conds},'time')
-                        flfhtoi = FL_FH{subjs,conds}.time  >= round(Deci.Plot.Extra.Conn.FL_FH.toi(1),4) & FL_FH{subjs,conds}.time <= round(Deci.Plot.Extra.Conn.FL_FH.toi(2),4);
-                        FL_FH{subjs,conds}.time = FL_FH{subjs,conds}.time(flfhtoi);
-                        FL_FH{subjs,conds}.(param) = FL_FH{subjs,conds}.param(:,:,:,flfhtoi);
-                    end
-                    
-                    FL_FH{subjs,conds}.(param) = permute(mean(FL_FH{subjs,conds}.(param),[find(~ismember(dim,{'freqlow' 'freqhigh'}))],'omitnan'),[find(ismember(dim,{'freqlow' 'freqhigh'})) find(~ismember(dim,{'freqlow' 'freqhigh'}))]);
-                    FL_FH{subjs,conds}.dimord = 'freqlow_freqhigh';
-                    
-                    if Deci.Plot.Stat.do
-                        FL_FH_Stat{subjs,conds} = StatsData{subjs,conds};
-                        FL_FH_Stat{subjs,conds}.(param) = permute(mean(FL_FH_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','freqlow' 'freqhigh'}))],'omitnan'),[find(ismember(dimstat,{'subj','freqlow' 'freqhigh'})) find(~ismember(dimstat,{'subj','freqlow' 'freqhigh'}))]);
-                        FL_FH_Stat{subjs,conds}.dimord = 'subj_freqlow_freqhigh';
-                    end
-                    
-                    FLFH = true;
-                    
-                else
-                    FLFH = false;
-                end
-                
-                
-                if Params.CL_CH.do && all(ismember({'chanlow' 'chanhigh'},dim))
-                    CL_CH{subjs,conds} = ConnData{subjs,conds};
-                    
-                    clchtoi = CL_CH{subjs,conds}.time  >= round(Deci.Plot.Extra.Conn.CL_CH.toi(1),4) & CL_CH{subjs,conds}.time <= round(Deci.Plot.Extra.Conn.CL_CH.toi(2),4);
-                    CL_CH{subjs,conds}.time = CL_CH{subjs,conds}.time(clchtoi);
-                    CL_CH{subjs,conds}.(param) = CL_CH{subjs,conds}.(param)(:,:,:,clchtoi);
-                    
-                    CL_CH{subjs,conds}.(param) = permute(mean(CL_CH{subjs,conds}.(param),[find(~ismember(dim,{'chanlow' 'chanhigh'}))],'omitnan'),[find(ismember(dim,{'chanlow' 'chanhigh'})) find(~ismember(dim,{'chanlow' 'chanhigh'}))]);
-                    CL_CH{subjs,conds}.dimord = 'chanlow_chanhigh';
-                    
-                    if Deci.Plot.Stat.do
-                        CL_CH_Stat{subjs,conds} = StatsData{subjs,conds};
-                        CL_CH_Stat{subjs,conds}.(param) = permute(mean(CL_CH_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','chanlow' 'chanhigh'}))],'omitnan'),[find(ismember(dimstat,{'subj','chanlow' 'chanhigh'})) find(~ismember(dimstat,{'subj','chanlow' 'chanhigh'}))]);
-                        CL_CH_Stat{subjs,conds}.dimord = 'subj_chanlow_chanhigh';
-                    end
-                    
-                    CLCH = true;
-                    
-                    
-                else
-                    CLCH = false;
-                end
-                
-                
-                if Params.CL.do
-                    CL{subjs,conds} = ConnData{subjs,conds};
-                    
-                    if isfield(CL{subjs,conds},'time')
-                        cltoi = CL{subjs,conds}.time  >= round(Deci.Plot.Extra.Conn.CL.toi(1),4) & CL{subjs,conds}.time <= round(Deci.Plot.Extra.Conn.CL.toi(2),4);
-                        %CL{subjs,conds}.time = CL{subjs,conds}.time(cltoi);
-                        CL{subjs,conds} =rmfield(CL{subjs,conds},'time');
-                        CL{subjs,conds}.(param) = CL{subjs,conds}.(param)(:,:,:,cltoi);
-                    end
-                    
-                    CL{subjs,conds}.(param) = permute(mean(CL{subjs,conds}.(param),[find(~ismember(dim,{'chan','chanlow'}))],'omitnan'),[find(ismember(dim,{'chan','chanlow'})) find(~ismember(dim,{'chan','chanlow'}))]);
-                    CL{subjs,conds}.dimord = 'chan';
-                    
-                    if Deci.Plot.Stat.do
-                        CL_Stat{subjs,conds} = StatsData{subjs,conds};
-                        CL_Stat{subjs,conds}.(param) = permute(mean(CL_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','chan','chanlow'}))],'omitnan'),[find(ismember(dimstat,{'subj','chan','chanlow'})) find(~ismember(dimstat,{'subj','chan','chanlow'}))]);
-                        CL_Stat{subjs,conds}.dimord = 'subj_chan';
-                    end
-                    
-                    CL_do = true;
-                    
-                    
-                else
-                    CL_do = false;
-                end
-                
-                if Params.CH.do
-                    CH{subjs,conds} = ConnData{subjs,conds};
-                    
-                    if isfield(CH{subjs,conds},'time')
-                        chtoi = CH{subjs,conds}.time  >= round(Deci.Plot.Extra.Conn.CH.toi(1),4) & CH{subjs,conds}.time <= round(Deci.Plot.Extra.Conn.CH.toi(2),4);
-                        CH{subjs,conds}.time = CH{subjs,conds}.time(chtoi);
-                        CH{subjs,conds}.(param) = CH{subjs,conds}.(param)(:,:,:,chtoi);
-                    end
-                    
-                    CH{subjs,conds}.(param) = permute(mean(CH{subjs,conds}.(param),[find(~ismember(dim,{'chanhigh'}))],'omitnan'),[find(ismember(dim,{'chanhigh'})) find(~ismember(dim,{'chanhigh'}))]);
-                    CH{subjs,conds}.dimord = 'chan';
-                    
-                    if Deci.Plot.Stat.do
-                        CH_Stat{subjs,conds} = StatsData{subjs,conds};
-                        CH_Stat{subjs,conds}.(param) = permute(mean(CH_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','chanhigh'}))],'omitnan'),[find(ismember(dimstat,{'subj','chanhigh'})) find(~ismember(dimstat,{'subj','chanhigh'}))]);
-                        CH_Stat{subjs,conds}.dimord = 'subj_chan';
-                    end
-                    
-                    CH_do = true;
-                    
-                    
-                else
-                    CH_do = false;
-                end
-                
-                
-                
-                
-                if Params.FL_time.do && [all(ismember({'freq' 'time'},dim)) || all(ismember({'freqlow' 'time'},dim))]
-                    FL_time{subjs,conds} = ConnData{subjs,conds};
-                    FL_time{subjs,conds}.(param) = permute(mean(FL_time{subjs,conds}.(param),[find(~ismember(dim,{'freq' 'time' 'freqlow'}))],'omitnan'),[find(ismember(dim,{'freq' 'time' 'freqlow'})) find(~ismember(dim,{'freq' 'time' 'freqlow'}))]);
-                    FL_time{subjs,conds}.dimord = 'freq_time';
-                    
-                    if Deci.Plot.Stat.do
-                        FL_time_Stat{subjs,conds} = StatsData{subjs,conds};
-                        FL_time_Stat{subjs,conds}.(param) = permute(mean(FL_time_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','freq' 'time' 'freqlow'}))],'omitnan'),[find(ismember(dimstat,{'subj','freq' 'time' 'freqlow'})) find(~ismember(dimstat,{'subj','freq' 'time' 'freqlow'}))]);
-                        FL_time_Stat{subjs,conds}.dimord = 'subj_freq_time';
-                    end
-                    
-                    FLtime = true;
-                    
-                else
-                    FLtime = false;
-                end
-                
-                if Params.FH_time.do && ~all(ismember({'freq' 'time'},dim)) && all(ismember({'freqhigh' 'time'},dim))
-                    FH_time{subjs,conds} = ConnData{subjs,conds};
-                    FH_time{subjs,conds}.param = permute(mean(FH_time{subjs,conds}.(param),[find(~ismember(dim,{'freq' 'time' 'freqhigh'}))],'omitnan'),[find(ismember(dim,{'freq' 'time' 'freqhigh'})) find(~ismember(dim,{'freq' 'time' 'freqhigh'}))]);
-                    FH_time{subjs,conds}.dimord = 'freq_time';
-                    
-                    if Deci.Plot.Stat.do
-                        FH_time_Stat{subjs,conds} = StatsData{subjs,conds};
-                        FH_time_Stat{subjs,conds}.(param) = permute(mean(FH_time_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','freq' 'time' 'freqhigh'}))],'omitnan'),[find(ismember(dimstat,{'subj','freq' 'time' 'freqhigh'})) find(~ismember(dimstat,{'subj','freq' 'time' 'freqhigh'}))]);
-                        FH_time_Stat{subjs,conds}.dimord = 'subj_freq_time';
-                    end
-                    
-                    FHtime = true;
-                    
-                else
-                    FHtime = false;
-                end
-                
-                if Params.CL_time.do && [all(ismember({'chan' 'time'},dim)) || all(ismember({'chanlow' 'time'},dim))]
-                    CL_time{subjs,conds} = ConnData{subjs,conds};
-                    CL_time{subjs,conds}.(param) = permute(mean(CL_time{subjs,conds}.(param),[find(~ismember(dim,{'chan' 'time' 'chanlow'}))],'omitnan'),[find(ismember(dim,{'chan' 'time' 'chanlow'})) find(~ismember(dim,{'chan' 'time' 'chanlow'}))]);
-                    CL_time{subjs,conds}.dimord = 'chan_time';
-                    
-                    if Deci.Plot.Stat.do
-                        CL_time_Stat{subjs,conds} = StatsData{subjs,conds};
-                        CL_time_Stat{subjs,conds}.(param) = permute(mean(CL_time_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','chan' 'time' 'chanlow'}))],'omitnan'),[find(ismember(dimstat,{'subj','chan' 'time' 'chanlow'})) find(~ismember(dimstat,{'subj','chan' 'time' 'chanlow'}))]);
-                        CL_time_Stat{subjs,conds}.dimord = 'subj_chan_time';
-                        
-                        %CL_time_Stat{subjs,conds}.label = CL_time_Stat{subjs,conds}.chanlow;
-                    end
-                    
-                    CLtime = true;
-                    
-                else
-                    CLtime = false;
-                end
-                
-                if Params.CH_time.do && ~all(ismember({'chan' 'time'},dim)) && all(ismember({'chanhigh' 'time'},dim))
-                    CH_time{subjs,conds} = ConnData{subjs,conds};
-                    CH_time{subjs,conds}.(param) = permute(mean(CH_time{subjs,conds}.(param),[find(~ismember(dim,{'chan' 'time' 'chanhigh'}))],'omitnan'),[find(ismember(dim,{'chan' 'time' 'chanhigh'})) find(~ismember(dim,{'chan' 'time' 'chanhigh'}))]);
-                    CH_time{subjs,conds}.dimord = 'chan_time';
-                    
-                    if Deci.Plot.Stat.do
-                        CH_time_Stat{subjs,conds} = StatsData{subjs,conds};
-                        CH_time_Stat{subjs,conds}.(param) = permute(mean(CH_time_Stat{subjs,conds}.(param),[find(~ismember(dimstat,{'subj','chan' 'time' 'chanhigh'}))],'omitnan'),[find(ismember(dimstat,{'subj','chan' 'time' 'chanhigh'})) find(~ismember(dimstat,{'subj','chan' 'time' 'chanhigh'}))]);
-                        CH_time_Stat{subjs,conds}.dimord = 'subj_chan_time';
-                    end
-                    
-                    CHtime = true;
-                    
-                else
-                    CHtime = false;
-                end
-                
             end
             
         end
+    end
+    
+    
+    %% Math
+    if ~isempty(Deci.Plot.Math)
         
+        display(' ')
+        display(['Doing ' num2str(length(Deci.Plot.Math)) ' Maths'] )
         
-        %% Stats
-        
-        if Deci.Plot.Stat.do
-            info.isfreq = 0;
-            info.isconn = 1;
-            
-            Deci.Plot.Stat.parameter = param;
-            
-            
-            if FLFH
-                FLFH_StatData = dc_plotstat(Deci,FL_FH_Stat,info);
+        for conds = 1:length(Deci.Plot.Math)
+            for subj = 1:size(sub_cond,1)
+                scfg.parameter = param;
+                scfg.operation = Deci.Plot.Math{conds};
+                
+                arginstr = sprintf('x%i,', 1:length([sub_cond(subj,:)]));
+                arginstr = arginstr(1:end-1); % remove the trailing ','
+                eval(sprintf('operation = @(x) %s;',regexprep( scfg.operation,'x(\d*)','x{$1}')));
+                
+                MathData{subj} =  sub_cond{subj,1};
+                MathData{subj}.(param) = feval(operation, cellfun(@(c) c.(param),sub_cond(subj,:),'un',0));
             end
             
-            if CLCH
-                CLCH_StatData = dc_plotstat(Deci,CL_CH_Stat,info);
-            end
-            
-            if CL_do
-                CL_StatData = dc_plotstat(Deci,CL_Stat,info);
-            end
-            
-            if CH_do
-                CH_StatData = dc_plotstat(Deci,CH_Stat,info);
-            end
-            
-            if FLtime
-                FLtime_StatData = dc_plotstat(Deci,FL_time_Stat,info);
-            end
-            
-            if FHtime
-                FHtime_StatData = dc_plotstat(Deci,FH_time_Stat,info);
-            end
-            
-            if CLtime
-                CLtime_StatData = dc_plotstat(Deci,CL_time_Stat,info);
-            end
-            
-            if CHtime
-                CHtime_StatData = dc_plotstat(Deci,CH_time_Stat,info);
-            end
-            
+            sub_cond(:,size(sub_cond,2)+1) = MathData;
         end
-        
-        
-        
-        %% Plot
-        
-        SubjectList = Deci.SubjectList;
+    end
+    
+    %% Averaging
+    
+    if size(sub_cond,1) == 1
+        Deci.Plot.GrandAverage = false;
+    end
+    
+    
+    %% Hemifield
+    %         if Deci.Plot.Hemiflip.do
+    %             display(' ')
+    %             display(['Applying Hemifield Flipping'] )
+    %
+    %             Deci.Plot.Hemiflip = Exist(Deci.Plot.Hemiflip,'Type','Subtraction');
+    %
+    %             for conds = 1:size(sub_cond,2)
+    %                 for subj = 1:size(sub_cond,1)
+    %
+    %                     hcfg.parameter = 'avg';
+    %                     hcfg.operation = 'x2 - x1';
+    %
+    %                     ContraCfg.channel = dc_getchans('even');
+    %
+    %                     ismember(sub_cond{subj,conds}.chanhigh,ContraCfg.channel);
+    %
+    %                     ContraData{subj,conds} = ft_selectdata(ContraCfg,sub_cond{subj,conds});
+    %                     ContraData{subj,conds} = hemifieldflip(ContraData{subj,conds},);
+    %
+    %                     IpsiCfg.channel = dc_getchans('odd');
+    %                     IpsiData{subj,conds} = ft_selectdata(IpsiCfg,sub_cond{subj,conds});
+    %
+    %                     if strcmpi(Deci.Plot.Hemiflip.Type,'Subtraction')
+    %                         sub_cond{subj,conds} = ft_math(hcfg,IpsiData{subj,conds},ContraData{subj,conds});
+    %                     end
+    %                 end
+    %
+    %             end
+    %
+    %             if strcmpi(Deci.Plot.Hemiflip.Type,'Both')
+    %                 sub_cond = cat(2,IpsiData,ContraData);
+    %
+    %                 %Deci.SubjectList = cat(2,cellfun(@(c) [c ' Ipsilateral'],Deci.SubjectList,'un',0),cellfun(@(c) [c ' Contralateral'],Deci.SubjectList,'un',0));
+    %
+    %                 drawlength =  length(Deci.Plot.Draw) + length(Deci.Plot.Math);
+    %
+    %                 Deci.Plot.Draw =  cellfun(@(c) [c arrayfun(@(d) d+drawlength,c,'un',1)],Deci.Plot.Draw,'un',0);
+    %                 Deci.Plot.Subtitle =  cellfun(@(c) [cellfun(@(d) [d ' Ipsilateral'],c,'un',0) cellfun(@(d) [d ' Contralateral'],c,'un',0)],Deci.Plot.Subtitle,'un',0);
+    %
+    %             else
+    %                 Deci.Plot.Title = cellfun(@(c) [c ' Contra - Ipsilateral'],Deci.Plot.Title,'un',0);
+    %             end
+    %         end
+    %
+    %
+    %         if Deci.Plot.LeftRight
+    %             for conds = 1:size(sub_cond,2)
+    %                 for subj = 1:size(sub_cond,1)
+    %
+    %                     Right = ismember(sub_cond{subj,conds}.chanhigh,dc_getchans('even'));
+    %                     Left = ismember(sub_cond{subj,conds}.chanhigh,dc_getchans('odd'));
+    %
+    %                     Rights = sub_cond{subj,conds};
+    %                     Rights.(param) = Rights.(param)(:,Right,)
+    %
+    %
+    %                     sub_cond = cat(2,IpsiData,ContraData);
+    %
+    %                     %Deci.SubjectList = cat(2,cellfun(@(c) [c ' Ipsilateral'],Deci.SubjectList,'un',0),cellfun(@(c) [c ' Contralateral'],Deci.SubjectList,'un',0));
+    %
+    %                     drawlength =  length(Deci.Plot.Draw) + length(Deci.Plot.Math);
+    %
+    %                     Deci.Plot.Draw =  cellfun(@(c) [c arrayfun(@(d) d+drawlength,c,'un',1)],Deci.Plot.Draw,'un',0);
+    %                     Deci.Plot.Subtitle =  cellfun(@(c) [cellfun(@(d) [d ' Ipsilateral'],c,'un',0) cellfun(@(d) [d ' Contralateral'],c,'un',0)],Deci.Plot.Subtitle,'un',0);
+    %
+    %                     Deci.Plot.Title = cellfun(@(c) [c ' Contra - Ipsilateral'],Deci.Plot.Title,'un',0);
+    %
+    %                 end
+    %             end
+    %         end
+    
+    %%
+    
+    for conds = 1:size(sub_cond,2)
         
         if Deci.Plot.GrandAverage
-            SubjectList = {'Group Average'};
+            
+            if any(~isnan(trllen))
+                trlstd = nanstd(trllen,[],1);
+                trllen = nanmean(trllen,1);
+            end
+            
+            if any(~isnan(lockers))
+                lockersstd = nanstd(lockers,[],1);
+                lockers = nanmean(lockers,1);
+            end
+            
+            Subjs = cellfun(@(c) c.(param),sub_cond(:,conds),'UniformOutput',false);
+            Subjs = cat(length(strsplit(sub_cond{1}.dimord,'_'))+1,Subjs{:});
+            %
+            Subjs = permute(Subjs,[length(strsplit(sub_cond{1}.dimord,'_'))+1 1:length(strsplit(sub_cond{1}.dimord,'_'))]);
+            StatsData{1,conds} = sub_cond{1,conds};
+            StatsData{1,conds}.(param) = Subjs;
+            StatsData{1,conds}.dimord = ['subj_' sub_cond{1,conds}.dimord];
+            
+            Subjs = permute(nanmean(Subjs,1),[2:length(strsplit(sub_cond{1}.dimord,'_'))+1 1]);
+            ConnData{1,conds} = sub_cond{1,conds};
+            ConnData{1,conds}.(param) = Subjs;
+            clear Subjs;
+        else
+            Deci.Plot.Stat.do = false;
+            ConnData(:,conds) = sub_cond(:,conds);
         end
         
         
-        for cond = 1:length(Deci.Plot.Draw)
-            clear flfh_fig fltime_fig fhtime_fig cl_fig
+        %% Data Management
+        
+        Deci.Plot.Extra.Conn.FL_FH = Exist(Deci.Plot.Extra.Conn.FL_FH,'toi',[-inf inf]);
+        Deci.Plot.Extra.Conn.CL_CH = Exist(Deci.Plot.Extra.Conn.CL_CH,'toi',[-inf inf]);
+        
+        
+        info.parameter = param;
+        
+        
+        AllPlots = {Deci.Plot.Extra.Conn.FL_FH.do Deci.Plot.Extra.Conn.CL_CH.do Deci.Plot.Extra.Conn.FL_time.do ...
+            Deci.Plot.Extra.Conn.FH_time.do Deci.Plot.Extra.Conn.CL_time.do Deci.Plot.Extra.Conn.CH_time.do ...
+            Deci.Plot.Extra.Conn.CL.do Deci.Plot.Extra.Conn.CH.do};
+        
+        
+        AllPlots_Dims  ={{'freqlow' 'freqhigh'}, {'chanlow' 'chanhigh'}, {'freq' 'time' 'freqlow'}, {'freq' 'time' 'freqhigh'} ...
+            {'chan' 'time' 'chanlow'},{'chan' 'time' 'chanhigh'}, {'chan','chanlow'}, {'chan','chanhigh'}} ;
+        
+        
+        for subjs = 1:size(ConnData,1)
             
+            dim = strsplit(ConnData{subjs,conds}.dimord,'_');
             
-            for subj = 1:size(ConnData,1)
+            if Deci.Plot.Stat.do
+                dimstat = strsplit(StatsData{subjs,conds}.dimord,'_');
+            end
+            
+            for DataType = 1:length(AllPlots)
                 
-                
-                if FLFH
-                    flfh_fig(subj) = figure;
+                if AllPlots{DataType} && sum(ismember(AllPlots_Dims{DataType},dim)) >= [length(AllPlots_Dims{DataType})-1]
                     
-                    if Deci.Plot.Stat.do
-                        dc_pmask(flfh_fig)
-                    end
-                    suptitle([SubjectList{subj} ' ' Deci.Plot.Title{cond} ' ' conntype{conoi}  ]); %' at time range '  regexprep(num2str(minmax(FL_FH{1,1}.time)),' +',' - ') 's']);
+                    AllData{DataType}{subjs,conds} = ConnData{subjs,conds};
                     
-                end
-                
-                if CLCH
-                    clch_fig(subj) = figure;
-                    
-                    if Deci.Plot.Stat.do
-                        dc_pmask(clch_fig)
-                    end
-                    suptitle([SubjectList{subj} ' ' Deci.Plot.Title{cond} ' ' conntype{conoi}  ]); %' at time range '  regexprep(num2str(minmax(FL_FH{1,1}.time)),' +',' - ') 's']);
-                    
-                end
-                
-                if CL_do
-                    cl_fig(subj) = figure;
-                    
+                    AllData{DataType}{subjs,conds}.(param) = permute(mean(AllData{DataType}{subjs,conds}.(param),[find(~ismember(dim,AllPlots_Dims{DataType}))],'omitnan'),[find(ismember(dim,AllPlots_Dims{DataType})) find(~ismember(dim,AllPlots_Dims{DataType}))]);
+                    AllData{DataType}{subjs,conds}.dimord = strjoin(dim(ismember(dim,AllPlots_Dims{DataType})),'_');
                     
                     
                     if Deci.Plot.Stat.do
-                        CL_StatData{cond}.mask = double(CL_StatData{cond}.mask);
-                        CL_StatData{cond}.mask(CL_StatData{cond}.mask == 0) = .2;
-                        
-                        dc_pmask(cl_fig)
+                        AllData_Stat{DataType}{subjs,conds} = StatsData{subjs,conds};
+                        AllData_Stat{DataType}{subjs,conds}.(param) = permute(mean(AllData_Stat{DataType}{subjs,conds}.(param),[find(~ismember(dimstat,[{'subj'} AllPlots_Dims{DataType}]))],'omitnan'),[find(ismember(dimstat,[{'subj'} AllPlots_Dims{DataType}])) find(~ismember(dimstat,[{'subj'} AllPlots_Dims{DataType}]))]);
+                        AllData_Stat{DataType}{subjs,conds}.dimord = strjoin([{'subj'} dim(ismember(dim,AllPlots_Dims{DataType}))],'_');
                     end
-               
-                end
-                
-                if CH_do
-                    ch_fig(subj) = figure;
                     
-                    if Deci.Plot.Stat.do
-                        dc_pmask(ch_fig)
-                    end
-                    suptitle([SubjectList{subj} ' ' Deci.Plot.Title{cond} ' ' conntype{conoi}  ]); %' at time range '  regexprep(num2str(minmax(FL_FH{1,1}.time)),' +',' - ') 's']);
+                    AllPlots_do{DataType} = true;
+                else
+                    AllPlots_do{DataType} = false;
+                    
                     
                 end
+            end
+            
+        end
+        
+    end
+    
+    
+    %% Stats
+    
+    if Deci.Plot.Stat.do
+        info.isfreq = 0;
+        info.isconn = 1;
+        
+        Deci.Plot.Stat.parameter = param;
+        
+        
+        for DataType = 1:length(AllPlots)
+            
+            if AllPlots_do{DataType}
+                AllData_StatData{DataType} = dc_plotstat(Deci,AllData_Stat{DataType},info);
                 
-                
-                if FLtime
-                    fltime_fig(subj) = figure;
-                    if Deci.Plot.Stat.do
-                        dc_pmask(fltime_fig)
-                    end
-                    if ismember(dim, {'freqhigh'})
-                        suptitle([SubjectList{subj} ' ' Deci.Plot.Title{cond} ' ' conntype{conoi} ' at Mean Freq High ' num2str(mean(FL_time{1,1}.freqhigh)) 'Hz']);
-                    else
-                        suptitle([SubjectList{subj} ' ' Deci.Plot.Title{cond} ' ' conntype{conoi}]);
+                if Deci.Plot.Stat.twoway.do
+                    for cond = 1:length(Deci.Plot.Draw)
                         
-                        
-                    end
-                end
-                
-                if FHtime
-                    fhtime_fig(subj) = figure;
-                    if Deci.Plot.Stat.do
-                        dc_pmask(fhtime_fig)
-                    end
-                    suptitle([SubjectList{subj} ' ' Deci.Plot.Title{cond} ' ' conntype{conoi} ' at Mean Freq Low ' num2str(mean(FH_time{1,1}.freqlow)) 'Hz']);
-                end
-                
-                if CLtime
-                    cltime_fig(subj) = figure;
-                    if Deci.Plot.Stat.do
-                        dc_pmask(cltime_fig)
-                    end
-                    suptitle([SubjectList{subj} ' ' Deci.Plot.Title{cond} ' ' conntype{conoi} ' at Mean Chan highs ']);
-                end
-                
-                if CHtime
-                    chtime_fig(subj) = figure;
-                    if Deci.Plot.Stat.do
-                        dc_pmask(chtime_fig)
-                    end
-                    suptitle([SubjectList{subj} ' ' Deci.Plot.Title{cond} ' ' conntype{conoi} ' at Mean Chan lows ']);
-                end
-                
-                for subcond = 1:length(Deci.Plot.Draw{cond})
-                    
-                    if FLFH
-                        set(0, 'CurrentFigure', flfh_fig(subj) )
-                        flfh_fig(subj).Visible = 'on';
-                        subby_flfh(subj,subcond) = subplot(length(Deci.Plot.Draw{cond}),1,subcond );
-                        colormap(Deci.Plot.ColorMap)
-                        
-                        freq = FL_FH{subj,Deci.Plot.Draw{cond}(subcond)};
-                        [~,ufreqlow] = unique(freq.freqlow);
-                        [~,ufreqhigh] = unique(freq.freqhigh);
-                        
-                        h = imagesc(subby_flfh(subj,subcond),unique(freq.freqlow),unique(freq.freqhigh),freq.(param)(ufreqlow,ufreqhigh)');
-                        
-                        if Deci.Plot.Stat.do
-                            set(h, 'AlphaDataMapping', 'scaled');
-                            h.AlphaData = double(FLFH_StatData{cond}.mask)';
-                            h.AlphaData(h.AlphaData == 0) = .2;
-                        end
-                        
-                        axis tight
-                        colorbar;
-                        
-                        if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
-                            title([Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')'],'Interpreter','none');
-                        else
-                            title([Deci.Plot.Subtitle{cond}{subcond}],'Interpreter','none');
-                        end
-                        
-                        ylabel('Freq High')
-                        if subcond == length(Deci.Plot.Draw{cond})
-                            xlabel('Freq Low')
+                        if length(Deci.Plot.Draw{cond}) == 4
+                            
+                            anovadata = [AllData{DataType}{1,Deci.Plot.Draw{cond}}];
+                            AllData{DataType}{1,end+1} = AllData{DataType}{1};
+                            AllData{DataType}{1,end}.(param) = mean(cat(5,anovadata([3 4]).(param)),5) - mean(cat(5,anovadata([1 2]).(param)),5);
+                            
+                            AllData_StatData{DataType}{end+1} = structfun(@(c) c(:,:,1),AllData_StatData{DataType}{cond},'UniformOutput',false);
+                            
+                            AllData{DataType}{1,end+1} = AllData{DataType}{1};
+                            AllData{DataType}{1,end}.(param) = mean(cat(5,anovadata([1 3]).(param)),5) - mean(cat(5,anovadata([2 4]).(param)),5);
+                            
+                            
+                            AllData_StatData{DataType}{end+1} = structfun(@(c) c(:,:,2),AllData_StatData{DataType}{cond},'UniformOutput',false);
+                            
+                            AllData{DataType}{1,end+1} = AllData{DataType}{1};
+                            AllData{DataType}{1,end}.(param) =   [[anovadata(3).(param)] - [anovadata(4).(param)]]  -  [[anovadata(1).(param)] - [anovadata(2).(param)]];
+                            
+                            AllData_StatData{DataType}{end+1} = structfun(@(c) c(:,:,3),AllData_StatData{DataType}{cond},'UniformOutput',false);
+                            
                         end
                     end
                     
-                    if CLCH
-                        set(0, 'CurrentFigure', clch_fig(subj) )
-                        clch_fig(subj).Visible = 'on';
-                        subby_clch(subj,subcond) = subplot(length(Deci.Plot.Draw{cond}),1,subcond );
-                        colormap(Deci.Plot.ColorMap)
-                        
-                        chan = CL_CH{subj,Deci.Plot.Draw{cond}(subcond)};
-                        
-                        h = imagesc(subby_clch(subj,subcond),1:length(chan.chanlow),1:length(chan.chanhigh),chan.(param)');
-                        set(h, 'AlphaDataMapping', 'scaled');
-                        
-                        
-                        if Deci.Plot.Stat.do
-                            h.AlphaData = double(CLCH_StatData{cond}.mask)';
-                            h.AlphaData(h.AlphaData == 0) = .2;
-                        end
-                        
-                        subby_clch(subj,subcond).XTick = 1:length(chan.chanlow);
-                        subby_clch(subj,subcond).XTickLabel = chan.chanlow;
-                        
-                        subby_clch(subj,subcond).YTick = 1:length(chan.chanhigh);
-                        subby_clch(subj,subcond).YTickLabel = chan.chanhigh;
-                        
-                        axis tight
-                        colorbar;
-                        
-                        if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
-                            title([Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')'],'Interpreter','none');
-                        else
-                            title([Deci.Plot.Subtitle{cond}{subcond}],'Interpreter','none');
-                        end
-                        
-                        ylabel('Chan High')
-                        if subcond == length(Deci.Plot.Draw{cond})
-                            xlabel('Chan Low')
-                        end
-                    end
                     
-                    if CL_do
-                        set(0, 'CurrentFigure', cl_fig(subj) )
-                        cl_fig(subj).Visible = 'on';
-                        subby_cl(subj,subcond) = subplot(length(Deci.Plot.Draw{cond}),1,subcond );
+                end
+                
+            end
+        end
+        
+        if Deci.Plot.Stat.twoway.do
 
-                        chan = CL{subj,Deci.Plot.Draw{cond}(subcond)};
+            
+            Deci.Plot.Draw{end+1} = length(AllData{find([AllPlots_do{:}],1,'first')}) -2;
+            Deci.Plot.Draw{end+1} = length(AllData{find([AllPlots_do{:}],1,'first')}) -1;
+            Deci.Plot.Draw{end+1} = length(AllData{find([AllPlots_do{:}],1,'first')});
+            
+            Deci.Plot.Title(end+1:end+3)        = Deci.Plot.Stat.twoway.Title;
+            Deci.Plot.Subtitle(end+1:end+3)   = Deci.Plot.Stat.twoway.Subtitle;
+        end
+    end
+    
+    
+    
+    %% Plot
+    
+    SubjectList = Deci.SubjectList;
+    
+    if Deci.Plot.GrandAverage
+        SubjectList = {'Group Average'};
+    end
+    
+    
+    for cond = 1:length(Deci.Plot.Draw)
+        clear flfh_fig fltime_fig fhtime_fig cl_fig
+        
+        
+        for subj = 1:size(SubjectList,1)
+            
+            
+            for DataType = 1:length(AllPlots)
+                
+                if AllPlots_do{DataType}
+                    
+                    AllPlots_fig{DataType}{cond}(subj) = figure;
+                    
+                    if Deci.Plot.Stat.do
+                        dc_pmask(AllPlots_fig{DataType}{cond}(subj))
+                    end
+                    
+                    
+                    suptitle([SubjectList{subj} ' ' Deci.Plot.Title{cond} ' ' conntype{conoi}  ]);
+                    
+                end
+                
+            end
+            
+            for subcond = 1:length(Deci.Plot.Draw{cond})
+                
+                for DataType = 1:length(AllPlots)
+                    if AllPlots_do{DataType}
+                        set(0, 'CurrentFigure',  AllPlots_fig{DataType}{cond}(subj) )
+                        AllPlots_fig{DataType}{cond}(subj).Visible = 'on';
                         
-                        chan.powspctrm = chan.([param]);
-                        chan.dimord = 'chan';
-                        
-                        if ~isfield(chan,'label')
-                            chan.label = chan.chanlow;
-                        end
-                        %                     chan.freq = mean(chan.freq);
-                        %                     chan.time = mean(chan.time);
+                        AllPlots_subby{DataType}{cond}(subj,subcond) = subplot(length(Deci.Plot.Draw{cond}),1,subcond );
+                        colormap(Deci.Plot.ColorMap)
                         
                         pcfg = cfg;
+                        pcfg.parameter = param;
+                        
+                        connplot = [];
+                        connplot.(param) =  permute(AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(param),[4 1 2 3]);
                         if Deci.Plot.Stat.do
                             pcfg.clim = 'maxmin';
                             pcfg.maskparameter ='mask';
-                            chan.mask = permute(CL_StatData{cond}.mask,[1 3 2]);
+                            connplot.mask = permute(AllData_StatData{DataType}{cond}.mask,[4 1 2 3]); %repmat(,[length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
+                            connplot.mask = double(connplot.mask);
+                            connplot.mask(connplot.mask == 0) = .2;
                         end
                         
-                        pcfg.imagetype = Deci.Plot.ImageType;
-                        pcfg.comment = 'no';
-                        pcfg.style = 'fill';
-                        pcfg.markersymbol = '.';
-                        pcfg.colormap = Deci.Plot.ColorMap;
-                        pcfg.colorbar = 'yes';
-                        pcfg.contournum = 15;
-                        pcfg.parameter = 'powspctrm';
-                        
-                        ft_topoplotER(pcfg,chan)
-                        
-                        if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
-                            title([Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')'],'Interpreter','none');
-                        else
-                            title([Deci.Plot.Subtitle{cond}{subcond}],'Interpreter','none');
-                        end
-                        
-                    end
-                    
-                    
-                    
-                    if FLtime
-                        set(0, 'CurrentFigure', fltime_fig(subj) )
-                        fltime_fig(subj).Visible = 'on';
-                        subby_fltime(subj,subcond) = subplot(length(Deci.Plot.Draw{cond}),1,subcond );
-                        
-                        
-                        freq = FL_time{subj,Deci.Plot.Draw{cond}(subcond)};
-                        [~,ufreqlow] = unique(freq.(dim{ismember(dim,{'freq' 'freqlow'})}));
-                        
-                        [~,h] = contourf(subby_fltime(subj,subcond),freq.time,unique(freq.(dim{ismember(dim,{'freq' 'freqlow'})})),freq.(param)(ufreqlow,:));
-                        
-                        h.LineColor = 'none';
-                        
-                        if Deci.Plot.Stat.do
-                            FLtime_StatData{cond}.mask = double(FLtime_StatData{cond}.mask);
-                            FLtime_StatData{cond}.mask(FLtime_StatData{cond}.mask == 0) = nan;
-                            h.UserData = cat(3,h.ZData.*[FLtime_StatData{cond}.mask],h.ZData);
-                            h.ZData =  h.ZData.*[FLtime_StatData{cond}.mask];
-                        end
-                        
-                        colorbar;
-                        colormap(Deci.Plot.ColorMap)
-                        if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
-                            xlims = xlim;
-                            ylims = ylim;
+                        if sum(size(AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(param)) ~= 1) > 1
+                            pcfg.imagetype = 'imagesc';
+                            pcfg.colormap = Deci.Plot.ColorMap;
                             
-                            for locks = 1:length([lockers(subj,Deci.Plot.Draw{cond}(subcond),:)])
-                                hold on
+                            connplot.dimord = 'chan_freq_time';
+                            connplot.label = {'dummy'};
+                            
+                            curdim = dim(ismember(dim,AllPlots_Dims{DataType}));
+                            
+                            connplot.freq = 1:length(AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(curdim{1}));
+                            
+                            if ~ismember({'time'},curdim)
+                                connplot.time = 1:length(AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(curdim{2}));
                                 
-                                locktime = [lockers(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                            else
+                                connplot.time = AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.time;
+                            end
+                            
+                            evalc('ft_singleplotTFR(pcfg,connplot)');
+                            
+                            axis tight
+                            colorbar;
+                            
+                            if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
+                                title([Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')'],'Interpreter','none');
+                            else
+                                title([Deci.Plot.Subtitle{cond}{subcond}],'Interpreter','none');
+                            end
+                            
+                            AllPlots_subby{DataType}{cond}(subj,subcond).YTick = 1:length(AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(curdim{1}));
+                            AllPlots_subby{DataType}{cond}(subj,subcond).YTickLabel = AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(curdim{1});
+                            
+                            
+                            if ~ismember({'time'},curdim)
+                                AllPlots_subby{DataType}{cond}(subj,subcond).XTick = 1:length(AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(curdim{2}));
+                                AllPlots_subby{DataType}{cond}(subj,subcond).XTickLabel = AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(curdim{2});
                                 
+                            else
                                 
-                                if Deci.Plot.GrandAverage
-                                    if locktime > xlims(1) && locktime < xlims(2)
-                                        lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
-                                        plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
-                                        
-                                        
-                                        if [locktime - lockstd] < xlims(1)
-                                            lockpstd(1) = xlims(1);
-                                        else
-                                            lockpstd(1) = [locktime - lockstd];
-                                        end
-                                        
-                                        if [locktime + lockstd] > xlims(2)
-                                            lockpstd(2) = xlims(2);
-                                        else
-                                            lockpstd(2) = [locktime + lockstd];
-                                        end
-                                        
-                                        lockpgon = polyshape([lockpstd fliplr(lockpstd)],sort([ylims ylims]),'Simplify', false);
-                                        lockb = plot(lockpgon,'HandleVisibility','off');
-                                        hold on
-                                        lockb.EdgeAlpha = 0;
-                                        lockb.FaceAlpha = .30;
-                                        lockb.FaceColor = plotlock.Color;
-                                        
-                                        arrayfun(@(c) uistack(c,'top'),lockb);
-                                        clear lockb
-                                        
-                                    end
+                                if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
+                                    xlims = xlim;
+                                    ylims = ylim;
                                     
-                                else
-                                    if locktime > xlims(1) && locktime < xlims(2)
-                                        plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
+                                    for locks = 1:length([lockers(subj,Deci.Plot.Draw{cond}(subcond),:)])
+                                        hold on
+                                        
+                                        locktime = [lockers(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                                        
+                                        
+                                        if Deci.Plot.GrandAverage
+                                            if locktime > xlims(1) && locktime < xlims(2)
+                                                lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                                                plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
+                                                
+                                                
+                                                if [locktime - lockstd] < xlims(1)
+                                                    lockpstd(1) = xlims(1);
+                                                else
+                                                    lockpstd(1) = [locktime - lockstd];
+                                                end
+                                                
+                                                if [locktime + lockstd] > xlims(2)
+                                                    lockpstd(2) = xlims(2);
+                                                else
+                                                    lockpstd(2) = [locktime + lockstd];
+                                                end
+                                                
+                                                lockpgon = polyshape([lockpstd fliplr(lockpstd)],sort([ylims ylims]),'Simplify', false);
+                                                lockb = plot(lockpgon,'HandleVisibility','off');
+                                                hold on
+                                                lockb.EdgeAlpha = 0;
+                                                lockb.FaceAlpha = .30;
+                                                lockb.FaceColor = plotlock.Color;
+                                                
+                                                arrayfun(@(c) uistack(c,'top'),lockb);
+                                                clear lockb
+                                                
+                                            end
+                                            
+                                        else
+                                            if locktime > xlims(1) && locktime < xlims(2)
+                                                plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
+                                            end
+                                        end
+                                        
                                     end
+                                    ylim(ylims)
+                                    title([Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')']);
+                                else
+                                    title([Deci.Plot.Subtitle{cond}{subcond}]);
+                                end
+                                
+                                ylabel('Frequency (Hz)')  %changed 'Freq Low' -> 'Frequency (Hz)'
+                                if subcond == length(Deci.Plot.Draw{cond})
+                                    xlabel('Time')
                                 end
                                 
                             end
-                            ylim(ylims)
-                            title([Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')']);
-                        else
-                            title([Deci.Plot.Subtitle{cond}{subcond}]);
-                        end
-                        
-                        ylabel('Frequency (Hz)')  %changed 'Freq Low' -> 'Frequency (Hz)'
-                        if subcond == length(Deci.Plot.Draw{cond})
-                            xlabel('Time')
-                        end
-                        
-                    end
-                    
-                    if FHtime
-                        set(0, 'CurrentFigure', fhtime_fig(subj))
-                        fhtime_fig(subj).Visible = 'on';
-                        subby_fhtime(subj,subcond) = subplot(length(Deci.Plot.Draw{cond}),1,subcond );
-                        
-                        freq = FH_time{subj,Deci.Plot.Draw{cond}(subcond)};
-                        [~,ufreqhigh] = unique(freq.freqhigh);
-                        
-                        [~,h] = contourf(subby_fhtime(subj,subcond),freq.time,unique(freq.freqhigh),freq.param(ufreqhigh,:));
-                        
-                        
-                        h.LineColor = 'none';
-                        h.UserData = h.ZData;
-                        h.ZData = h.ZData.*[double(FHtime_StatData{cond}.mask)];
-                        
-                        
-                        colorbar;
-                        colormap(Deci.Plot.ColorMap)
-                        if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
-                            xlims = xlim;
-                            ylims = ylim;
                             
-                            for locks = 1:length([lockers(subj,Deci.Plot.Draw{cond}(subcond),:)])
-                                hold on
-                                
-                                locktime = [lockers(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
-                                
-                                
-                                if Deci.Plot.GrandAverage
-                                    if locktime > xlims(1) && locktime < xlims(2)
-                                        lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
-                                        plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
-                                        
-                                        
-                                        if [locktime - lockstd] < xlims(1)
-                                            lockpstd(1) = xlims(1);
-                                        else
-                                            lockpstd(1) = [locktime - lockstd];
-                                        end
-                                        
-                                        if [locktime + lockstd] > xlims(2)
-                                            lockpstd(2) = xlims(2);
-                                        else
-                                            lockpstd(2) = [locktime + lockstd];
-                                        end
-                                        
-                                        lockpgon = polyshape([lockpstd fliplr(lockpstd)],sort([ylims ylims]),'Simplify', false);
-                                        lockb = plot(lockpgon,'HandleVisibility','off');
-                                        hold on
-                                        lockb.EdgeAlpha = 0;
-                                        lockb.FaceAlpha = .30;
-                                        lockb.FaceColor = plotlock.Color;
-                                        
-                                        arrayfun(@(c) uistack(c,'top'),lockb);
-                                        clear lockb
-                                        
-                                    end
-                                    
-                                else
-                                    if locktime > xlims(1) && locktime < xlims(2)
-                                        plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
-                                    end
-                                end
-                                
-                            end
-                            ylim(ylims)
-                            title([Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')']);
-                        else
-                            title([Deci.Plot.Subtitle{cond}{subcond}]);
-                        end
-                        
-                        ylabel('Freq High')
-                        if subcond == length(Deci.Plot.Draw{cond})
-                            xlabel('Time')
-                        end
-                        
-                        
-                    end
-                    
-                    %chans
-                    
-                    
-                    if CLtime
-                        set(0, 'CurrentFigure', cltime_fig(subj) )
-                        cltime_fig(subj).Visible = 'on';
-                        subby_cltime(subj,subcond) = subplot(length(Deci.Plot.Draw{cond}),1,subcond );
-                        
-                        
-                        freq = CL_time{subj,Deci.Plot.Draw{cond}(subcond)};
-                        
-                        if isfield(freq,'labelcmb')
-                            h = imagesc(subby_cltime(subj,subcond),freq.time,1:length(unique(freq.labelcmb(:,1))),freq.(param));
                             
-                            subby_cltime(subj,subcond).YTickLabel = freq.chanlow;
-                            subby_cltime(subj,subcond).YTick = 1:length(freq.chanlow);
                         else
-                            h = imagesc(subby_cltime(subj,subcond),freq.time,1:length(freq.label),freq.(param));
-                            subby_cltime(subj,subcond).YTickLabel =freq.label;
-                            subby_cltime(subj,subcond).YTick = 1:length(freq.label);
-                        end
-                        
-                        if Deci.Plot.Stat.do
-                            set(h, 'AlphaDataMapping', 'scaled');
-                            h.AlphaData = double(CLtime_StatData{cond}.mask)';
-                            h.AlphaData(h.AlphaData == 0) = .2;
-                        end
-                        
-                        colormap(Deci.Plot.ColorMap)
-                        colorbar;
-                        if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
-                            xlims = xlim;
-                            ylims = ylim;
                             
-                            for locks = 1:length([lockers(subj,Deci.Plot.Draw{cond}(subcond),:)])
-                                hold on
-                                
-                                locktime = [lockers(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
-                                
-                                
-                                if Deci.Plot.GrandAverage
-                                    if locktime > xlims(1) && locktime < xlims(2)
-                                        lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
-                                        plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
-                                        
-                                        
-                                        if [locktime - lockstd] < xlims(1)
-                                            lockpstd(1) = xlims(1);
-                                        else
-                                            lockpstd(1) = [locktime - lockstd];
-                                        end
-                                        
-                                        if [locktime + lockstd] > xlims(2)
-                                            lockpstd(2) = xlims(2);
-                                        else
-                                            lockpstd(2) = [locktime + lockstd];
-                                        end
-                                        
-                                        lockpgon = polyshape([lockpstd fliplr(lockpstd)],sort([ylims ylims]),'Simplify', false);
-                                        lockb = plot(lockpgon,'HandleVisibility','off');
-                                        hold on
-                                        lockb.EdgeAlpha = 0;
-                                        lockb.FaceAlpha = .30;
-                                        lockb.FaceColor = plotlock.Color;
-                                        
-                                        arrayfun(@(c) uistack(c,'top'),lockb);
-                                        clear lockb
-                                        
-                                    end
-                                    
-                                else
-                                    if locktime > xlims(1) && locktime < xlims(2)
-                                        plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
-                                    end
-                                end
-                                
-                            end
-                            ylim(ylims)
-                            title([Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')']);
-                        else
-                            title([Deci.Plot.Subtitle{cond}{subcond}]);
-                        end
-                        
-                        ylabel('Channels Low')
-                        if subcond == length(Deci.Plot.Draw{cond})
-                            xlabel('Time')
-                        end
-                        
-                    end
-                    
-                    if CHtime
-                        set(0, 'CurrentFigure', chtime_fig(subj) )
-                        chtime_fig(subj).Visible = 'on';
-                        subby_chtime(subj,subcond) = subplot(length(Deci.Plot.Draw{cond}),1,subcond );
-                        
-                        
-                        freq = CH_time{subj,Deci.Plot.Draw{cond}(subcond)};
-                        
-                        h = imagesc(subby_chtime(subj,subcond),freq.time,1:length(unique(freq.labelcmb(:,2))),freq.(param));
-                        
-                        set(h, 'AlphaDataMapping', 'scaled');
-                        if Deci.Plot.Stat.do
-                            h.AlphaData = double(CHtime_StatData{cond}.mask)';
-                            h.AlphaData(h.AlphaData == 0) = .2;
-                        end
-                        
-                        colorbar;
-                        colormap(Deci.Plot.ColorMap)
-                        subby_chtime(subj,subcond).YTickLabel = freq.chanhigh;
-                        subby_chtime(subj,subcond).YTick = 1:length(freq.chanlow);
-                        
-                        if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
-                            xlims = xlim;
-                            ylims = ylim;
+                            % Code For Conn Topo
                             
-                            for locks = 1:length([lockers(subj,Deci.Plot.Draw{cond}(subcond),:)])
-                                hold on
-                                
-                                locktime = [lockers(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
-                                
-                                
-                                if Deci.Plot.GrandAverage
-                                    if locktime > xlims(1) && locktime < xlims(2)
-                                        lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
-                                        plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
-                                        
-                                        
-                                        if [locktime - lockstd] < xlims(1)
-                                            lockpstd(1) = xlims(1);
-                                        else
-                                            lockpstd(1) = [locktime - lockstd];
-                                        end
-                                        
-                                        if [locktime + lockstd] > xlims(2)
-                                            lockpstd(2) = xlims(2);
-                                        else
-                                            lockpstd(2) = [locktime + lockstd];
-                                        end
-                                        
-                                        lockpgon = polyshape([lockpstd fliplr(lockpstd)],sort([ylims ylims]),'Simplify', false);
-                                        lockb = plot(lockpgon,'HandleVisibility','off');
-                                        hold on
-                                        lockb.EdgeAlpha = 0;
-                                        lockb.FaceAlpha = .30;
-                                        lockb.FaceColor = plotlock.Color;
-                                        
-                                        arrayfun(@(c) uistack(c,'top'),lockb);
-                                        clear lockb
-                                        
-                                    end
-                                    
-                                else
-                                    if locktime > xlims(1) && locktime < xlims(2)
-                                        plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
-                                    end
-                                end
-                                
-                            end
-                            ylim(ylims)
-                            title([Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')']);
-                        else
-                            title([Deci.Plot.Subtitle{cond}{subcond}]);
+                            %                                 pcfg = cfg;
+                            %
+                            %                                 if Deci.Plot.Stat.do
+                            %                                     pcfg.clim = 'maxmin';
+                            %                                     pcfg.maskparameter ='mask';
+                            %                                     chan.mask = permute(CL_StatData{cond}.mask,[1 3 2]);
+                            %                                 end
+                            %
+                            %                                 pcfg.imagetype = Deci.Plot.ImageType;
+                            %                                 pcfg.comment = 'no';
+                            %                                 pcfg.style = 'fill';
+                            %                                 pcfg.markersymbol = '.';
+                            %                                 pcfg.colormap = Deci.Plot.ColorMap;
+                            %                                 pcfg.colorbar = 'yes';
+                            %                                 pcfg.contournum = 15;
+                            %                                 pcfg.parameter = 'powspctrm';
+                            %
+                            %                                 ft_topoplotER(pcfg,chan)
+                            %
+                            %                                 if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
+                            %                                     title([Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')'],'Interpreter','none');
+                            %                                 else
+                            %                                     title([Deci.Plot.Subtitle{cond}{subcond}],'Interpreter','none');
+                            %                                 end
+                            
                         end
-                        
-                        ylabel('Channels High')
-                        if subcond == length(Deci.Plot.Draw{cond})
-                            xlabel('Time')
-                        end
-                        
-                        
                     end
-                    
-                    
-                    
                 end
                 
             end
-            
-            %% Normalize Plots
-            
-            
-            
-            for subj = 1:size(ConnData,1)
-                
-                if FLFH
-                    set(0, 'CurrentFigure', flfh_fig(subj) )
-                    for r = 1:length(subby_flfh(:))
-                        if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
-                            subby_flfh(r).CLim = Deci.Plot.Roi;
-                        elseif strcmp(Deci.Plot.Roi,'maxmin')
-                            if ~isempty(subby_flfh(r).Children.UserData)
-                                subby_flfh(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),subby_flfh(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),subby_flfh(:)))];
-                            else
-                                subby_flfh(r).CLim = [min(arrayfun(@(c) min(c.Children.CData(:)),subby_flfh(:))) max(arrayfun(@(c) max(c.Children.CData(:)),subby_flfh(:)))];
-                            end
-                            
-                        elseif strcmp(Deci.Plot.Roi,'maxabs')
-                            if ~isempty(subby_flfh(r).Children.UserData)
-                                subby_flfh(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby_flfh(:))) max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby_flfh(:)))];
-                            else
-                                subby_flfh(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.CData(:))),subby_flfh(:))) max(arrayfun(@(c) max(abs(c.Children.CData(:))),subby_flfh(:)))];
-                                
-                            end
-                            
-                        end
-                    end
-                    
-                end
-                
-                
-                if CLCH
-                    set(0, 'CurrentFigure', clch_fig(subj) )
-                    for r = 1:length(subby_clch(:))
-                        if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
-                            subby_clch(r).CLim = Deci.Plot.Roi;
-                        elseif strcmp(Deci.Plot.Roi,'maxmin')
-                            if ~isempty(subby_clch(r).Children.UserData)
-                                subby_clch(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),subby_clch(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),subby_clch(:)))];
-                            else
-                                subby_clch(r).CLim = [min(arrayfun(@(c) min(c.Children.CData(:)),subby_clch(:))) max(arrayfun(@(c) max(c.Children.CData(:)),subby_clch(:)))];
-                            end
-                            
-                        elseif strcmp(Deci.Plot.Roi,'maxabs')
-                            if ~isempty(subby_clch(r).Children.UserData)
-                                subby_clch(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby_clch(:))) max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby_clch(:)))];
-                            else
-                                subby_clch(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.CData(:))),subby_clch(:))) max(arrayfun(@(c) max(abs(c.Children.CData(:))),subby_clch(:)))];
-                                
-                            end
-                            
-                        end
-                    end
-                    
-                end
-                
-                
-                if FLtime
-                    set(0, 'CurrentFigure', fltime_fig(subj) )
-                    for r = 1:length(subby_fltime(:))
-                        if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
-                            subby_fltime(r).CLim = Deci.Plot.Roi;
-                        elseif strcmp(Deci.Plot.Roi,'maxmin')
-                            if ~isempty(subby_fltime(r).Children.UserData)
-                                subby_fltime(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),subby_fltime(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),subby_fltime(:)))];
-                            else
-                                subby_fltime(r).CLim = [min(arrayfun(@(c) min(c.Children.ZData(:)),subby_fltime(:))) max(arrayfun(@(c) max(c.Children.ZData(:)),subby_fltime(:)))];
-                            end
-                            
-                            
-                        elseif strcmp(Deci.Plot.Roi,'maxabs')
-                            if ~isempty(subby_fltime(r).Children.UserData)
-                                subby_fltime(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby_fltime(:))) max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby_fltime(:)))];
-                            else
-                                subby_fltime(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby_fltime(:))) max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby_fltime(:)))];
-                                
-                            end
-                            
-                        end
-                    end
-                    
-                end
-                
-                if FHtime
-                    set(0, 'CurrentFigure', fhtime_fig(subj) )
-                    for r = 1:length(subby_fhtime(:))
-                        if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
-                            subby_fhtime(r).CLim = Deci.Plot.Roi;
-                        elseif strcmp(Deci.Plot.Roi,'maxmin')
-                            if ~isempty(subby_fhtime(r).Children.UserData)
-                                subby_fhtime(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),subby_fhtime(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),subby_fhtime(:)))];
-                            else
-                                subby_fhtime(r).CLim = [min(arrayfun(@(c) min(c.Children.ZData(:)),subby_fhtime(:))) max(arrayfun(@(c) max(c.Children.ZData(:)),subby_fhtime(:)))];
-                            end
-                            
-                        elseif strcmp(Deci.Plot.Roi,'maxabs')
-                            if ~isempty(subby_fhtime(r).Children.UserData)
-                                subby_fhtime(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby_fhtime(:))) max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby_fhtime(:)))];
-                            else
-                                subby_fhtime(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby_fhtime(:))) max(arrayfun(@(c) max(abs(c.Children.ZData(:))),subby_fhtime(:)))];
-                                
-                            end
-                            
-                        end
-                    end
-                    
-                end
-                
-                if CLtime
-                    set(0, 'CurrentFigure', cltime_fig(subj) )
-                    for r = 1:length(subby_cltime(:))
-                        if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
-                            subby_cltime(r).CLim = Deci.Plot.Roi;
-                        elseif strcmp(Deci.Plot.Roi,'maxmin')
-                            if ~isempty(subby_cltime(r).Children.UserData)
-                                subby_cltime(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),subby_cltime(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),subby_cltime(:)))];
-                            else
-                                subby_cltime(r).CLim = [min(arrayfun(@(c) min(c.Children.CData(:)),subby_cltime(:))) max(arrayfun(@(c) max(c.Children.CData(:)),subby_cltime(:)))];
-                            end
-                            
-                        elseif strcmp(Deci.Plot.Roi,'maxabs')
-                            if ~isempty(subby_cltime(r).Children.UserData)
-                                subby_cltime(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby_cltime(:))) max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby_cltime(:)))];
-                            else
-                                subby_cltime(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.CData(:))),subby_cltime(:))) max(arrayfun(@(c) max(abs(c.Children.CData(:))),subby_cltime(:)))];
-                                
-                            end
-                            
-                        end
-                    end
-                    
-                end
-                
-                if CHtime
-                    set(0, 'CurrentFigure', chtime_fig(subj) )
-                    for r = 1:length(subby_chtime(:))
-                        if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
-                            subby_chtime(r).CLim = Deci.Plot.Roi;
-                        elseif strcmp(Deci.Plot.Roi,'maxmin')
-                            if ~isempty(subby_chtime(r).Children.UserData)
-                                subby_chtime(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),subby_chtime(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),subby_chtime(:)))];
-                            else
-                                subby_chtime(r).CLim = [min(arrayfun(@(c) min(c.Children.CData(:)),subby_chtime(:))) max(arrayfun(@(c) max(c.Children.CData(:)),subby_chtime(:)))];
-                            end
-                            
-                        elseif strcmp(Deci.Plot.Roi,'maxabs')
-                            if ~isempty(subby_chtime(r).Children.UserData)
-                                subby_chtime(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby_chtime(:))) max(arrayfun(@(c) max(abs(c.Children.UserData(:))),subby_chtime(:)))];
-                            else
-                                subby_chtime(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.CData(:))),subby_chtime(:))) max(arrayfun(@(c) max(abs(c.Children.CData(:))),subby_chtime(:)))];
-                                
-                            end
-                            
-                        end
-                    end
-                    
-                end
-                
-                if CL_do
-                    set(0, 'CurrentFigure', cl_fig(subj) )
-
-                    childs = cl_fig(subj).Children.findobj('Type','Axes');
-                    
-                    for r = 1:length(childs)
-                        if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
-                            childs(r).CLim = Deci.Plot.Roi;
-                        elseif strcmp(Deci.Plot.Roi,'maxmin')
-                                childs(r).CLim= minmax([cl_fig(subj).Children.findobj('Type','Axes').CLim]);
-                        elseif strcmp(Deci.Plot.Roi,'maxabs')
-                                childs(r).CLim = [-1*max(abs(minmax([cl_fig(subj).Children.findobj('Type','Axes').CLim]))) max(abs(minmax([cl_fig(subj).Children.findobj('Type','Axes').CLim])))];
-                        end
-                    end
-                    
-                   suptitle([SubjectList{subj} ' ' Deci.Plot.Title{cond} ' ' conntype{conoi}  ]); %' at time range '  regexprep(num2str(minmax(FL_FH{1,1}.time)),' +',' - ') 's']);
-                    
-                    
-                end
-                
-            end
-            
-            clear subby_fhtime
-            clear subby_flfh
-            clear subby_clch
-            clear subby_fltime
-            clear subby_cltime
-            clear subby_chtime
-            clear subby_cl
         end
+        
+        %% Normalize Plots
+        
+        for subj = 1:size(SubjectList,1)
+            
+            for DataType = 1:length(AllPlots)
+                
+                if AllPlots_do{DataType}
+                    
+                    set(0, 'CurrentFigure', AllPlots_fig{DataType}{cond}(subj) )
+                    for r = 1:length(AllPlots_subby{DataType}{cond}(:))
+                        if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
+                            AllPlots_subby{DataType}{cond}(r).CLim = Deci.Plot.Roi;
+                        elseif strcmp(Deci.Plot.Roi,'maxmin')
+                            if isempty(AllPlots_subby{DataType}{cond}(r).Children.findobj('Type','Image').UserData)
+                                AllPlots_subby{DataType}{cond}(r).CLim = [min(arrayfun(@(c) min(c.Children.findobj('Type','Image').UserData(:)),AllPlots_subby{DataType}{cond}(:))) max(arrayfun(@(c) max(c.Children.findobj('Type','Image').UserData(:)),AllPlots_subby{DataType}{cond}(:)))];
+                            else
+                                AllPlots_subby{DataType}{cond}(r).CLim = [min(arrayfun(@(c) min(c.Children.findobj('Type','Image').CData(:)),AllPlots_subby{DataType}{cond}(:))) max(arrayfun(@(c) max(c.Children.findobj('Type','Image').CData(:)),AllPlots_subby{DataType}{cond}(:)))];
+                            end
+                            
+                        elseif strcmp(Deci.Plot.Roi,'maxabs')
+                            if isempty(AllPlots_subby{DataType}{cond}(r).Children.findobj('Type','Image').UserData)
+                                AllPlots_subby{DataType}{cond}(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Image').UserData(:))),AllPlots_subby{DataType}{cond}(:))) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Image').UserData(:))),AllPlots_subby{DataType}{cond}(:)))];
+                            else
+                                AllPlots_subby{DataType}{cond}(r).CLim = [-1*max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Image').CData(:))),AllPlots_subby{DataType}{cond}(:))) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Image').CData(:))),AllPlots_subby{DataType}{cond}(:)))];
+                                
+                            end
+                            
+                        end
+                    end
+                end
+            end
+            
+        end
+        
     end
 end
 end

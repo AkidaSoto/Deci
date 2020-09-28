@@ -22,13 +22,23 @@ ButtonH=uicontrol('Parent', mainfig,'Style','pushbutton','String','p Mask','Posi
                     imag.UserData = logical(~isnan(imag.CData));
                 end
                 
-                if length(size(imag.AlphaData)) < length(size(imag.UserData))
+                for b = 1:length(Axes)
                     
+                    if Axes(b).UserData > size(imag.UserData,3)
+                        Axes(b).UserData = 1;
+                    end
+                    
+                     Axes(b).Children.findobj('Type','Image').AlphaData = Axes(b).Children.findobj('Type','Image').UserData(:,:,Axes(b).UserData);
+                    
+                    
+                    if Axes(b).UserData ~= 1
+                        PushButton.String =  ['p mask ' num2str(Axes(b).UserData-1)];
+                    else
+                        PushButton.String =  ['p mask off'];
+                    end
+                    
+                    Axes(b).UserData = Axes(b).UserData + 1;
                 end
-                
-                placeholder = imag.UserData;
-                imag.UserData = imag.AlphaData;
-                imag.AlphaData = placeholder;
             else
                 
                 %imag =  Axes(a).Children.findobj('Type','contour');

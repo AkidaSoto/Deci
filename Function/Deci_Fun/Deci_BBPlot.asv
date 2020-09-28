@@ -1,7 +1,7 @@
 function Deci_BBPlot(Deci,params)
 
 %% Deci Checks
-Dims = {'MTopo' 'Topo' 'Square' 'Wire' 'Bar'};
+Dims = {'Topo' 'Square' 'Wire' 'Bar'};
 [Deci, info] = dc_plotcheck(Deci,Dims);
 info.isfreq = true;
 
@@ -13,15 +13,11 @@ display(['Plotting Brain-Behavior Correlation']);
 
 for brain = 1:length(params.Brain)
     
-    for behavior = 1:length(params.Behavior)
+    for behavior = 1:length(param.Behavior)
         
-        Deci.Plot.Freq.Type = [params.Brain{brain} '_' params.Behavior{behavior}];
-        
-        info.extension = ['Extra' filesep 'Corr' filesep Deci.Plot.Freq.Type];
+        info.extension = ['Extra' filesep 'Corr' filesep params.Brain '_' params.Behavior];
         info.parameter = 'powspctrm';
         info.variable = 'R';
-        
-        
         
         [Subjects,info] =  dc_plotload(Deci,info);
         
@@ -57,10 +53,6 @@ for brain = 1:length(params.Brain)
         %% Plot Types
         if Deci.Plot.Topo.do
             dc_plottopo(Deci,Subjects,info);
-        end
-        
-        if Deci.Plot.MTopo.do
-            dc_plotMtopo(Deci,Subjects,info);
         end
         
         if Deci.Plot.Square.do

@@ -118,10 +118,10 @@ tmpcfg = keepfields(cfg, {'frequency', 'avgoverfreq', 'latency', 'avgovertime', 
 % restore the provenance information
 [cfg, varargin{:}] = rollback_provenance(cfg, varargin{:});
 
-if strcmp(cfg.correctm, 'cluster') && length(varargin{1}.label)>1
-  % this is required for clustering with multiple channels
-  ft_checkconfig(cfg, 'required', 'neighbours');
-end
+% if strcmp(cfg.correctm, 'cluster') && length(varargin{1}.label)>1
+%   % this is required for clustering with multiple channels
+%   ft_checkconfig(cfg, 'required', 'neighbours');
+% end
 
 %dimord = getdimord(varargin{1}, cfg.parameter);
 dimord = varargin{1}.dimord;
@@ -205,19 +205,59 @@ else
   end
 end
 
-if ~isstruct(stat)
-  % only the probability was returned as a single matrix, reformat into a structure
-  stat = struct('prob', stat);
-end
+% if ~isstruct(stat)
+%   % only the probability was returned as a single matrix, reformat into a structure
+%   stat = struct('prob', stat);
+% end
 
-%the statistical output contains multiple elements, e.g. F-value, beta-weights and probability
+if iscell(stat)
+    tempstat = stat;
+    
+    for eachstat = 1:length(stat)
+    
+        stat = tempstat{eachstat};
+        fn = fieldnames(stat);
+        
+        for i=1:length(fn)
+            if numel(stat.(fn{i}))==prod(datsiz)
+                % reformat into the same dimensions as the input data
+                stat.(fn{i}) = reshape(stat.(fn{i}), [datsiz 1]);
+            end
+        end
+        
+        % describe the dimensions of the output data
+        stat.dimord = cfg.dimord;
+        
+        % copy the descripive fields into the output
+        stat = copyfields(varargin{1}, stat, {'freq', 'time', 'label'});
+        
+        % these were only present to inform the low-level functions
+        %cfg = removefields(cfg, {'dim', 'dimord'});
+        
+        
+        tempstat{eachstat} = stat;
+    end
+    
+    stat = tempstat;
+    
+else
 fn = fieldnames(stat);
 
 for i=1:length(fn)
-  if numel(stat.(fn{i}))==prod(datsiz)
+  if numel(stat.(fn{i}))==[prod(datsiz)*size(stat.mask,2)]
     % reformat into the same dimensions as the input data
-    stat.(fn{i}) = reshape(stat.(fn{i}), [datsiz 1]);
+    stat.(fn{i}) = reshape(stat.(fn{i}), [datsiz size(stat.mask,2)]);
   end
+end
+
+% describe the dimensions of the output data
+stat.dimord = cfg.dimord;
+
+% copy the descripive fields into the output
+stat = copyfields(varargin{1}, stat, {'freq', 'time', 'label'});
+
+% these were only present to inform the low-level functions
+cfg = removefields(cfg, {'dim', 'dimord'});
 end
 
 % describe the dimensions of the output data

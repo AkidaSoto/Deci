@@ -3,9 +3,20 @@ function StatData = dc_plotstat(Deci,SegStatdata,info)
 display(' ')
 display('Calculating Statistics')
 
-neighbours       = load('easycap_neighbours','neighbours');
-Deci.Plot.Stat.neighbours = neighbours.neighbours;
+if isfield(SegStatdata{1},'label')
+    if length(SegStatdata{1}.label) > 1
+        neighbours       = load('easycapM11_neighb');
+        Deci.Plot.Stat.neighbours = neighbours.neighbours;
+    end
+end
+
 Deci.Plot.Stat.ivar = 1;
+
+% if isfield(SegStatdata{1},'cfg')
+%    SegStatdata = cellfun(@(c) rmfield(c,'cfg'), SegStatdata,'un',0);
+% end
+
+Deci.Plot.Stat.randomseed = 7;
 
 for conds = 1:length(Deci.Plot.Draw)
     design = [];
@@ -28,9 +39,10 @@ for conds = 1:length(Deci.Plot.Draw)
                 if length(Deci.Plot.Draw{conds}) > 2
                     Deci.Plot.Stat.tail = 1;
                     
-                    Deci.Plot.Stat = Exist(Deci.Plot.Stat,'twoway',false);
+                    Deci.Plot.Stat = Exist(Deci.Plot.Stat,'twoway',[]);
+                    Deci.Plot.Stat.twoway = Exist(Deci.Plot.Stat.twoway,'do',false);
                     
-                    if Deci.Plot.Stat.twoway
+                    if Deci.Plot.Stat.twoway.do && length(Deci.Plot.Draw{conds}) == 4
                         Deci.Plot.Stat.statistic = 'dc_statfun_depsamplesFunivariate';
                     else
                         Deci.Plot.Stat.statistic = 'ft_statfun_depsamplesFunivariate';
@@ -46,7 +58,9 @@ for conds = 1:length(Deci.Plot.Draw)
                     [StatData{conds}] = ft_freqstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
                 elseif info.isconn
                     Deci.Plot.Stat.minnbchan = 1;
+                    Deci.Plot.Stat.neighbours = [];
                     [StatData{conds}] = dc_freqstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
+                    
                     %[StatData{conds}] = dc_connectivitystatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
                 else
                     [StatData{conds}] = ft_timelockstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
