@@ -135,16 +135,14 @@ for Cond = 1:length(Deci.Analysis.Conditions)
         error('1 or More Marker Codes not found in events. If using own DT, make sure Step 4 contains updated DT.Markers field')
     end
     
-    Deci.Analysis = Exist(Deci.Analysis,'UniqueConditions',[]);
-    Deci.Analysis.UniqueConditions = Exist(Deci.Analysis.UniqueConditions,'do',false);
-    
     if ~Deci.Analysis.UniqueConditions.do
     
     maxt = length(find(cellfun(@(c) any(ismember(Deci.Analysis.Conditions{Cond},c)), Deci.DT.Markers)));
     info.alltrials = find(sum(ismember(events,Deci.Analysis.Conditions{Cond}),2) == maxt);
     
     else
-    info = feval(Deci.Analysis.UniqueConditions.Function,Deci,info,events,Deci.Analysis.UniqueConditions.Param);
+        
+        
     end
     
     %% ignore all locks with missing nans
