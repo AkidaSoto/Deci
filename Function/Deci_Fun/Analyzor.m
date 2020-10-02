@@ -362,6 +362,8 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                 chanh = dc_getchans('noeyes');
                             end
                             
+                            
+                            
                             freqlow = Current{3};
                             freqhigh = Current{4};
                             conntype = Current{5};
@@ -467,7 +469,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                             if ismember({'chancmb'},strsplit(conn.dimord,'_'))
                                             conn.([conntype{conoi} 'spctrm']) = permute(conn.([conntype{conoi} 'spctrm']),[2 3 1]);
                                             else
-                                            conn.([conntype{conoi} 'spctrm']) = permute(conn.([conntype{conoi} 'spctrm']),[3 4 1 2]);    
+                                            conn.([conntype{conoi} 'spctrm']) = permute(conn.([conntype{conoi} 'spctrm'])(1,2,:,:),[3 4 1 2]);    
                                             end
                                             
                                             conn.dimord = 'freq_time';
@@ -585,7 +587,8 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                             save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep strjoin([chancmb(choicmb,:) freqcmb(foicmb,:) conntype(conoi)],'_')],'conn','-v7.3');
                                             clear conn
                                         else
-                                            error('parameters for connectivity cannot be computed.')
+                                            continue;
+                                            %error('parameters for connectivity cannot be computed.')
                                         end
                                         
                                         %                                         %lcfg.latency = params.toi;

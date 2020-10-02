@@ -65,7 +65,7 @@ for ConnList = 1:length(Params.List)
             end
         end
         
-        if ismember(conntype(conoi),{'plv','wpli_debiased','wpli'})
+        if ismember(conntype(conoi),{'plv','wpli_debiased','wpli','amplcorr','powcorr'})
             chancmb = chancmb(cellfun(@(a,b) ~isequal(a,b),chancmb(:,1),chancmb(:,2)),:);
             
             chancmb = chancmb(~ismember(chancmb(:,1),chancmb(:,2)),:);
@@ -120,7 +120,7 @@ for ConnList = 1:length(Params.List)
                         
                     end
                     
-                    if ismember(conntype(conoi),{'plv','wpli_debiased','wpli','coh'})
+                    if ismember(conntype(conoi),{'plv','wpli_debiased','wpli','coh','amplcorr','powcorr'})
                         param = [conntype{conoi} 'spctrm'];
                         
                         sub_chan{choicmb} = sub_freq{foicmb};
@@ -156,7 +156,7 @@ for ConnList = 1:length(Params.List)
                     lockers(subject_list,Conditions,:) = nan;
                 end
                 
-                if ismember(conntype(conoi),{'plv','wpli_debiased','wpli','coh'})
+                if ismember(conntype(conoi),{'plv','wpli_debiased','wpli','coh','amplcorr','powcorr'})
                     param = [conntype{conoi} 'spctrm'];
                     
                     uchoi = unique(chancmb(:,1),'stable');
@@ -236,7 +236,7 @@ for ConnList = 1:length(Params.List)
                                 
                             end
                             
-                            if ismember(conntype(conoi),{'plv','wpli_debiased','wpli'})
+                            if ismember(conntype(conoi),{'plv','wpli_debiased','wpli','amplcorr','powcorr'})
                                 param = [conntype{conoi} 'spctrm'];
                                 
                                 bsl_chan{choicmb} = bslfreq{foicmb};
@@ -259,7 +259,7 @@ for ConnList = 1:length(Params.List)
                         end
                         
                         
-                        if ismember(conntype(conoi),{'plv','wpli_debiased','wpli'})
+                        if ismember(conntype(conoi),{'plv','wpli_debiased','wpli','amplcorr','powcorr'})
                             param = [conntype{conoi} 'spctrm'];
                             
                             uchoi = unique(chancmb(:,1));
@@ -527,6 +527,9 @@ for ConnList = 1:length(Params.List)
     
     
     %% Stats
+    Plot.Draw = Deci.Plot.Draw;
+    Plot.Title = Deci.Plot.Title;
+    Plot.Subtitle = Deci.Plot.Subtitle;
     
     if Deci.Plot.Stat.do
         info.isfreq = 0;
@@ -574,12 +577,12 @@ for ConnList = 1:length(Params.List)
         if Deci.Plot.Stat.twoway.do
 
             
-            Deci.Plot.Draw{end+1} = length(AllData{find([AllPlots_do{:}],1,'first')}) -2;
-            Deci.Plot.Draw{end+1} = length(AllData{find([AllPlots_do{:}],1,'first')}) -1;
-            Deci.Plot.Draw{end+1} = length(AllData{find([AllPlots_do{:}],1,'first')});
+            Plot.Draw{end+1} = length(AllData{find([AllPlots_do{:}],1,'first')}) -2;
+            Plot.Draw{end+1} = length(AllData{find([AllPlots_do{:}],1,'first')}) -1;
+            Plot.Draw{end+1} = length(AllData{find([AllPlots_do{:}],1,'first')});
             
-            Deci.Plot.Title(end+1:end+3)        = Deci.Plot.Stat.twoway.Title;
-            Deci.Plot.Subtitle(end+1:end+3)   = Deci.Plot.Stat.twoway.Subtitle;
+            Plot.Title(end+1:end+3)        = Deci.Plot.Stat.twoway.Title;
+            Plot.Subtitle(end+1:end+3)   = Deci.Plot.Stat.twoway.Subtitle;
         end
     end
     
@@ -594,7 +597,7 @@ for ConnList = 1:length(Params.List)
     end
     
     
-    for cond = 1:length(Deci.Plot.Draw)
+    for cond = 1:length(Plot.Draw)
         clear flfh_fig fltime_fig fhtime_fig cl_fig
         
         
@@ -612,36 +615,36 @@ for ConnList = 1:length(Params.List)
                     end
                     
                     
-                    suptitle([SubjectList{subj} ' ' Deci.Plot.Title{cond} ' ' conntype{conoi}  ]);
+                    suptitle([SubjectList{subj} ' ' Plot.Title{cond} ' ' conntype{conoi}  ]);
                     
                 end
                 
             end
             
-            for subcond = 1:length(Deci.Plot.Draw{cond})
+            for subcond = 1:length(Plot.Draw{cond})
                 
                 for DataType = 1:length(AllPlots)
                     if AllPlots_do{DataType}
                         set(0, 'CurrentFigure',  AllPlots_fig{DataType}{cond}(subj) )
                         AllPlots_fig{DataType}{cond}(subj).Visible = 'on';
                         
-                        AllPlots_subby{DataType}{cond}(subj,subcond) = subplot(length(Deci.Plot.Draw{cond}),1,subcond );
+                        AllPlots_subby{DataType}{cond}(subj,subcond) = subplot(length(Plot.Draw{cond}),1,subcond );
                         colormap(Deci.Plot.ColorMap)
                         
                         pcfg = cfg;
                         pcfg.parameter = param;
                         
                         connplot = [];
-                        connplot.(param) =  permute(AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(param),[4 1 2 3]);
+                        connplot.(param) =  permute(AllData{DataType}{subj,Plot.Draw{cond}(subcond)}.(param),[4 1 2 3]);
                         if Deci.Plot.Stat.do
                             pcfg.clim = 'maxmin';
                             pcfg.maskparameter ='mask';
-                            connplot.mask = permute(AllData_StatData{DataType}{cond}.mask,[4 1 2 3]); %repmat(,[length(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.label) 1 1]);
+                            connplot.mask = permute(AllData_StatData{DataType}{cond}.mask,[4 1 2 3]); %repmat(,[length(Segdata{subj,Plot.Draw{cond}(subcond)}.label) 1 1]);
                             connplot.mask = double(connplot.mask);
                             connplot.mask(connplot.mask == 0) = .2;
                         end
                         
-                        if sum(size(AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(param)) ~= 1) > 1
+                        if sum(size(AllData{DataType}{subj,Plot.Draw{cond}(subcond)}.(param)) ~= 1) > 1
                             pcfg.imagetype = 'imagesc';
                             pcfg.colormap = Deci.Plot.ColorMap;
                             
@@ -650,13 +653,13 @@ for ConnList = 1:length(Params.List)
                             
                             curdim = dim(ismember(dim,AllPlots_Dims{DataType}));
                             
-                            connplot.freq = 1:length(AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(curdim{1}));
+                            connplot.freq = 1:length(AllData{DataType}{subj,Plot.Draw{cond}(subcond)}.(curdim{1}));
                             
                             if ~ismember({'time'},curdim)
-                                connplot.time = 1:length(AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(curdim{2}));
+                                connplot.time = 1:length(AllData{DataType}{subj,Plot.Draw{cond}(subcond)}.(curdim{2}));
                                 
                             else
-                                connplot.time = AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.time;
+                                connplot.time = AllData{DataType}{subj,Plot.Draw{cond}(subcond)}.time;
                             end
                             
                             evalc('ft_singleplotTFR(pcfg,connplot)');
@@ -664,35 +667,35 @@ for ConnList = 1:length(Params.List)
                             axis tight
                             colorbar;
                             
-                            if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
-                                title([Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')'],'Interpreter','none');
+                            if Plot.Draw{cond}(subcond) <= size(lockers,2)
+                                title([Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Plot.Draw{cond}(subcond))) ')'],'Interpreter','none');
                             else
-                                title([Deci.Plot.Subtitle{cond}{subcond}],'Interpreter','none');
+                                title([Plot.Subtitle{cond}{subcond}],'Interpreter','none');
                             end
                             
-                            AllPlots_subby{DataType}{cond}(subj,subcond).YTick = 1:length(AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(curdim{1}));
-                            AllPlots_subby{DataType}{cond}(subj,subcond).YTickLabel = AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(curdim{1});
+                            AllPlots_subby{DataType}{cond}(subj,subcond).YTick = 1:length(AllData{DataType}{subj,Plot.Draw{cond}(subcond)}.(curdim{1}));
+                            AllPlots_subby{DataType}{cond}(subj,subcond).YTickLabel = AllData{DataType}{subj,Plot.Draw{cond}(subcond)}.(curdim{1});
                             
                             
                             if ~ismember({'time'},curdim)
-                                AllPlots_subby{DataType}{cond}(subj,subcond).XTick = 1:length(AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(curdim{2}));
-                                AllPlots_subby{DataType}{cond}(subj,subcond).XTickLabel = AllData{DataType}{subj,Deci.Plot.Draw{cond}(subcond)}.(curdim{2});
+                                AllPlots_subby{DataType}{cond}(subj,subcond).XTick = 1:length(AllData{DataType}{subj,Plot.Draw{cond}(subcond)}.(curdim{2}));
+                                AllPlots_subby{DataType}{cond}(subj,subcond).XTickLabel = AllData{DataType}{subj,Plot.Draw{cond}(subcond)}.(curdim{2});
                                 
                             else
                                 
-                                if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
+                                if Plot.Draw{cond}(subcond) <= size(lockers,2)
                                     xlims = xlim;
                                     ylims = ylim;
                                     
-                                    for locks = 1:length([lockers(subj,Deci.Plot.Draw{cond}(subcond),:)])
+                                    for locks = 1:length([lockers(subj,Plot.Draw{cond}(subcond),:)])
                                         hold on
                                         
-                                        locktime = [lockers(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                                        locktime = [lockers(subj,Plot.Draw{cond}(subcond),locks)/1000];
                                         
                                         
                                         if Deci.Plot.GrandAverage
                                             if locktime > xlims(1) && locktime < xlims(2)
-                                                lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                                                lockstd = [lockersstd(subj,Plot.Draw{cond}(subcond),locks)/1000];
                                                 plotlock = line([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
                                                 
                                                 
@@ -728,13 +731,13 @@ for ConnList = 1:length(Params.List)
                                         
                                     end
                                     ylim(ylims)
-                                    title([Deci.Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Deci.Plot.Draw{cond}(subcond))) ')']);
+                                    title([Plot.Subtitle{cond}{subcond} ' (' num2str(trllen(subj,Plot.Draw{cond}(subcond))) ')']);
                                 else
-                                    title([Deci.Plot.Subtitle{cond}{subcond}]);
+                                    title([Plot.Subtitle{cond}{subcond}]);
                                 end
                                 
                                 ylabel('Frequency (Hz)')  %changed 'Freq Low' -> 'Frequency (Hz)'
-                                if subcond == length(Deci.Plot.Draw{cond})
+                                if subcond == length(Plot.Draw{cond})
                                     xlabel('Time')
                                 end
                                 

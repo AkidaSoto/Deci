@@ -60,7 +60,7 @@ for brain = 1:length(params.Brain)
         end
         
         if Deci.Plot.MTopo.do
-            dc_plotMtopo(Deci,Subjects,info);
+            dc_plotmtopo(Deci,Subjects,info);
         end
         
         if Deci.Plot.Square.do

@@ -346,7 +346,7 @@ for cond = 1:length(Deci.Plot.Draw)
             end
         end
         
-         suptitle(Deci.Plot.Title{cond});
+         suptitle([Deci.Plot.Title{cond} ' ' Deci.Plot.Freq.Type]);
     end
     
 end
