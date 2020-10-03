@@ -48,7 +48,11 @@ for subject_list = 1:length(Deci.SubjectList)
     
     cfg.trl = cfg.trl(:,[1:3 5:end]);
     
+    if ~Deci.DT.NanLocks
     trllength = num2str(length(find(~isnan(mean(cfg.trl,2)))));
+    else
+    trllength =  num2str(size(cfg.trl,1))
+    end
     disp(['Found ' num2str(trllength) ' trials out of ' num2str(size(cfg.trl,1)) ' for ' Deci.SubjectList{subject_list}]);
     
     mkdir(Deci.Folder.Definition);
