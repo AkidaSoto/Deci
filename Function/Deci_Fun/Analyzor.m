@@ -448,7 +448,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                         datahigh.label = labels;
                                         datahigh.dimord = 'rpttap_chan_freq_time';
                                         
-                                        if isequal(LF,HF) && ~isequal(chancmb(choicmb,1),chancmb(choicmb,2)) && ismember(conntype(conoi),{'plv','wpli_debiased','wpli','amplcorr', 'psi', 'powcorr','coh'})
+                                        if isequal(LF,HF) && ~isequal(chancmb(choicmb,1),chancmb(choicmb,2)) && ismember(conntype(conoi),{'plv','wpli_debiased','wpli','amplcorr', 'psi', 'powcorr','coh','powcorr_ortho'})
                                             
                                             conndata = ft_appendfreq(struct('parameter','fourierspctrm','appenddim','chan'),datalow,datahigh);
                                             conndata.cumtapcnt = Fourier.cumtapcnt;

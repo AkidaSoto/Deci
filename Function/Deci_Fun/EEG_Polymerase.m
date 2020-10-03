@@ -53,8 +53,8 @@ for j = 1:length(startstopseg)
         end
     end
     
-    minlockindex = find([sample{ismember(value,cfg.DT.Locks)}] == min([sample{ismember(value,cfg.DT.Locks)}]),1,'first');
-    maxlockindex = find([sample{ismember(value,cfg.DT.Locks)}] == max([sample{ismember(value,cfg.DT.Locks)}]),1,'first');
+    minlockindex = cfg.DT.Locks == value([sample{:}] == min([sample{ismember(value,cfg.DT.Locks)}]));
+    maxlockindex = cfg.DT.Locks == value([sample{:}] == max([sample{ismember(value,cfg.DT.Locks)}]));
     
     begsample = sample{ismember(value,cfg.DT.Locks(minlockindex))} + sstime(1)*hdr.Fs;
     endsample = sample{ismember(value,cfg.DT.Locks(maxlockindex))} + sstime(2)*hdr.Fs;
