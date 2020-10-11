@@ -34,7 +34,12 @@ for subject_list = 1:length(Deci.SubjectList)
     cfg.DT = Deci.DT;
     cfg.trialfun = cfg.DT.Type;
     cfg.file_ending = files_ending{1};
+    
+     Deci.DT = Exist(Deci.DT,'NanLocks',false);
+    
     evalc('cfg = ft_definetrial(cfg);'); % will return cfg.trl, the segmented data
+    
+   
     
     cfg.trialnum = cfg.trl(:,4);
     
@@ -48,10 +53,11 @@ for subject_list = 1:length(Deci.SubjectList)
     
     cfg.trl = cfg.trl(:,[1:3 5:end]);
     
+    
     if ~Deci.DT.NanLocks
     trllength = num2str(length(find(~isnan(mean(cfg.trl,2)))));
     else
-    trllength =  num2str(size(cfg.trl,1))
+    trllength =  num2str(size(cfg.trl,1));
     end
     disp(['Found ' num2str(trllength) ' trials out of ' num2str(size(cfg.trl,1)) ' for ' Deci.SubjectList{subject_list}]);
     

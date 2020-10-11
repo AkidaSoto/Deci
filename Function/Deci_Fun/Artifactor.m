@@ -279,8 +279,11 @@ for subject_list = 1:length(Deci.SubjectList)
             data.trlnum = trlnum;
             data.postart = postart;
             mkdir([Deci.Folder.Artifact])
-            save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','-v7.3')
-            data = rmfield(data,'trial');
+            
+            
+            info = rmfield(data,'trial');
+            save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info','-v7.3')
+        
             %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
         end
         

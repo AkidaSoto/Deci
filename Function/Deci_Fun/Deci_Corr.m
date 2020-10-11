@@ -82,9 +82,14 @@ for brains = 1:length(params.Brain)
                 switch params.Brain{brains}
                     case 'Magnitude'
                         
+                        if strcmpi(params.type,'spearman')   
+                        [R(1,foi,ti), P(1,foi,ti)] = corr(b_time,parameter,'Type','Spearman');
+                        else
                         [r,p] = corrcoef(b_time,parameter);
                         R(1,foi,ti) = r(1,2);
                         P(1,foi,ti) = p(1,2);
+                        end
+                        
                         
                     case 'Phase'
                         [R(1,foi,ti),P(1,foi,ti)] =  circ_corrcl(b_time, parameter);

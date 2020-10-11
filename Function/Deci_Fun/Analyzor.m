@@ -464,6 +464,14 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                                 conncfg.complex     = 'abs';
                                             end
                                             
+                                            if ismember(conntype(conoi),{'powcorr_ortho'})
+                                            scfg.latency     = Deci.Analysis.Connectivity.toi;
+                                            scfg.avgovertime = 'yes';
+                                            
+                                            conndata = ft_selectdata(scfg,conndata);
+                                            conndata.dimord = 'rpttap_chan_freq';
+                                            end
+                                            
                                             evalc('conn = ft_connectivityanalysis(conncfg,conndata)');
                                             
                                             if ismember({'chancmb'},strsplit(conn.dimord,'_'))

@@ -1,4 +1,4 @@
-function Plottor_2std(Deci,params)
+function Plottor_scatter(Deci,params)
 
 
 params = Exist(params,'std','std');
@@ -10,6 +10,7 @@ for subject_list = 1:length(Deci.SubjectList)
     
     switch Deci.Plot.Behv.Source
         case 'PostArt'
+            info = [];
             load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'info');
             data = info;
             
@@ -233,8 +234,20 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
 end
 %% plot
 
-
-
+if Deci.Whatever
+    
+    
+    for subject_list = 1:length(Deci.SubjectList)
+        
+        mkdir([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{subject_list}]);
+        save([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{subject_list}  filesep 'Acc.mat'],'Acc');
+        Deci.SubjectList{subject_list} = Deci.SubjectList{subject_list}([1:6 8:end]);
+        mkdir([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{subject_list}]);
+        save([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{subject_list}  filesep 'Acc.mat'],'Acc');
+        
+    end
+end
+    
 for fig = find(Deci.Plot.Behv.Acc.Figure)
     
     liner = lines(size(Acc{fig},2));

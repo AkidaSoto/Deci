@@ -537,7 +537,8 @@ if ~isempty(Deci.Plot.Behv.Acc)
                            
                            
                             if  Deci.Plot.Behv.Acc.Dot
-                            k = CleanBars(Acc{fig},Accsem{fig},AccDots{fig});
+                            k = CleanBars(Acc{fig}),,Acc{fig});
+                            Sub.Acc = {'SubjAvg'};
                             else
                             k = CleanBars(Acc{fig}(subj,:,:,:),Accsem{fig}(subj,:,:,:));
                             end
@@ -670,15 +671,7 @@ end
                     disp(['RT Total for ' Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Subtitle{fig}{draw} ' ' num2str(squeeze(RT{fig}(subj,draw,:,:))) ' +- ' num2str(squeeze(RTsem{fig}(subj,draw,:,:)))])
                     
                     if draw == 1
-                        
-                        
-                        if  Deci.Plot.Behv.Acc.Dot
-                            CleanBars(RT{fig}(subj,:,:,:),RTsem{fig}(subj,:,:,:),RTDots{fig})
-                        else
-                            CleanBars(RT{fig}(subj,:,:,:),RTsem{fig}(subj,:,:,:))
-                        end
-                        
-                        
+                        CleanBars(RT{fig}(subj,:,:,:),RTsem{fig}(subj,:,:,:))
                         title(['RT Total for ' Sub.RT{subj} ': ' Deci.Plot.Behv.RT.Title{fig} ' '],'Interpreter','none')
                         legend([Deci.Plot.Behv.RT.Subtitle{fig}])
                         xticklabels(Sub.RT{subj})

@@ -1,14 +1,14 @@
-function CleanBars(data,varargin)
+function h = CleanBars(data,varargin)
 
 A =gca;
 if length(find(size(data) ~= 1)) == 1
     
     
-    bar(A,[zeros([1 size(data,2)]);data]);
-    arrayfun(@(c) set(c,'YData',c.YData(2)),A.Children)
+    h = bar(A,[zeros([1 size(data,2)]);data]);
+    arrayfun(@(c) set(c,'YData',c.YData(2)),h)
     
 else
-    bar(A,data);
+    h = bar(A,data);
 end
 
 hold on
@@ -23,7 +23,19 @@ if ~isempty(varargin)
     for i = 1:nbars
         % Calculate center of each bar
         x = (1:ngroups) - groupwidth/2 + (2*i-1) * groupwidth / (2*nbars);
+        
+        if ~isempty(varargin{1})
         errorbar(x, data(:,i), varargin{1}(:,i), 'k', 'linestyle', 'none');
+        end
+        
+        if ~isempty(varargin{2})
+        randylim = (2*1-1) * groupwidth / (2*nbars);
+        rander = rand([length(varargin{2}(:,i)) 1])-.5;
+        randy =  rander* [randylim];
+        
+        scatter(x*ones([size(varargin{2},1) 1])+randy, varargin{2}(:,i),'k')
+            
+        end
     end
 end
 
