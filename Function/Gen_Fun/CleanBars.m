@@ -28,7 +28,7 @@ if ~isempty(varargin)
         errorbar(x, data(:,i), varargin{1}(:,i), 'k', 'linestyle', 'none');
         end
         
-        if ~isempty(varargin{2})
+        if length(varargin) == 2
         randylim = (2*1-1) * groupwidth / (2*nbars);
         rander = rand([length(varargin{2}(:,i)) 1])-.5;
         randy =  rander* [randylim];

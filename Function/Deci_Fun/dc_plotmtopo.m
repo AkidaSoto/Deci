@@ -99,38 +99,6 @@ end
 
 %% Stats
 
-if Deci.Whatever
-        load([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{1} filesep 'Acc.mat']);
-        
-    for cond = 1:size(Segdata,2)
-        for chan = 1:size(Segdata{subject_list,cond}.powspctrm,2)
-            for freq = 1:size(Segdata{subject_list,cond}.powspctrm,3)
-                for time = 1:size(Segdata{subject_list,cond}.powspctrm,4)
-                    
-                    [r(chan,freq,time),p(chan,freq,time)] = corr(zscore(Segdata{cond}.powspctrm(:,chan,freq,time)),Acc{1},'Type','Spearman');
-                    
-                    
-                    
-                end
-            end
-        end
-        
-        for stat = 1:length(Deci.Plot.Draw)
-            inst.stat = r;
-            
-            inst.mask = fdr(p,.05);
-            inst.prob = p;
-            
-            StatData{stat} = inst;
-        end
-        
-    end
-    
-    
-    Deci.Plot.Stat.do = true;
-end
-
-
 if Deci.Plot.Stat.do
     StatData = dc_plotstat(Deci,SegStatdata,info);
     
@@ -168,6 +136,36 @@ if Deci.Plot.Stat.do
         
     end
     
+end
+
+
+if Deci.Whatever
+        load([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{1} filesep 'Acc.mat']);
+        
+    for cond = 1:size(Segdata,2)
+        for chan = 1:size(Segdata{1,cond}.powspctrm,2)
+                for time = 1:size(Segdata{1,cond}.powspctrm,4)
+                    
+                    [r(chan,freq,time),p(chan,freq,time)] = corr(zscore(mean(Segdata{cond}.powspctrm(:,chan,:,time),3)),zscore(Acc{1}),'Type','Spearman');
+                end
+        end
+        
+        for stat = 1:length(Deci.Plot.Draw)
+            inst.stat = r;
+            
+            inst.mask = p < .05; %fdr(p,.05);
+            inst.prob = p;
+            
+            StatData{stat} = inst;
+            
+             StatData{stat}.mask  = permute(StatData{stat}.mask,[1 4 3 2]);
+             StatData{stat}.stat  = permute(StatData{stat}.stat,[1 4 3 2]);
+        end
+        
+    end
+    
+    
+    Deci.Plot.Stat.do = true;
 end
 
 
@@ -366,10 +364,10 @@ for cond = 1:length(Deci.Plot.Draw)
             if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
                 childs(r).CLim = Deci.Plot.Roi;
             elseif strcmp(Deci.Plot.Roi,'maxmin')
-                if ~ isempty(childs(r).Children.UserData)
-                    childs(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),childs(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),childs(:)))];
+                if ~isempty(childs(r).Children.findobj('Type','Contour').UserData)
+                    childs(r).CLim = [min(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),childs(:))) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),childs(:)))];
                 else
-                    childs(r).CLim= minmax([topo(subj).Children.findobj('Type','Axes').CLim]);
+                    childs(r).CLim = [min(minmax([topo(subj).Children.findobj('Type','Axes').CLim])) max(minmax([topo(subj).Children.findobj('Type','Axes').CLim]))];
                 end
             elseif strcmp(Deci.Plot.Roi,'maxabs')
                 if ~isempty(childs(r).Children.findobj('Type','Contour').UserData)

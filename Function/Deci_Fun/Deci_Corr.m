@@ -82,6 +82,7 @@ for brains = 1:length(params.Brain)
                 switch params.Brain{brains}
                     case 'Magnitude'
                         
+                        params = Exist(params,'type',[]);
                         if strcmpi(params.type,'spearman')   
                         [R(1,foi,ti), P(1,foi,ti)] = corr(b_time,parameter,'Type','Spearman');
                         else

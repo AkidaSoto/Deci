@@ -15,6 +15,7 @@ for  subject_list = 1:length(Deci.SubjectList)
                 load([Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep info.Chois{Channel} '.mat'],info.variable);
             
             else
+                display(['could not find' [Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep info.Chois{Channel} '.mat']])
                 continue
             end
             
@@ -44,7 +45,7 @@ for  subject_list = 1:length(Deci.SubjectList)
             end
         end
         
-        if ~exist('variable')
+        if isempty(eval(info.variable))
             continue;
         end
             

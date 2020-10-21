@@ -8,7 +8,9 @@ function PCAnalyzor(Deci)
         AnalysisFunc = @Analyzor;
     end
      
+   Deci.Analysis = Exist(Deci.Analysis,'Pool',false);
 
+   if ~Deci.Analysis.Pool
     if Deci.PCom
         global PCom
         
@@ -31,6 +33,9 @@ function PCAnalyzor(Deci)
        end
        disp(['Full Analysis Time:' num2str(etime(clock,TimerAn))])
     end
+   else
+       AnalysisFunc(Deci);
+   end
 end
 
 

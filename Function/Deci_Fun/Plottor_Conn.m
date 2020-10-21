@@ -748,7 +748,10 @@ for ConnList = 1:length(Params.List)
                         else
                             
                             connplot.(param) = permute(connplot.(param),[2 1]);
+                            
+                            if Deci.Plot.Stat.do
                             connplot.mask = permute(connplot.mask,[2 1 3 4]);
+                            end
                             connplot.dimord = 'chan';
                             
                             labelcheck = ismember(AllPlots_Dims{DataType},fields(sub_cond{1}));
