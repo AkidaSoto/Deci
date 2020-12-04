@@ -30,39 +30,101 @@ end
 
 
 %ismember(dataplaceholder{2}.label,{'FCz'})
+allchan_cond2=dataplaceholder{2}.trial;
+[~,size_cond2]=size(allchan_cond2);
+allchan_cond5=dataplaceholder{5}.trial;
+[~,size_cond5]=size(allchan_cond5);
+allchan_cond3=dataplaceholder{3}.trial;
+[~,size_cond3]=size(allchan_cond3);
+allchan_cond7=dataplaceholder{7}.trial;
+[~,size_cond7]=size(allchan_cond7);
 
-[~,sizen2]=size(dataplaceholder{2}.trial);
-[~,sizen1]=size(dataplaceholder{1}.trial);
-bothconditions=[dataplaceholder{1}.trial dataplaceholder{2}.trial];
-timeSeriesData=bothconditions;
-bothkeys=[repmat({'condition_1'},1,sizen1) repmat({'condition_2'},1,sizen2)];
-uniquelabel=cell(1,length(timeSeriesData));
-for i=1:length(timeSeriesData)
-    count=num2str(i);
-    uniquelabel{1,i}=['Sample_' count];
+lo2=zeros(size_cond2,1);
+for i=1:size_cond2
+    [~,lo2(i)]=size(allchan_cond2{i});
 end
-labels=uniquelabel;
-keywords=bothkeys;
-save('INP_test.mat', 'timeSeriesData','labels','keywords')
-TS_Init('INP_test.mat')
-TS_Compute();
-TS_Normalize('mixedSigmoid',[0.4,1.0]);
-TS_LabelGroups('norm')
+lo5=zeros(size_cond5,1);
+for i=1:size_cond5
+    [~,lo5(i)]=size(allchan_cond5{i});
+end
+lo3=zeros(size_cond3,1);
+for i=1:size_cond3
+    [~,lo3(i)]=size(allchan_cond3{i});
+end
+lo7=zeros(size_cond7,1);
+for i=1:size_cond7
+    [~,lo7(i)]=size(allchan_cond7{i});
+end
 
-TS_PlotTimeSeries('norm')
-TS_PlotDataMatrix('norm')
-TS_Cluster()
-TS_PlotDataMatrix('norm')
-TS_PlotLowDim('norm','pca')
-TS_PlotLowDim('norm','tsne')
-TS_Classify('HCTSA_N.mat')
-cfnParams=GiveMeDefaultClassificationParams('HCTSA_N.mat');
-numNulls=100;
-%TS_Classify('HCTSA_N.mat',cfnParams,numNulls,'doParallel',true)
-featuresets= {'notLocationDependent','locationDependent','notLengthDependent','lengthDependent','notSpreadDependent','spreadDependent'};
-TS_CompareFeatureSets('norm',cfnParams,featuresets)
-TS_ClassifyLowDim('norm')
+lo=min([min(lo2) min(lo5) min(lo3) min(lo7)]);
 
-TS_TopFeatures('norm', 'classification')
+
+FCz_cond2_trials=zeros(size_cond2,min(lo));
+for i=1:size_cond2
+    FCz_cond2_trials(i,:)=allchan_cond2{i}(59,1:min(lo)); %change 59 to ismember notation later; also NOTE this has been normalized
+end
+FCz_cond5_trials=zeros(size_cond5,min(lo));
+for i=1:size_cond5
+    FCz_cond5_trials(i,:)=allchan_cond5{i}(59,1:min(lo)); %change 59 to ismember notation later; also NOTE this has been normalized
+end
+FCz_cond3_trials=zeros(size_cond3,min(lo));
+for i=1:size_cond3
+    FCz_cond3_trials(i,:)=allchan_cond3{i}(59,1:min(lo)); %change 59 to ismember notation later; also NOTE this has been normalized
+end
+FCz_cond7_trials=zeros(size_cond7,min(lo));
+for i=1:size_cond7
+    FCz_cond7_trials(i,:)=allchan_cond7{i}(59,1:min(lo)); %change 59 to ismember notation later; also NOTE this has been normalized
+end
+
+compare_case=2;
+if compare_case==1
+    FCz_cor_trials=[FCz_cond3_trials; FCz_cond7_trials];
+    FCz_inc_trials=[FCz_cond2_trials; FCz_cond5_trials];
+    
+    [~,sizen2]=size(FCz_cor_trials);
+    [~,sizen1]=size(FCz_inc_trials);
+    allconditions=[FCz_cor_trials; FCz_inc_trials]; %add second condition once code confirmed
+    timeSeriesData=allconditions;
+    bothkeys=[repmat({'Correct'},1,size(FCz_cor_trials,1)) repmat({'Incorrect'},1,size(FCz_inc_trials,1))];
+    %save bothkeys
+    uniquelabel=cell(1,size(timeSeriesData,1));
+    keywords=bothkeys;
+elseif compare_case==2
+    [~,sizen2]=size(FCz_cond2_trials);
+    [~,sizen3]=size(FCz_cond3_trials);
+    [~,sizen5]=size(FCz_cond5_trials);
+    [~,sizen7]=size(FCz_cond7_trials);
+    allconditions=[FCz_cond2_trials; FCz_cond3_trials; FCz_cond5_trials; FCz_cond7_trials];
+    timeSeriesData=allconditions;
+    allkeys=[repmat({'Condition 2'},1,size(FCz_cond2_trials,1)) repmat({'Condition 3'},1,size(FCz_cond3_trials,1)) repmat({'Condition 5'},1,size(FCz_cond5_trials,1)) repmat({'Condition 7'},1,size(FCz_cond7_trials,1))];
+    %save allkeys
+    keywords=allkeys;
+end
+    %save timeSeriesData
+    for i=1:size(timeSeriesData,1)
+        count=num2str(i);
+        uniquelabel{1,i}=['Sample_' count];
+    end
+    labels=uniquelabel;
+    save('INP_test.mat', 'timeSeriesData','labels','keywords')
+    TS_Init('INP_test.mat')
+
+% TS_Compute();
+% TS_Normalize('mixedSigmoid',[0.4,1.0]);
+% TS_LabelGroups('norm')
+% TS_PlotTimeSeries('norm')
+% TS_PlotDataMatrix('norm')
+% TS_Cluster()
+% TS_PlotDataMatrix('norm')
+% TS_PlotLowDim('norm','pca')
+% TS_PlotLowDim('norm','tsne')
+% TS_Classify('HCTSA_N.mat')
+% cfnParams=GiveMeDefaultClassificationParams('HCTSA_N.mat');
+% numNulls=100;
+% %TS_Classify('HCTSA_N.mat',cfnParams,num Nulls,'doParallel',true)
+% featuresets= {'notLocationDependent','locationDependent','notLengthDependent','lengthDependent','notSpreadDependent','spreadDependent'};
+% TS_CompareFeatureSets('norm',cfnParams,featuresets)
+% TS_ClassifyLowDim('norm')
+% TS_TopFeatures('norm', 'classification')
 
 end
