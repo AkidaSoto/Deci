@@ -130,13 +130,12 @@ end
 %  abs(Fourier.fourierspctrm).^2;
 
 
-%Get Freqs out of Fourier here
+%Get Freqs and Time out of Fourier here using code below
 %info.toi = round(variable.time,4) >= info.Tois(1) & round(variable.time,4) <= info.Tois(2)
 
-%Move Hctsa inside here and clear Fourier after you're
-%done so that there's isn't memory issues.
+%Move Hctsa inside here 
 
-
+% Save output
 mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'TopFeatures' ])
 save([Deci.Folder.Analysis filesep 'Extra' filesep 'TopFeatures' filesep Deci.SubjectList{info.subject_list}],'TopFeatures');
 
