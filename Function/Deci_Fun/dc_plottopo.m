@@ -88,7 +88,15 @@ end
 %% Stats
 
 if Deci.Plot.Stat.do
+    Deci.Plot.Stat = Exist(Deci.Plot.Stat,'Corr',[]);
+    Deci.Plot.Stat.Corr  = Exist(Deci.Plot.Stat.Corr,'do',false);
+    
+    if ~Deci.Plot.Stat.Corr.do
     StatData = dc_plotstat(Deci,SegStatdata,info);
+    else
+        
+        
+    end
 end
 
 

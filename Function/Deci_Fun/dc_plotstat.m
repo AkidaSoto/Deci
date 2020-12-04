@@ -7,7 +7,11 @@ if isfield(SegStatdata{1},'label')
     if length(SegStatdata{1}.label) > 1
         neighbours       = load('easycapM11_neighb');
         Deci.Plot.Stat.neighbours = neighbours.neighbours;
+    else 
+        Deci.Plot.Stat.minnbchan = 0;
     end
+else
+    Deci.Plot.Stat.minnbchan = 0;
 end
 
 Deci.Plot.Stat.ivar = 1;
@@ -57,8 +61,23 @@ for conds = 1:length(Deci.Plot.Draw)
                 if info.isfreq
                     [StatData{conds}] = ft_freqstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
                 elseif info.isconn
-                    Deci.Plot.Stat.minnbchan = 1;
-                    Deci.Plot.Stat.neighbours = [];
+                   
+                    %Deci.Plot.Stat.neighbours = [];
+                    
+                    if Deci.Plot.Extra.Conn.CL.do || Deci.Plot.Extra.Conn.CH.do
+                         Deci.Plot.Stat.minnbchan = 1;
+                         neighbours       = load('easycapM11_neighb');
+                        Deci.Plot.Stat.neighbours = neighbours.neighbours;
+                        
+                        if Deci.Plot.Extra.Conn.CL.do 
+                            Deci.Plot.Stat.channel = SegStatdata{1}.chanlow;
+                        else
+                            Deci.Plot.Stat.channel = SegStatdata{1}.chanhigh;
+                        end
+                    else
+                        Deci.Plot.Stat.connectivity = true(1);
+                    end
+                    
                     [StatData{conds}] = dc_freqstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
                     
                     %[StatData{conds}] = dc_connectivitystatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
@@ -123,20 +142,71 @@ for conds = 1:length(Deci.Plot.Draw)
                 [StatData{conds}] = ft_timelockstatistics(Deci.Plot.Stat, allSegStatdata);
                 
             end
+        case 'Corr'
+                for subcond = 1:length(Deci.Plot.Draw{conds})
+                    for subj = 1:size(SegStatdata{1}.(info.parameter),1)
+                        design(1,subj+size(SegStatdata{1}.(info.parameter),1)*[subcond-1]) =  subcond;
+                     
+                    end
+                end
+            
+            Deci.Plot.Stat.design = design;
+            Deci.Plot.Stat.statistic = 'ft_statfun_correlationT';
+
+            if info.isfreq
+                [StatData{conds}] = ft_freqstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
+            elseif info.isconn
+                Deci.Plot.Stat.minnbchan = 1;
+                %Deci.Plot.Stat.neighbours = [];
+                
+                if Deci.Plot.Extra.Conn.CL.do || Deci.Plot.Extra.Conn.CH.do
+                    neighbours       = load('easycapM11_neighb');
+                    Deci.Plot.Stat.neighbours = neighbours.neighbours;
+                    
+                    if Deci.Plot.Extra.Conn.CL.do
+                        Deci.Plot.Stat.channel = SegStatdata{1}.chanlow;
+                    else
+                        Deci.Plot.Stat.channel = SegStatdata{1}.chanhigh;
+                    end
+                    
+                end
+                
+                [StatData{conds}] = dc_freqstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
+                
+                %[StatData{conds}] = dc_connectivitystatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
+            else
+                [StatData{conds}] = ft_timelockstatistics(Deci.Plot.Stat, SegStatdata{:,Deci.Plot.Draw{conds}});
+            end
+            
     end
     
     if iscell(StatData{conds})
-        tmp.prob = cell2mat(cellfun(@(c) c.prob,StatData{conds},'UniformOutput',false));
-        tmp.stat = cell2mat(cellfun(@(c) c.stat,StatData{conds},'UniformOutput',false));
-        tmp.mask = cell2mat(cellfun(@(c) c.mask,StatData{conds},'UniformOutput',false));
+        tmp.prob = cellfun(@(c) c.prob,StatData{conds},'UniformOutput',false);
+        tmp.prob = cat(4,tmp.prob{:});
+        
+        tmp.stat = cellfun(@(c) c.stat,StatData{conds},'UniformOutput',false);
+        tmp.stat= cat(4,tmp.stat{:});
+        
+        tmp.mask = cellfun(@(c) c.mask,StatData{conds},'UniformOutput',false);
+        tmp.mask = cat(4,tmp.mask{:});
         %tmp.critval = cell2mat(cellfun(@(c) c.critval,StatData{conds},'UniformOutput',false));
         
     else
-        tmp.prob = StatData{conds}.prob;
-        tmp.stat = StatData{conds}.stat;
-        tmp.mask = StatData{conds}.mask;
-        %tmp.critval = StatData{conds}.critval;
+        
+        if Deci.Plot.Stat.twoway.do
+            statdim = length(size(StatData{conds}.prob));
+            
+            tmp.prob = permute(StatData{conds}.prob,[1:statdim-1 statdim+1:statdim+[4 - statdim] statdim]);
+            tmp.stat = permute(StatData{conds}.stat,[1:statdim-1 statdim+1:statdim+[4 - statdim] statdim]);
+            tmp.mask = permute(StatData{conds}.mask,[1:statdim-1 statdim+1:statdim+[4 - statdim] statdim]);
+            %tmp.critval = StatData{conds}.critval;
+        else
+            tmp.prob = StatData{conds}.prob;
+            tmp.stat = StatData{conds}.stat;
+            tmp.mask = StatData{conds}.mask;
+        end
 
+        
     end
     
     StatData{conds} = tmp;

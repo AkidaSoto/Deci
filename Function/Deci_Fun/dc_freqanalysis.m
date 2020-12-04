@@ -202,7 +202,14 @@ else
             % compute datspectrum*wavelet, if there are reqtimeboi's that have data
             if ~isempty(reqtimeboi)
                 dum = [fftshift(ifft(datspectrum .* repmat(fft(complex(vertcat(prezer,tap.*cos(ind),pstzer), vertcat(prezer,tap.*sin(ind),pstzer)),[],1)',[nchan 1]), [], 2),2)] .* sqrt(2 ./ fsample);
-                fourierspctrm(itrial,:,ifreqoi,reqtimeboiind) = gather(dum(:,reqtimeboi));
+                
+                % Compute fft
+                if cfg.gpu
+                    fourierspctrm(itrial,:,ifreqoi,reqtimeboiind) = gather(dum(:,reqtimeboi));
+                else
+                    fourierspctrm(itrial,:,ifreqoi,reqtimeboiind) = dum(:,reqtimeboi);
+                end
+                
             end
         end
     end

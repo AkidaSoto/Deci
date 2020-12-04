@@ -13,14 +13,12 @@ for subject_list = 1:length(Deci.SubjectList)
             
             if isempty(info)
                 load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data');
-                data = rmfield(data,'trial');
+                info = rmfield(data,'trial');
                 
-                info = data;
-                
-                save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info');
-            else
-                data = info;
+                save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info', '-v7.3');
             end
+            
+            data = info;
             
             if isfield(data,'condinfo')  %replacer starting 12/22, lets keep for ~4 months
                 data.postart.locks = data.condinfo{1};
@@ -236,6 +234,8 @@ end
 %% sort
 
 Deci.Plot.Behv.Acc = Exist(Deci.Plot.Behv.Acc,'BaW',false);
+Deci.Plot.Behv.Acc = Exist(Deci.Plot.Behv.Acc,'Dot',false);
+ 
 for fig = find(Deci.Plot.Behv.Acc.Figure)
     
     clear fAcc
@@ -258,6 +258,9 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
         Sub.Acc = Deci.SubjectList;
         if Deci.Plot.Behv.Acc.Collapse.Subject
 
+             if Deci.Plot.Behv.Acc.Dot
+             AccDots{fig} = Acc{fig}; 
+             end
             
             if ~Deci.Plot.Behv.Acc.BaW
             Accsem{fig} =  nanstd(Acc{fig},[],1)/sqrt(size(Acc{fig},1));
@@ -277,6 +280,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
 end
 
 Deci.Plot.Behv.RT = Exist(Deci.Plot.Behv.RT,'BaW',false);
+ Deci.Plot.Behv.RT = Exist(Deci.Plot.Behv.RT,'Dot',false);
 for fig = find(Deci.Plot.Behv.RT.Figure)
     
     
@@ -298,7 +302,9 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
         Sub.RT = Deci.SubjectList;
         if Deci.Plot.Behv.RT.Collapse.Subject
             
-            
+            if Deci.Plot.Behv.RT.Dot
+                RTDots{fig} = RT{fig};
+            end
             
             if ~Deci.Plot.Behv.RT.BaW
                 
@@ -525,10 +531,16 @@ if ~isempty(Deci.Plot.Behv.Acc)
                         title(h.Parent,[Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Subtitle{fig}{draw}],'Interpreter','none');
                         
                     else
-                        disp(['Acc Total for ' Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{fig} ' ' num2str(squeeze(Acc{fig}(subj,draw,:,:))*100) '%' ' +- ' num2str(squeeze(Accsem{fig}(subj,draw,:,:))*100)]);
-                        
+                       
                         if draw == 1
-                            CleanBars(Acc{fig}(subj,:,:,:),Accsem{fig}(subj,:,:,:))
+                            disp(['Acc Total for ' Sub.Acc{subj} ' ' Deci.Plot.Behv.Acc.Title{fig} ' ' num2str(squeeze(Acc{fig}(subj,draw,:,:))*100) '%' ' +- ' num2str(squeeze(Accsem{fig}(subj,draw,:,:))*100)]);
+                           
+                           
+                            if  Deci.Plot.Behv.Acc.Dot
+                            k = CleanBars(Acc{fig},Accsem{fig},AccDots{fig});
+                            else
+                            k = CleanBars(Acc{fig}(subj,:,:,:),Accsem{fig}(subj,:,:,:));
+                            end
                             ylim([0 1]);
                             title(['Acc Total for ' Sub.Acc{subj} ': ' Deci.Plot.Behv.Acc.Title{fig} ' '],'Interpreter','none')
                             legend([Deci.Plot.Behv.Acc.Subtitle{fig}])
@@ -658,7 +670,15 @@ end
                     disp(['RT Total for ' Sub.RT{subj} ' ' Deci.Plot.Behv.RT.Subtitle{fig}{draw} ' ' num2str(squeeze(RT{fig}(subj,draw,:,:))) ' +- ' num2str(squeeze(RTsem{fig}(subj,draw,:,:)))])
                     
                     if draw == 1
-                        CleanBars(RT{fig}(subj,:,:,:),RTsem{fig}(subj,:,:,:))
+                        
+                        
+                        if  Deci.Plot.Behv.Acc.Dot
+                            CleanBars(RT{fig}(subj,:,:,:),RTsem{fig}(subj,:,:,:),RTDots{fig})
+                        else
+                            CleanBars(RT{fig}(subj,:,:,:),RTsem{fig}(subj,:,:,:))
+                        end
+                        
+                        
                         title(['RT Total for ' Sub.RT{subj} ': ' Deci.Plot.Behv.RT.Title{fig} ' '],'Interpreter','none')
                         legend([Deci.Plot.Behv.RT.Subtitle{fig}])
                         xticklabels(Sub.RT{subj})

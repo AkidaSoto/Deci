@@ -31,6 +31,13 @@ display(' ')
     for conds = 1:length(Deci.Plot.Math)
         for subj = 1:size(Subjects,1)
             scfg.parameter = info.parameter;
+            
+            if contains(Deci.Plot.Math{conds},'N')
+                pos = find(Deci.Plot.Math{conds} == 'N');
+                Deci.Plot.Math{conds} = replace(Deci.Plot.Math{conds},'N',num2str(length(size(Subjects{subj,1}.powspctrm))+1));
+                
+            end
+            
             scfg.operation = Deci.Plot.Math{conds};
             evalc('MathData{subj} = ft_math(scfg,Subjects{subj,:})');
         end 

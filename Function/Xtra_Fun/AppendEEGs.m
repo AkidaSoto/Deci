@@ -21,6 +21,7 @@ for Each = 1:length(BaseFiles)
     
     Copies = CopyFiles(ismember(CopysBaseName,BaseFiles{Each}));
     
+    if ~isempty(Copies)
     hdr   = ft_read_header([Dir filesep BaseFiles{Each} '.' datatype]);
     event = ft_read_event([Dir filesep BaseFiles{Each} '.' datatype]); 
     dat   = ft_read_data([Dir filesep BaseFiles{Each} '.' datatype]);
@@ -35,7 +36,11 @@ for Each = 1:length(BaseFiles)
     end
    
     ft_write_data([Dir '_new' filesep BaseFiles{Each}],dat,'header',hdr,'dataformat','brainvision_eeg','event',event)
-    
+    else
+       copyfile( [Dir filesep BaseFiles{Each} '.' datatype], [Dir '_new' filesep BaseFiles{Each} '.' datatype]);
+       copyfile( [Dir filesep BaseFiles{Each} '.vhdr' ], [Dir '_new' filesep BaseFiles{Each} '.vhdr']);
+       copyfile( [Dir filesep BaseFiles{Each} '.vmrk'], [Dir '_new' filesep BaseFiles{Each} '.vmrk']);
+    end
 end
 
 end

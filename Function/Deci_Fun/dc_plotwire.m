@@ -61,6 +61,7 @@ if Deci.Plot.Stat.do
     StatData = dc_plotstat(Deci,SegStatdata,info);
 end
 
+
 %% Plot
 
 if Deci.Plot.GrandAverage
@@ -190,21 +191,21 @@ for cond = 1:length(Deci.Plot.Draw)
         plot([0 0], ylim, 'k--','HandleVisibility','off'); % vert. l
         end
         
-%         if Deci.Plot.Stat.do
-%             boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
-%             for bb = 1:length(boxes)
-%                 if ~isempty(boxes)
-%                     boxes(bb).FaceAlpha = .35;
-%                     uistack(boxes(bb),'bottom')
-%                     boxes(bb).HandleVisibility = 'off';
-%                 end
-%             end
-%         end
+        if Deci.Plot.Stat.do
+            boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
+            for bb = 1:length(boxes)
+                if ~isempty(boxes)
+                    boxes(bb).FaceAlpha = .35;
+                    uistack(boxes(bb),'bottom')
+                    boxes(bb).HandleVisibility = 'off';
+                end
+            end
+        end
         
         if max(Deci.Plot.Draw{cond}) <= size(info.trllen,2)
             legend(arrayfun(@(a,b) [ Deci.Plot.Freq.Type ' ' a{1} ' (' num2str(b) ')'] ,Deci.Plot.Subtitle{cond},info.trllen(subj,Deci.Plot.Draw{cond}),'UniformOutput',false));
         else
-            legend([Deci.Plot.Freq.Type ' '  Deci.Plot.Subtitle{cond}]);
+            legend([Deci.Plot.Subtitle{cond}]);
         end
         
         title([Deci.SubjectList{subj} ' ' Deci.Plot.Title{cond}], 'Interpreter', 'none');

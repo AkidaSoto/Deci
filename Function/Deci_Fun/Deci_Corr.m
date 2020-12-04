@@ -56,7 +56,7 @@ for brains = 1:length(params.Brain)
         
 
         behavior = behavior.(Type{1});   
-        parameter = zscore(behavior);
+       
         
         
         time_window = params.window;
@@ -77,14 +77,31 @@ for brains = 1:length(params.Brain)
                 
                 if params.zscorebrain
                    b_time = zscore(b_time); 
+                   parameter = zscore(behavior);
+                else
+                    parameter = behavior;
+                end
+                
+                if ~isequal(size(b_time),size(parameter))
+                    parameter = parameter';
                 end
                 
                 switch params.Brain{brains}
                     case 'Magnitude'
                         
+                        if params.logsig
+                            b_time = logsig(b_time);
+                        end
+                        
+                        params = Exist(params,'type',[]);
+                        if strcmpi(params.type,'spearman')   
+                        [R(1,foi,ti), P(1,foi,ti)] = corr(b_time,parameter,'Type','Spearman');
+                        else
                         [r,p] = corrcoef(b_time,parameter);
                         R(1,foi,ti) = r(1,2);
                         P(1,foi,ti) = p(1,2);
+                        end
+                        
                         
                     case 'Phase'
                         [R(1,foi,ti),P(1,foi,ti)] =  circ_corrcl(b_time, parameter);

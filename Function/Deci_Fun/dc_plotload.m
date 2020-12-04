@@ -9,7 +9,15 @@ for  subject_list = 1:length(Deci.SubjectList)
     for Conditions = 1:length(Deci.Plot.CondTitle)
         for Channel = 1:length(info.Chois)
             
-            load([Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep info.Chois{Channel} '.mat'],info.variable);
+            eval([info.variable '= [];']);
+            
+            if exist([Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep info.Chois{Channel} '.mat']) == 2
+                load([Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep info.Chois{Channel} '.mat'],info.variable);
+            
+            else
+                display(['could not find' [Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep info.Chois{Channel} '.mat']])
+                continue
+            end
             
             evalc(['variable =' info.variable ';']);
             if isfield(variable,'time')
@@ -37,6 +45,10 @@ for  subject_list = 1:length(Deci.SubjectList)
             end
         end
         
+        if isempty(eval(info.variable))
+            continue;
+        end
+            
         if isfield(variable,'trllength')
             info.trllen(subject_list,Conditions) = variable.trllength;
         else

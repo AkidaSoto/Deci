@@ -1,4 +1,4 @@
-function dc_plottopo(Deci,Subjects,info)
+function dc_plotmtopo(Deci,Subjects,info)
 
 
 warning('off','MATLAB:handle_graphics:exceptions:SceneNode');
@@ -138,7 +138,6 @@ if Deci.Plot.Stat.do
     
 end
 
-
 %% Plot
 
 if Deci.Plot.GrandAverage
@@ -156,7 +155,9 @@ if Deci.Plot.GrandAverage
                 
                 tcfg.latency = Deci.Plot.Square.Toi;
                 tcfg.frequency = Deci.Plot.Square.Foi;
-                tcfg.channel = Deci.Plot.Square.Channel;
+                
+                
+                tcfg.channel = dc_getchans(Deci.Plot.Square.Channel);
                 
                 Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
                 
@@ -263,7 +264,7 @@ for cond = 1:length(Deci.Plot.Draw)
         topo(subj)  = figure;
         
         if Deci.Plot.Stat.do
-            dc_pmask(topo)
+            dc_pmask(topo(subj))
         end
         
         for subcond = 1:length(Deci.Plot.Draw{cond})
@@ -332,10 +333,10 @@ for cond = 1:length(Deci.Plot.Draw)
             if length(Deci.Plot.Roi) == 2 && isnumeric(Deci.Plot.Roi)
                 childs(r).CLim = Deci.Plot.Roi;
             elseif strcmp(Deci.Plot.Roi,'maxmin')
-                if ~ isempty(childs(r).Children.UserData)
-                    childs(r).CLim = [min(arrayfun(@(c) min(c.Children.UserData(:)),childs(:))) max(arrayfun(@(c) max(c.Children.UserData(:)),childs(:)))];
+                if ~isempty(childs(r).Children.findobj('Type','Contour').UserData)
+                    childs(r).CLim = [min(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),childs(:))) max(arrayfun(@(c) max(abs(c.Children.findobj('Type','Contour').UserData(:))),childs(:)))];
                 else
-                    childs(r).CLim= minmax([topo(subj).Children.findobj('Type','Axes').CLim]);
+                    childs(r).CLim = [min(minmax([topo(subj).Children.findobj('Type','Axes').CLim])) max(minmax([topo(subj).Children.findobj('Type','Axes').CLim]))];
                 end
             elseif strcmp(Deci.Plot.Roi,'maxabs')
                 if ~isempty(childs(r).Children.findobj('Type','Contour').UserData)
@@ -346,7 +347,7 @@ for cond = 1:length(Deci.Plot.Draw)
             end
         end
         
-         suptitle(Deci.Plot.Title{cond});
+         suptitle([Deci.Plot.Title{cond} ' ' Deci.Plot.Freq.Type]);
     end
     
 end

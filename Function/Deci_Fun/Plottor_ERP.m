@@ -354,7 +354,29 @@ if Deci.Plot.Stat.do
                     allbartdata.dimord = 'rpt_chan_time';
                     [barstat{conds}] = ft_timelockstatistics(Deci.Plot.Stat, allbartdata);
                 end
+            case 'Corr'
+                    
+                for subcond = 1:length(Deci.Plot.Draw{conds})
+                    for subj = 1:size(Subjects,1)
+                        design(1,subj+size(Subjects,1)*[subcond-1]) =  subcond;
+                    end
+                end
                 
+                Deci.Plot.Stat.design = design;
+                Deci.Plot.Stat.statistic = 'ft_statfun_correlationT';
+                
+
+                if Deci.Plot.Topo.do
+                    [topostat{conds}] = ft_timelockstatistics(Deci.Plot.Stat, topotdata{Deci.Plot.Draw{conds}});
+                end
+                
+                if Deci.Plot.Wire.do
+                    [wirestat{conds}] = ft_timelockstatistics(Deci.Plot.Stat, wiretdata{:,Deci.Plot.Draw{conds}});
+                end
+                
+                if Deci.Plot.Bar.do
+                    [barstat{conds}] = ft_timelockstatistics(Deci.Plot.Stat, bartdata{Deci.Plot.Draw{conds}});
+                end
         end
         
     end
