@@ -138,37 +138,6 @@ if Deci.Plot.Stat.do
     
 end
 
-
-if Deci.Whatever
-        load([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{1} filesep 'Acc.mat']);
-        
-    for cond = 1:size(Segdata,2)
-        for chan = 1:size(Segdata{1,cond}.powspctrm,2)
-                for time = 1:size(Segdata{1,cond}.powspctrm,4)
-                    
-                    [r(chan,freq,time),p(chan,freq,time)] = corr(zscore(mean(Segdata{cond}.powspctrm(:,chan,:,time),3)),zscore(Acc{1}),'Type','Spearman');
-                end
-        end
-        
-        for stat = 1:length(Deci.Plot.Draw)
-            inst.stat = r;
-            
-            inst.mask = p < .05; %fdr(p,.05);
-            inst.prob = p;
-            
-            StatData{stat} = inst;
-            
-             StatData{stat}.mask  = permute(StatData{stat}.mask,[1 4 3 2]);
-             StatData{stat}.stat  = permute(StatData{stat}.stat,[1 4 3 2]);
-        end
-        
-    end
-    
-    
-    Deci.Plot.Stat.do = true;
-end
-
-
 %% Plot
 
 if Deci.Plot.GrandAverage

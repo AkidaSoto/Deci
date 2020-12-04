@@ -226,6 +226,11 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 for chan = 1:length(dat.label)
                     ecfg.channel = dat.label(chan);
                     erp = ft_selectdata(ecfg,dat);
+                    
+                    if isfield(Deci.Analysis.ERP, 'filter')
+                    
+                    end
+                        
                     evalc('erp = ft_timelockanalysis([],erp)');
                     erp.lockers = lockers;
                     erp.trllength = size(dat.trialinfo,1);
@@ -462,6 +467,10 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                                conncfg.complex     = 'imag';
                                             else
                                                 conncfg.complex     = 'abs';
+                                            end
+                                            
+                                            if ismember(conntype(conoi),{'psi'})
+                                                conncfg.bandwidth = 1;
                                             end
                                             
                                             if ismember(conntype(conoi),{'powcorr_ortho'})

@@ -246,7 +246,9 @@ fn = fieldnames(stat);
 for i=1:length(fn)
   if numel(stat.(fn{i}))==[prod(datsiz)*size(stat.mask,2)]
     % reformat into the same dimensions as the input data
+    if numel(stat.(fn{i})) > 1
     stat.(fn{i}) = reshape(stat.(fn{i}), [datsiz size(stat.mask,2)]);
+    end
   end
 end
 

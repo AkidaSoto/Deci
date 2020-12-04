@@ -56,7 +56,7 @@ for brains = 1:length(params.Brain)
         
 
         behavior = behavior.(Type{1});   
-        parameter = zscore(behavior);
+       
         
         
         time_window = params.window;
@@ -77,10 +77,21 @@ for brains = 1:length(params.Brain)
                 
                 if params.zscorebrain
                    b_time = zscore(b_time); 
+                   parameter = zscore(behavior);
+                else
+                    parameter = behavior;
+                end
+                
+                if ~isequal(size(b_time),size(parameter))
+                    parameter = parameter';
                 end
                 
                 switch params.Brain{brains}
                     case 'Magnitude'
+                        
+                        if params.logsig
+                            b_time = logsig(b_time);
+                        end
                         
                         params = Exist(params,'type',[]);
                         if strcmpi(params.type,'spearman')   

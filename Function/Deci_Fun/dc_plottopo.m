@@ -87,36 +87,16 @@ end
 
 %% Stats
 
-
-if Deci.Whatever
-        load([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{1} filesep 'Acc.mat']);
+if Deci.Plot.Stat.do
+    Deci.Plot.Stat = Exist(Deci.Plot.Stat,'Corr',[]);
+    Deci.Plot.Stat.Corr  = Exist(Deci.Plot.Stat.Corr,'do',false);
+    
+    if ~Deci.Plot.Stat.Corr.do
+    StatData = dc_plotstat(Deci,SegStatdata,info);
+    else
         
-    for cond = 1:size(Segdata,2)
-        for chan = 1:size(Segdata{1,cond}.powspctrm,2)
-            for freq = 1:size(Segdata{1,cond}.powspctrm,3)
-                    [r(chan,freq),p(chan,freq)] = corr(zscore(Segdata{cond}.powspctrm(:,chan,freq)),Acc{1},'Type','Spearman');
-            end
-        end
-        
-        for stat = 1:length(Deci.Plot.Draw)
-            inst.stat = r;
-            
-            inst.mask = fdr(p,.05);
-            inst.prob = p;
-            
-            StatData{stat} = inst;
-        end
         
     end
-    
-    
-    Deci.Plot.Stat.do = true;
-end
-
-
-
-if Deci.Plot.Stat.do
-    StatData = dc_plotstat(Deci,SegStatdata,info);
 end
 
 
