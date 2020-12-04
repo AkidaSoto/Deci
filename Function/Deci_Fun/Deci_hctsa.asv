@@ -27,7 +27,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     
     dataplaceholder = ft_selectdata(ccfg,data);
     
-for Lock = 1:length(params.Lock)
+for Lock = 1:length(Deci.Analysis.Locks)
             display(' ')
             display(['---Starting Lock #' num2str(Lock) ': ' Deci.Analysis.LocksTitle{Lock} '---'])
             display(' ')
@@ -102,16 +102,25 @@ for Lock = 1:length(params.Lock)
                     acfg.parameter = 'fourierspctrm';
                     acfg.appenddim = 'freq';
                     
-                    Fourier(Cond) = rmfield(ft_appendfreq(acfg,tempfreq{:}),'cfg');
-                    Fourier(Cond).dimord = 'rpt_chan_freq_time';
-                    trllength(Cond) = size(Fourier(Cond).fourierspctrm,1);
+                    Fourier = rmfield(ft_appendfreq(acfg,tempfreq{:}),'cfg');
+                    Fourier.dimord = 'rpt_chan_freq_time';
+                    trllength = size(Fourier.fourierspctrm,1);
                     
                     
                    
                     
                 end
                 
-
+                %Get Freqs out of Fourier here
+                %info.toi = round(variable.time,4) >= info.Tois(1) & round(variable.time,4) <= info.Tois(2)
+                
+                 %Move Hctsa inside here and clear Fourier after you're
+                 %done so that there's isn't memory issues.
+                    
+                 
+                mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'TopFeatures' ])
+                save([Deci.Folder.Analysis filesep 'Extra' filesep 'TopFeatures' filesep Deci.SubjectList{info.subject_list}],'TopFeatures');     
+                clear Fourier
     
                 
 end
@@ -120,30 +129,11 @@ end
 end
 %% Do hctsa
 
-%Fourier(Cond) corresponds to the fourier of each condition
-
 %Deci.Analysis.CondTitle     = {'GG Correct'20 'GG Incorrect'10  'G0 Correct'10 'G0 Incorrect'0 ...
 %                               'N0 Correct'0 'N0 Incorrect'-10 'NN Correct'-10 'NN Incorrect'20};  
 
 
-% Apply the function below to change the complex fourier into total power
-%  abs(Fourier.fourierspctrm).^2;
-
-
-%Get Freqs out of Fourier here
-%info.toi = round(variable.time,4) >= info.Tois(1) & round(variable.time,4) <= info.Tois(2)
-
-%Move Hctsa inside here and clear Fourier after you're
-%done so that there's isn't memory issues.
-
-
-mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'TopFeatures' ])
-save([Deci.Folder.Analysis filesep 'Extra' filesep 'TopFeatures' filesep Deci.SubjectList{info.subject_list}],'TopFeatures');
-
-
-
-%%
-
+%ismember(dataplaceholder{2}.label,{'FCz'})
 allchan_cond2=dataplaceholder{2}.trial;
 [~,size_cond2]=size(allchan_cond2);
 allchan_cond5=dataplaceholder{5}.trial;
