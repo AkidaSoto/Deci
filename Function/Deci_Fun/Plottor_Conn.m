@@ -267,12 +267,12 @@ for ConnList = 1:length(Params.List)
                             
                             for choi = 1:length(uchoi)
                                 chandat = cellfun(@(c) c.(param),bsl_chan(ismember(chancmb(:,1),uchoi{choi})),'UniformOutput',false);
-                                tempdata{choi} = cat(3,chandat{:});
+                                tempbsldata{choi} = cat(3,chandat{:});
                             end
                             clear chandat
                             
                             bsl_cond{subject_list,Conditions} = bsl_chan{1};
-                            bsl_cond{subject_list,Conditions}.(param) = permute(cat(4,tempdata{:}),[4 3 1 2]);
+                            bsl_cond{subject_list,Conditions}.(param) = permute(cat(4,tempbsldata{:}),[4 3 1 2]);
                             bsl_cond{subject_list,Conditions}.labelcmb = chancmb;
                             bsl_cond{subject_list,Conditions}.dimord = ['chanlow_chanhigh_' bsl_cond{subject_list,Conditions}.dimord];
                         else
@@ -331,8 +331,10 @@ for ConnList = 1:length(Params.List)
                     
                 end
             end
-            
+
         end
+        
+         clear bsl_cond
     end
     
     
@@ -811,7 +813,6 @@ for ConnList = 1:length(Params.List)
                 
                 if AllPlots_do{DataType}
                     
-                    if DataType < 8
                         set(0, 'CurrentFigure', AllPlots_fig{DataType}{cond}(subj) )
                         childs = AllPlots_fig{DataType}{cond}(subj).Children.findobj('Type','Axes');
                         
@@ -836,8 +837,6 @@ for ConnList = 1:length(Params.List)
                                 
                             end
                         end
-                        
-                    end
                     
                     suptitle([SubjectList{subj} ' ' Plot.Title{cond} ' ' conntype{conoi}  ]);
                     

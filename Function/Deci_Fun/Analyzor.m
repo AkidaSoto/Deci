@@ -319,7 +319,8 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     if Deci.Analysis.Freq.do
                         freq = freqplaceholder;
                         freq.dimord = 'chan_freq_time';
-                        freq.powspctrm      = permute(abs(mean(freq.fourierspctrm./abs(freq.fourierspctrm),1)),[2 3 4 1]);         % divide by amplitude
+                        N = size(freq.fourierspctrm,1);
+                        freq.powspctrm      = permute(abs(sum(freq.fourierspctrm./abs(freq.fourierspctrm),1))/N,[2 3 4 1]);         % divide by amplitude
                         freq  = rmfield(freq,'fourierspctrm');
                         freq.trllength = trllength;
                         freq.lockers = lockers;
