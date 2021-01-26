@@ -54,27 +54,6 @@ if Deci.Analysis.Laplace
     display('Laplace Transform Applied')
 end
 
-if ~ismember(Deci.Analysis.Channels,{'all','Reinhart-All'})
-    cfg = [];
-    cfg.channel = Deci.Analysis.Channels;
-    evalc('data = ft_selectdata(cfg,data)');
-    display('Channel Selection Applied')
-end
-%% Downsample
-if ~isempty(Deci.Analysis.DownSample)
-    rcfg = struct('resamplefs',Deci.Analysis.DownSample,'detrend','no');
-    evalc('data = ft_resampledata(rcfg,data)');
-    display('Downsampling Applied')
-end
-
-data.locks = locks;
-data.events = events;
-data.trlnum = trlnum;
-data.postart.locks = postart.locks;
-data.postart.events = postart.events;
-data.postart.trlnum = postart.trlnum;
-info.postart = data.postart;
-
 %% HemifieldFlip
 %check to see if postart is pull through selectdata
 if Deci.Analysis.HemifieldFlip.do
@@ -105,6 +84,29 @@ if Deci.Analysis.HemifieldFlip.do
     
     display('HemifieldFlip Applied')
 end
+
+
+if ~ismember(Deci.Analysis.Channels,{'all','Reinhart-All'})
+    cfg = [];
+    cfg.channel = Deci.Analysis.Channels;
+    evalc('data = ft_selectdata(cfg,data)');
+    display('Channel Selection Applied')
+end
+%% Downsample
+if ~isempty(Deci.Analysis.DownSample)
+    rcfg = struct('resamplefs',Deci.Analysis.DownSample,'detrend','no');
+    evalc('data = ft_resampledata(rcfg,data)');
+    display('Downsampling Applied')
+end
+
+data.locks = locks;
+data.events = events;
+data.trlnum = trlnum;
+data.postart.locks = postart.locks;
+data.postart.events = postart.events;
+data.postart.trlnum = postart.trlnum;
+info.postart = data.postart;
+
 
 if Deci.Analysis.Unique.do
     for funs = find(Deci.Analysis.Unique.list)
