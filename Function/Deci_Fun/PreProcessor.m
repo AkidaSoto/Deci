@@ -201,6 +201,11 @@ else
     postart.trlnum = trlnum;
 end
 
+if Deci.PP.ShowData
+    cfg.viewmode = 'vertical';
+    evalc('artf = ft_databrowser(cfg,data)');
+end
+
 %% ICA
 
 display(' ')

@@ -245,7 +245,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             
             %% Do Freq Analyses
             
-            if Deci.Analysis.Freq.do || Deci.Analysis.Connectivity.do || Deci.Analysis.Freq.Extra.do
+            if Deci.Analysis.Freq.do || Deci.Analysis.Connectivity.do || Deci.Analysis.Freq.Extra.do || Deci.Analysis.Source.do
                 
                 if ~strcmp(Deci.Analysis.Freq.method,'hilbert')
                     fcfg = Deci.Analysis.Freq;

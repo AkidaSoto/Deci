@@ -152,7 +152,7 @@ for subject_list = 1:length(Deci.SubjectList)
             
             postart.locks = postart.locks(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)),:);
             postart.events = postart.events(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)),:);
-            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(data.trlnum,datacomp_rej.saminfo)));
+            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)));
             %
             %             cfg = [];
             %             cfg.trials = postart.trlnum;
