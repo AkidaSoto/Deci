@@ -28,14 +28,24 @@ if ~isempty(varargin)
         errorbar(x, data(:,i), varargin{1}(:,i), 'k', 'linestyle', 'none');
         end
         
-        if length(varargin) == 2
-        randylim = (2*1-1) * groupwidth / (2*nbars);
-        rander = rand([length(varargin{2}(:,i)) 1])-.5;
-        randy =  rander* [randylim];
-        
-        scatter(x*ones([size(varargin{2},1) 1])+randy, varargin{2}(:,i),'k')
-            
+        if length(varargin) >= 2
+            if ~isempty(varargin{2})
+                randylim = (2*1-1) * groupwidth / (2*nbars);
+                rander = rand([length(varargin{2}(:,i)) 1])-.5;
+                randy =  rander* [randylim];
+                
+                scatter(x*ones([size(varargin{2},1) 1])+randy, varargin{2}(:,i),'k')
+            end
         end
+        
+        if length(varargin) >= 3
+             if ~isempty(varargin{3})
+                 if varargin{3}(i) == 1
+                 scatter(x,data(i)*1.1,'k*')
+                 end
+             end
+        end
+        
     end
 end
 

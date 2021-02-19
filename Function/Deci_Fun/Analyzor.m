@@ -54,27 +54,6 @@ if Deci.Analysis.Laplace
     display('Laplace Transform Applied')
 end
 
-if ~ismember(Deci.Analysis.Channels,{'all','Reinhart-All'})
-    cfg = [];
-    cfg.channel = Deci.Analysis.Channels;
-    evalc('data = ft_selectdata(cfg,data)');
-    display('Channel Selection Applied')
-end
-%% Downsample
-if ~isempty(Deci.Analysis.DownSample)
-    rcfg = struct('resamplefs',Deci.Analysis.DownSample,'detrend','no');
-    evalc('data = ft_resampledata(rcfg,data)');
-    display('Downsampling Applied')
-end
-
-data.locks = locks;
-data.events = events;
-data.trlnum = trlnum;
-data.postart.locks = postart.locks;
-data.postart.events = postart.events;
-data.postart.trlnum = postart.trlnum;
-info.postart = data.postart;
-
 %% HemifieldFlip
 %check to see if postart is pull through selectdata
 if Deci.Analysis.HemifieldFlip.do
@@ -105,6 +84,29 @@ if Deci.Analysis.HemifieldFlip.do
     
     display('HemifieldFlip Applied')
 end
+
+
+if ~ismember(Deci.Analysis.Channels,{'all','Reinhart-All'})
+    cfg = [];
+    cfg.channel = Deci.Analysis.Channels;
+    evalc('data = ft_selectdata(cfg,data)');
+    display('Channel Selection Applied')
+end
+%% Downsample
+if ~isempty(Deci.Analysis.DownSample)
+    rcfg = struct('resamplefs',Deci.Analysis.DownSample,'detrend','no');
+    evalc('data = ft_resampledata(rcfg,data)');
+    display('Downsampling Applied')
+end
+
+data.locks = locks;
+data.events = events;
+data.trlnum = trlnum;
+data.postart.locks = postart.locks;
+data.postart.events = postart.events;
+data.postart.trlnum = postart.trlnum;
+info.postart = data.postart;
+
 
 if Deci.Analysis.Unique.do
     for funs = find(Deci.Analysis.Unique.list)
@@ -226,6 +228,11 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 for chan = 1:length(dat.label)
                     ecfg.channel = dat.label(chan);
                     erp = ft_selectdata(ecfg,dat);
+                    
+                    if isfield(Deci.Analysis.ERP, 'filter')
+                    
+                    end
+                        
                     evalc('erp = ft_timelockanalysis([],erp)');
                     erp.lockers = lockers;
                     erp.trllength = size(dat.trialinfo,1);
@@ -238,7 +245,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             
             %% Do Freq Analyses
             
-            if Deci.Analysis.Freq.do || Deci.Analysis.Connectivity.do || Deci.Analysis.Freq.Extra.do
+            if Deci.Analysis.Freq.do || Deci.Analysis.Connectivity.do || Deci.Analysis.Freq.Extra.do || Deci.Analysis.Source.do
                 
                 if ~strcmp(Deci.Analysis.Freq.method,'hilbert')
                     fcfg = Deci.Analysis.Freq;
@@ -314,7 +321,8 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     if Deci.Analysis.Freq.do
                         freq = freqplaceholder;
                         freq.dimord = 'chan_freq_time';
-                        freq.powspctrm      = permute(abs(mean(freq.fourierspctrm./abs(freq.fourierspctrm),1)),[2 3 4 1]);         % divide by amplitude
+                        N = size(freq.fourierspctrm,1);
+                        freq.powspctrm      = permute(abs(sum(freq.fourierspctrm./abs(freq.fourierspctrm),1))/N,[2 3 4 1]);         % divide by amplitude
                         freq  = rmfield(freq,'fourierspctrm');
                         freq.trllength = trllength;
                         freq.lockers = lockers;
@@ -462,6 +470,10 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                                conncfg.complex     = 'imag';
                                             else
                                                 conncfg.complex     = 'abs';
+                                            end
+                                            
+                                            if ismember(conntype(conoi),{'psi'})
+                                                conncfg.bandwidth = 1;
                                             end
                                             
                                             if ismember(conntype(conoi),{'powcorr_ortho'})
