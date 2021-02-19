@@ -201,6 +201,8 @@ else
     postart.trlnum = trlnum;
 end
 
+Deci.PP = Exist(Deci.PP,'ShowData',false);
+
 if Deci.PP.ShowData
     cfg.viewmode = 'vertical';
     evalc('artf = ft_databrowser(cfg,data)');

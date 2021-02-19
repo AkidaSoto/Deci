@@ -80,7 +80,7 @@ for  subject_list = 1:length(Deci.SubjectList)
         if isfield(Deci.Plot.ERP,'PP')
             ppcfg = Deci.Plot.ERP.PP;
         
-           Subjects{subject_list,Conditions} = ft_preprocessing(ppcfg, Subjects{subject_list,Conditions});
+             Subjects{subject_list,Conditions} = ft_pre
             
         end
     end

@@ -217,11 +217,24 @@ for cond = 1:length(Deci.Plot.Draw)
             subtraction.pow = (subtraction.pow - SourceData{subj,Deci.Plot.Draw{cond}(1)}.pow)./ subtraction.pow;
             
             if Deci.Plot.GrandAverage && s1
+                
+                try
                 subtraction.pow(~Sourcestat{cond}.prob.mask) = nan;
                 
                 if ~any(Sourcestat{cond}.prob.mask)
-                   continue 
+                    continue
                 end
+                
+                catch
+                subtraction.pow(~Sourcestat{cond}.mask) = nan;
+                   
+                if ~any(Sourcestat{cond}.mask)
+                    continue
+                end
+                
+                end
+                
+
             end
             source_diff_int  = ft_sourceinterpolate(cfg, subtraction, mrirs);
             
@@ -256,11 +269,23 @@ for cond = 1:length(Deci.Plot.Draw)
             plotdata = SourceData{subj,Deci.Plot.Draw{cond}(subcond)};
             
             if Deci.Plot.GrandAverage && s1
-                plotdata.pow(~Sourcestat{cond}.prob.mask) = nan;
                 
-                if ~any(Sourcestat{cond}.prob.mask)
-                    continue
+                try
+                    plotdata.pow(~Sourcestat{cond}.prob.mask) = nan;
+                    
+                    if ~any(Sourcestat{cond}.prob.mask)
+                        continue
+                    end
+                    
+                catch
+                     plotdata.pow(~Sourcestat{cond}.mask) = nan;
+                     
+                     if ~any(Sourcestat{cond}.mask)
+                         continue
+                     end
+                     
                 end
+                
             end
             source_diff_int  = ft_sourceinterpolate(cfg, plotdata, mrirs);
             

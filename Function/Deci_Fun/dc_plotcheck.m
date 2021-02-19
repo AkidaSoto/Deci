@@ -10,6 +10,10 @@ for Dim = 1:length(Dims)
             Deci.Plot.(Dims{Dim}).Channel = dc_getchans('all');
         end
         
+        if isequal(Deci.Plot.(Dims{Dim}).Channel,'RNET')
+            Deci.Plot.(Dims{Dim}).Channel = dc_getchans('RNET');
+        end
+        
         Tois{Dim} = Deci.Plot.(Dims{Dim}).Toi;
         Fois{Dim} = Deci.Plot.(Dims{Dim}).Foi;
         Chois{Dim} = Deci.Plot.(Dims{Dim}).Channel;
