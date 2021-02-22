@@ -50,23 +50,31 @@ for  subject_list = 1:length(Deci.SubjectList)
     for Conditions = 1:length(Deci.Plot.CondTitle)
         for Channel = 1:length(Chois)
             
-            load([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'erp');
+            load([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'raw');
             
-            toi = round(erp.time,4) >= Tois(1) & round(erp.time,4) <= Tois(2);
+            toi = round(raw.time{1},4) >= Tois(1) & round(raw.time{1},4) <= Tois(2);
             
-            Chans{Channel} = erp;
+            Chans{Channel} = raw;
             Chans{Channel}.label = Chois(Channel);
+            
+            if isfield(Deci.Plot.ERP,'PP')
+                ppcfg = Deci.Plot.ERP.PP;
+                
+                 Chans{Channel} = ft_preprocessing(ppcfg,  Chans{Channel});
+                
+            end
+            
         end
         
-        if isfield(erp,'trllength')
-            trllen(subject_list,Conditions) = erp.trllength;
+        if isfield(raw,'trllength')
+            trllen(subject_list,Conditions) = raw.trllength;
         else
             trllen(subject_list,Conditions) = nan;
         end
         
-        if isfield(erp,'lockers')
+        if isfield(raw,'lockers')
             LockNum = Deci.Analysis.Locks(ismember(Deci.Analysis.LocksTitle,Deci.Plot.Lock));
-            lockers(subject_list,Conditions,:) = erp.lockers - erp.lockers(LockNum);
+            lockers(subject_list,Conditions,:) = raw.lockers - raw.lockers(LockNum);
         else
             lockers(subject_list,Conditions,:) = nan;
         end
@@ -77,12 +85,7 @@ for  subject_list = 1:length(Deci.SubjectList)
         Subjects{subject_list,Conditions} = rmfield(ft_appendtimelock(acfg,Chans{:}),'cfg');
         Subjects{subject_list,Conditions}.dimord = 'chan_time';
         
-        if isfield(Deci.Plot.ERP,'PP')
-            ppcfg = Deci.Plot.ERP.PP;
-        
-             Subjects{subject_list,Conditions} = ft_pre
-            
-        end
+
     end
     clear Chans;
 end
@@ -103,13 +106,13 @@ for Conditions = 1:size(Subjects,2)
             
             for Channel = 1:length(Chois)
                 
-                load([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep Chois{Channel} '.mat'],'erp');
+                load([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep Chois{Channel} '.mat'],'raw');
                 
-                BslChan{Channel} = erp;
+                BslChan{Channel} = raw;
                 BslChan{Channel}.label = Chois(Channel);
             end
             
-            acfg.parameter = 'avg';
+            %acfg.parameter = 'avg';
             acfg.appenddim = 'chan';
             Bsl{subject_list,Conditions} = rmfield(ft_appendtimelock(acfg,BslChan{:}),'cfg');
             Bsl{subject_list,Conditions}.dimord = 'chan_time';
@@ -119,13 +122,14 @@ for Conditions = 1:size(Subjects,2)
         
         toi2 = Bsl{subject_list,Conditions}.time >= round(Deci.Plot.Bsl(1),4) & Bsl{subject_list,Conditions}.time <= round(Deci.Plot.Bsl(2),4);
         
-        Bsl{subject_list,Conditions}.avg = nanmean(Bsl{subject_list,Conditions}.avg(:,toi2),2);
-        Bsl{subject_list,Conditions}.avg = repmat(Bsl{subject_list,Conditions}.avg,[1 size(Subjects{subject_list,Conditions}.avg,3)]);
+        Bsl{subject_list,Conditions}.trial = nanmean(Bsl{subject_list,Conditions}.trial(:,:,toi2),3);
+        Bsl{subject_list,Conditions}.trial = repmat(Bsl{subject_list,Conditions}.trial,[1 1 size(Subjects{subject_list,Conditions}.trial,3)]);
         
-        Subjects{subject_list,Conditions}.avg =  Subjects{subject_list,Conditions}.avg - Bsl{subject_list,Conditions}.avg;
+        Subjects{subject_list,Conditions}.trial =  Subjects{subject_list,Conditions}.trial - Bsl{subject_list,Conditions}.trial;
         Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(toi);
-        Subjects{subject_list,Conditions}.avg = Subjects{subject_list,Conditions}.avg(:,toi);
-        
+        Subjects{subject_list,Conditions}.trial = Subjects{subject_list,Conditions}.trial(:,:,toi);
+       
+        Subjects{subject_list,Conditions}.avg = permute(mean(Subjects{subject_list,Conditions}.trial,1),[2 3 1]);
     end
 end
 
@@ -504,130 +508,130 @@ for cond = 1:length(Deci.Plot.Draw)
             
         end
         
-    end
-    
-    if Deci.Plot.Wire.do
-        set(0, 'CurrentFigure', wire(subj) )
-        wire(subj).Visible = 'on';
-        
-        pcfg = cfg;
-        pcfg.clim = 'maxmin';
         
         
-        %pcfg.ylim = ylim;
-        pcfg.graphcolor = lines;
-        pcfg.linewidth = 1;
-        ft_singleplotER(pcfg,wiredata{subj,Deci.Plot.Draw{cond}});
-        set(gca, 'YDir', 'reverse');
-        
-        if Deci.Plot.GrandAverage
-            arrayfun(@(c) uistack(c,'top'),b);
-            clear b
-        end
-        
-        axis tight
-        hold on
-        plot([wiredata{cond}.time(1), wiredata{cond}.time(end)], [0 0], 'k--') % hor. line
-        plot([0 0], ylim, 'k--') % vert. l
-        
-        if Deci.Plot.Stat.do
-            boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
-            for bb = 1:length(boxes)
-                if ~isempty(boxes)
-                    boxes(bb).YData(boxes(bb).YData == min(boxes(bb).YData)) = min(ylim);
-                    boxes(bb).YData(boxes(bb).YData == max(boxes(bb).YData)) = max(ylim);
-                    
-                    boxes(bb).FaceAlpha = .35;
-                    uistack(boxes(bb),'bottom')
-                    boxes(bb).HandleVisibility = 'off';
-                end
-            end
-        end
-        
-        if max(Deci.Plot.Draw{cond}) <= size(trllen,2)
-            legend(arrayfun(@(a,b) [a{1} ' (' num2str(b) ')'] ,Deci.Plot.Subtitle{cond},trllen(subj,Deci.Plot.Draw{cond}),'UniformOutput',false));
-        else
-            legend([ Deci.Plot.Subtitle{cond}]);
-        end
-        
-        title([Deci.SubjectList{subj} ' ' Deci.Plot.Title{cond}], 'Interpreter', 'none');
-        set(legend, 'Interpreter', 'none')
-        xlim([wiredata{cond}.time(1) wiredata{cond}.time(end)])
-        xlabel('Time');
-        
-        
-        for subcond = 1:length(Deci.Plot.Draw{cond})
-            if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
-                xlims = xlim;
-                ylims = ylim;
-                
-                for locks = 1:length([lockers(subj,Deci.Plot.Draw{cond}(subcond),:)])
-                    hold on
-                    
-                    locktime = [lockers(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
-                    
-                    
-                    if locktime > xlims(1) && locktime < xlims(2)
-                        plotlock = plot([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
-                        plotlock.Color(4) = .2;
-                        
-                        if Deci.Plot.GrandAverage
-                            lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
-                            
-                            
-                            if [locktime - lockstd] < xlims(1)
-                                lockpstd(1) = xlims(1);
-                            else
-                                lockpstd(1) = [locktime - lockstd];
-                            end
-                            
-                            if [locktime + lockstd] > xlims(2)
-                                lockpstd(2) = xlims(2);
-                            else
-                                lockpstd(2) = [locktime + lockstd];
-                            end
-                            
-                            lockpgon = polyshape([lockpstd fliplr(lockpstd)],sort([ylims ylims]),'Simplify', false);
-                            lockb = plot(lockpgon,'HandleVisibility','off');
-                            hold on
-                            lockb.EdgeAlpha = 0;
-                            lockb.FaceAlpha = .15;
-                            lockb.FaceColor = plotlock.Color;
-                            
-                            arrayfun(@(c) uistack(c,'top'),lockb);
-                            clear lockb
-                            
-                        end
-                    end
-                    ylim(ylims)
-                end
-            end
-        end
-        
-    end
-    
-    if Deci.Plot.Bar.do
-        barfig(subj)  = figure;
-        set(0, 'CurrentFigure', barfig(subj) )
-        barfig(subj).Visible = 'on';
-        
-        CleanBars(mean(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.avg,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1), ...
-            nanstd(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.avg,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),[],1) ...
-            /sqrt(size(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.avg,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1)));
-        
-        l = legend(Deci.Plot.Subtitle{cond});
-        title([Deci.SubjectList{subj} ' ' Deci.Plot.Title{cond} ' Wire'])
-        set(l, 'Interpreter', 'none')
-        if Deci.Plot.Stat.do
-            hold on
+        if Deci.Plot.Wire.do
+            set(0, 'CurrentFigure', wire(subj) )
+            wire(subj).Visible = 'on';
             
-            if barstat{cond}.prob < Deci.Plot.Stat.alpha
-                plot([.75 1.25],[max(ylim) max(ylim)]*.90, '-k', 'LineWidth',2);
-                plot([1],[max(ylim)]*.95, '*k');
+            pcfg = cfg;
+            pcfg.clim = 'maxmin';
+            
+            
+            %pcfg.ylim = ylim;
+            pcfg.graphcolor = lines;
+            pcfg.linewidth = 1;
+            ft_singleplotER(pcfg,wiredata{subj,Deci.Plot.Draw{cond}});
+            set(gca, 'YDir', 'reverse');
+            
+            if Deci.Plot.GrandAverage
+                arrayfun(@(c) uistack(c,'top'),b);
+                clear b
+            end
+            
+            axis tight
+            hold on
+            plot([wiredata{cond}.time(1), wiredata{cond}.time(end)], [0 0], 'k--') % hor. line
+            plot([0 0], ylim, 'k--') % vert. l
+            
+            if Deci.Plot.Stat.do
+                boxes = wire(subj).Children(2).Children.findobj('Type','Patch');
+                for bb = 1:length(boxes)
+                    if ~isempty(boxes)
+                        boxes(bb).YData(boxes(bb).YData == min(boxes(bb).YData)) = min(ylim);
+                        boxes(bb).YData(boxes(bb).YData == max(boxes(bb).YData)) = max(ylim);
+                        
+                        boxes(bb).FaceAlpha = .35;
+                        uistack(boxes(bb),'bottom')
+                        boxes(bb).HandleVisibility = 'off';
+                    end
+                end
+            end
+            
+            if max(Deci.Plot.Draw{cond}) <= size(trllen,2)
+                legend(arrayfun(@(a,b) [a{1} ' (' num2str(b) ')'] ,Deci.Plot.Subtitle{cond},trllen(subj,Deci.Plot.Draw{cond}),'UniformOutput',false));
+            else
+                legend([ Deci.Plot.Subtitle{cond}]);
+            end
+            
+            title([Deci.SubjectList{subj} ' ' Deci.Plot.Title{cond}], 'Interpreter', 'none');
+            set(legend, 'Interpreter', 'none')
+            xlim([wiredata{cond}.time(1) wiredata{cond}.time(end)])
+            xlabel('Time');
+            
+            
+            for subcond = 1:length(Deci.Plot.Draw{cond})
+                if Deci.Plot.Draw{cond}(subcond) <= size(lockers,2)
+                    xlims = xlim;
+                    ylims = ylim;
+                    
+                    for locks = 1:length([lockers(subj,Deci.Plot.Draw{cond}(subcond),:)])
+                        hold on
+                        
+                        locktime = [lockers(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                        
+                        
+                        if locktime > xlims(1) && locktime < xlims(2)
+                            plotlock = plot([locktime locktime], ylims,'LineWidth',2,'Color','k','LineStyle','--','HandleVisibility','off');
+                            plotlock.Color(4) = .2;
+                            
+                            if Deci.Plot.GrandAverage
+                                lockstd = [lockersstd(subj,Deci.Plot.Draw{cond}(subcond),locks)/1000];
+                                
+                                
+                                if [locktime - lockstd] < xlims(1)
+                                    lockpstd(1) = xlims(1);
+                                else
+                                    lockpstd(1) = [locktime - lockstd];
+                                end
+                                
+                                if [locktime + lockstd] > xlims(2)
+                                    lockpstd(2) = xlims(2);
+                                else
+                                    lockpstd(2) = [locktime + lockstd];
+                                end
+                                
+                                lockpgon = polyshape([lockpstd fliplr(lockpstd)],sort([ylims ylims]),'Simplify', false);
+                                lockb = plot(lockpgon,'HandleVisibility','off');
+                                hold on
+                                lockb.EdgeAlpha = 0;
+                                lockb.FaceAlpha = .15;
+                                lockb.FaceColor = plotlock.Color;
+                                
+                                arrayfun(@(c) uistack(c,'top'),lockb);
+                                clear lockb
+                                
+                            end
+                        end
+                        ylim(ylims)
+                    end
+                end
+            end
+            
+        end
+        
+        if Deci.Plot.Bar.do
+            barfig(subj)  = figure;
+            set(0, 'CurrentFigure', barfig(subj) )
+            barfig(subj).Visible = 'on';
+            
+            CleanBars(mean(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.avg,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1), ...
+                nanstd(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.avg,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),[],1) ...
+                /sqrt(size(cell2mat(arrayfun(@(c) nanmean(nanmean(nanmean(c.avg,2),3),4),[bardata{subj,Deci.Plot.Draw{cond}}],'UniformOutput',false)),1)));
+            
+            l = legend(Deci.Plot.Subtitle{cond});
+            title([Deci.SubjectList{subj} ' ' Deci.Plot.Title{cond} ' Wire'])
+            set(l, 'Interpreter', 'none')
+            if Deci.Plot.Stat.do
+                hold on
+                
+                if barstat{cond}.prob < Deci.Plot.Stat.alpha
+                    plot([.75 1.25],[max(ylim) max(ylim)]*.90, '-k', 'LineWidth',2);
+                    plot([1],[max(ylim)]*.95, '*k');
+                end
             end
         end
     end
-    
 end
 
 for subj = 1:size(ErpData,1)
@@ -662,6 +666,9 @@ for subj = 1:size(ErpData,1)
             end
             
         end
+        
+
+        
     end
     
 end

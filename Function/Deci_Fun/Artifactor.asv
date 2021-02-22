@@ -39,16 +39,14 @@ for subject_list = 1:length(Deci.SubjectList)
             display(' ')
             feedback = 'no';
             
-            tempcfg = cfg;
-            
             cfg.feedback = feedback;
             cfg.demean     = 'no';
             
-            %cfg.detrend = 'yes';
-            bcfg.bpfreq = Deci.ICA.bpfreq;
-            bcfg.bpfilter = 'yes';
+            cfg.detrend = 'yes';
+            cfg.bpfreq = Deci.ICA.bpfreq;
+            cfg.bpfilter = 'yes';
             
-            tempdata = ft_preprocessing(bcfg,data);
+            tempdata = ft_preprocessing(cfg,data);
             
             evalc('data_ica = ft_componentanalysis(cfg, tempdata)');
             data_ica     = rmfield(data_ica,'cfg');
@@ -63,8 +61,8 @@ for subject_list = 1:length(Deci.SubjectList)
             cfg.component = [];
             
             comps = [data_ica.trial{:}];
-            all = [tempdata.trial{:}];
-            eyechan = all(ismember(tempdata.label,Deci.ICA.eog),:);
+            all = [data.trial{:}];
+            eyechan = all(ismember(data.label,Deci.ICA.eog),:);
             
             for eye = 1:size(eyechan,1)
                 for comp = 1:size(comps,1)
@@ -76,7 +74,7 @@ for subject_list = 1:length(Deci.SubjectList)
                 ecomponent{eye} = find(abs(corr(eye,:,1)) >= Deci.ICA.cutoff);
             end
             
-            refchan = all(ismember(tempdata.label,{'TP9' 'TP10'}),:);
+            refchan = all(ismember(data.label,{'TP9' 'TP10'}),:);
             
             for ref = 1:size(refchan,1)
                 for comp = 1:size(comps,1)
@@ -146,11 +144,9 @@ for subject_list = 1:length(Deci.SubjectList)
                 cfg.component = unique([component{:}])';
             end
             
-            evalc('data = ft_componentanalysis(tempcfg, data)');
-            
             disp(['Rejecting components: ' num2str(cfg.component')]);
             cfg.demean = 'yes';
-            evalc('data = ft_rejectcomponent(cfg, data)');
+            evalc('data = ft_rejectcomponent(cfg, data_ica)');
         end
         
         %% Interpolation
@@ -239,10 +235,7 @@ for subject_list = 1:length(Deci.SubjectList)
         tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)];
         cfg.channel = 'all';
         
-         bcfg.bpfreq = Deci.ICA.bpfreq;
-         bcfg.bpfilter = 'yes';
-        
-        evalc('data_rej = ft_rejectvisual(cfg,ft_preprocessing(bcfg,ft_redefinetrial(tcfg,data)))');
+        evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data))');
         
         
         if Deci.Art.ShowArt

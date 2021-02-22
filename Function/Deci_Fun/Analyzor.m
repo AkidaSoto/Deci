@@ -227,18 +227,18 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 
                 for chan = 1:length(dat.label)
                     ecfg.channel = dat.label(chan);
-                    erp = ft_selectdata(ecfg,dat);
+                    raw = ft_selectdata(ecfg,dat);
                     
-                    if isfield(Deci.Analysis.ERP, 'filter')
-                    
-                    end
-                        
-                    evalc('erp = ft_timelockanalysis([],erp)');
-                    erp.lockers = lockers;
-                    erp.trllength = size(dat.trialinfo,1);
+%                     if isfield(Deci.Analysis.ERP, 'PP')
+%                     
+%                     end
+%                         
+%                     evalc('erp = ft_timelockanalysis([],raw)');
+%                     erp.lockers = lockers;
+%                     erp.trllength = size(dat.trialinfo,1);
                     
                     mkdir([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
-                    save([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep dat.label{chan}],'erp');
+                    save([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep dat.label{chan}],'raw');
                 end
                 clear erp
             end
