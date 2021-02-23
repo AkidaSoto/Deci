@@ -187,7 +187,7 @@ for subject_list = 1:length(Deci.SubjectList)
             Imp_cfg.channel  = 'all';
             Imp_cfg.implicitref = Imp{1};
             Imp_cfg.refchannel = Imp;
-            Imp_cfg.feedback = feedback;
+            %Imp_cfg.feedback = feedback;
             evalc('data = ft_preprocessing(Imp_cfg,data)');
             disp('---Implicit Rereference applied---');
         end
