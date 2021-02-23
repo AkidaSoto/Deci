@@ -50,7 +50,7 @@ for  subject_list = 1:length(Deci.SubjectList)
     for Conditions = 1:length(Deci.Plot.CondTitle)
         for Channel = 1:length(Chois)
             
-            load([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'raw');
+            load([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'raw');
             
         
             
