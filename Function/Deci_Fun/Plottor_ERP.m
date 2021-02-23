@@ -52,7 +52,7 @@ for  subject_list = 1:length(Deci.SubjectList)
             
             load([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'raw');
             
-            toi = round(raw.time{1},4) >= Tois(1) & round(raw.time{1},4) <= Tois(2);
+        
             
             Chans{Channel} = raw;
             Chans{Channel}.label = Chois(Channel);
@@ -120,6 +120,7 @@ for Conditions = 1:size(Subjects,2)
             Bsl{subject_list,Conditions} =Subjects{subject_list,Conditions};
         end
         
+        toi = round(Bsl{subject_list,Conditions}.time,4) >= Tois(1) & round(Bsl{subject_list,Conditions}.time,4) <= Tois(2);
         toi2 = Bsl{subject_list,Conditions}.time >= round(Deci.Plot.Bsl(1),4) & Bsl{subject_list,Conditions}.time <= round(Deci.Plot.Bsl(2),4);
         
         Bsl{subject_list,Conditions}.trial = nanmean(Bsl{subject_list,Conditions}.trial(:,:,toi2),3);

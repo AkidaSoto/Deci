@@ -158,7 +158,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             display(['ignoring ' num2str(length(find(info.nanlocks))) ' trials with missing locks'])
         end
     else
-        info.nanlocks = logical(size(info.alltrials));
+        info.nanlocks = ~logical(1:length(info.alltrials));
     end
     
     %% Reject Arts
@@ -228,6 +228,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 for chan = 1:length(dat.label)
                     ecfg.channel = dat.label(chan);
                     raw = ft_selectdata(ecfg,dat);
+                    raw.lockers = info.lockers;
                     
 %                     if isfield(Deci.Analysis.ERP, 'PP')
 %                     

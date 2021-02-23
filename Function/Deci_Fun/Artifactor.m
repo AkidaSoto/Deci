@@ -276,17 +276,38 @@ for subject_list = 1:length(Deci.SubjectList)
             RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] < Deci.Art.RT.minlength;
             RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
             
+          
             postart.locks = postart.locks(ismember(postart.trlnum,trlnum(~RT_Art)),:);
             postart.events = postart.events(ismember(postart.trlnum,trlnum(~RT_Art)),:);
             postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(~RT_Art)));
             
+          
             display(' ')
             disp('---Reaction Time Rejection Applied---')
-            disp(['Rejected ' num2str(length(find(RT_Art))) ' trials'])
+            disp(['Rejected ' num2str(length(find(RT_Art))) ' min length trials'])
             disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
             disp(['Remaining ' num2str([length(postart.trlnum)/length(trlnum)]*100) '% trials'])
             display(' ')
             pause(.05);
+            
+            
+            RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] > Deci.Art.RT.maxlength;
+            RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
+            
+          
+            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(~RT_Art)),:);
+            postart.events = postart.events(ismember(postart.trlnum,trlnum(~RT_Art)),:);
+            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(~RT_Art)));
+            
+          
+            display(' ')
+            disp('---Reaction Time Rejection Applied---')
+            disp(['Rejected ' num2str(length(find(RT_Art))) ' max length trials'])
+            disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
+            disp(['Remaining ' num2str([length(postart.trlnum)/length(trlnum)]*100) '% trials'])
+            display(' ')
+            pause(.05);    
+        
         end
         
         
