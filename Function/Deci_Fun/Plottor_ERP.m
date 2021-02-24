@@ -64,6 +64,7 @@ for  subject_list = 1:length(Deci.SubjectList)
                 
             end
             
+            clear raw;
         end
         
         if isfield(raw,'trllength')
