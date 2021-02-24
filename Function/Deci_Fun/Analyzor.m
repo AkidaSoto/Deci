@@ -239,9 +239,9 @@ for Cond = 1:length(Deci.Analysis.Conditions)
 %                     erp.trllength = size(dat.trialinfo,1);
                     
                    
-                    save([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep dat.label{chan}],'raw');
+                    save([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep dat.label{chan}],'raw','-v7.3');
                 end
-                clear erp
+                clear raw
             end
             
             %% Do Freq Analyses
