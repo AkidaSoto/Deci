@@ -174,6 +174,8 @@ if Deci.PP.Manual_Trial_Rejection
     cfg =[];
     cfg.method = 'trial';
     cfg.alim = 100;
+    cfg.preproc.detrend = 'yes';
+    cfg.preproc.demean = 'yes';
     tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)]; 
     evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data))');
     

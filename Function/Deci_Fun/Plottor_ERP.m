@@ -67,15 +67,15 @@ for  subject_list = 1:length(Deci.SubjectList)
             clear raw;
         end
         
-        if isfield(raw,'trllength')
-            trllen(subject_list,Conditions) = raw.trllength;
+        if isfield(Chans{Channel},'trllength')
+            trllen(subject_list,Conditions) = Chans{Channel}.trllength;
         else
             trllen(subject_list,Conditions) = nan;
         end
         
-        if isfield(raw,'lockers')
+        if isfield(Chans{Channel},'lockers')
             LockNum = Deci.Analysis.Locks(ismember(Deci.Analysis.LocksTitle,Deci.Plot.Lock));
-            lockers(subject_list,Conditions,:) = raw.lockers - raw.lockers(LockNum);
+            lockers(subject_list,Conditions,:) = Chans{Channel}.lockers - Chans{Channel}.lockers(LockNum);
         else
             lockers(subject_list,Conditions,:) = nan;
         end

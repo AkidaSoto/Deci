@@ -31,6 +31,15 @@ for subject_list = 1:length(Deci.SubjectList)
         postart.events = data.postart.events;
         postart.trlnum = data.postart.trlnum;
         
+        
+        %cfg.detrend = 'yes';
+        bcfg.bpfreq = Deci.ICA.bpfreq;
+        bcfg.bpfilter = 'yes';
+        bcfg.detrend = 'yes';
+        bcfg.demean = 'yes';
+        
+        tempdata = ft_preprocessing(bcfg,data);
+        
         %% Do ICA
         
         if Deci.ICA.do
@@ -44,11 +53,7 @@ for subject_list = 1:length(Deci.SubjectList)
             cfg.feedback = feedback;
             cfg.demean     = 'no';
             
-            %cfg.detrend = 'yes';
-            bcfg.bpfreq = Deci.ICA.bpfreq;
-            bcfg.bpfilter = 'yes';
-            
-            tempdata = ft_preprocessing(bcfg,data);
+
             
             evalc('data_ica = ft_componentanalysis(cfg, tempdata)');
             data_ica     = rmfield(data_ica,'cfg');
@@ -192,7 +197,7 @@ for subject_list = 1:length(Deci.SubjectList)
             disp('---Implicit Rereference applied---');
         end
         
-        
+        tempdata = ft_preprocessing(bcfg,data);
         %% Manual Trial Rejection
         
         
@@ -203,9 +208,9 @@ for subject_list = 1:length(Deci.SubjectList)
             tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)];
             
             cfg.viewmode = 'vertical';
-            evalc('artf = ft_databrowser(cfg,ft_redefinetrial(tcfg,data))');
+            evalc('artf = ft_databrowser(cfg,ft_redefinetrial(tcfg,tempdata))');
             
-            evalc('datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,data))');
+            evalc('datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,tempdata))');
             
             
             postart.locks = postart.locks(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)),:);
@@ -238,11 +243,8 @@ for subject_list = 1:length(Deci.SubjectList)
         cfg.keepchannel = 'no';
         tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)];
         cfg.channel = 'all';
-        
-         bcfg.bpfreq = Deci.ICA.bpfreq;
-         bcfg.bpfilter = 'yes';
-        
-        evalc('data_rej = ft_rejectvisual(cfg,ft_preprocessing(bcfg,ft_redefinetrial(tcfg,data)))');
+       
+        evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,tempdata))');
         
         
         if Deci.Art.ShowArt
