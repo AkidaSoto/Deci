@@ -162,7 +162,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     end
     
     %% Reject Arts
-    ccfg.trials =  info.alltrials(~info.nanlocks);
+    ccfg.trials =  info.alltrials(logical(~info.nanlocks));
     if Deci.Analysis.ApplyArtReject
         ccfg.trials = ccfg.trials(ismember(trlnum(ccfg.trials),postart.trlnum));
         display('Applying Artifact Rejection')
