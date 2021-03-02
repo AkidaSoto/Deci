@@ -271,7 +271,7 @@ for conds = 1:size(Subjects,2)
             
             tcfg.latency = Deci.Plot.Bar.Toi;
             tcfg.channel = Deci.Plot.Bar.Channel;
-            
+            tcfg.avgovertime = 'yes';
             bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
             
             
@@ -285,9 +285,17 @@ for conds = 1:size(Subjects,2)
 end
 
 if Deci.Plot.Bar.do
-
-    bardatas = num2cell(cell2mat(cellfun(@(c) mean(c.avg,3),bardata,'UniformOutput',false)));
-    save([Deci.Folder.Plot filesep  Deci.Plot.Title{1} ' Bar Data.mat' ],'bardatas');
+    %ExportExcel
+    colname = Deci.Plot.Subtitle;
+    exceldata = [{'Bar Data'} colname{:}; Subs' arrayfun(@(d) {d},cell2mat(cellfun(@(c) c.avg, bardata, 'UniformOutput', false)))];
+    
+    if exist([Deci.Folder.Plot filesep  Deci.Plot.Title{1} ' Bar Data' ]) == 2
+        writematrix([],[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' Bar Data' ],'FileType','spreadsheet','Sheet','TempSheet');
+        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Full');
+    end
+    
+    writecell(exceldata,[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' Bar Data' ],'FileType','spreadsheet','Sheet','Bar Data');
+    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet'); 
 end
 
 if Deci.Plot.Stat.do

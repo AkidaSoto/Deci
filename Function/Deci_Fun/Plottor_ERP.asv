@@ -153,6 +153,8 @@ if ~isempty(Deci.Plot.Math)
     end
 end
 
+Subs = Deci.SubjectList;
+
 if Deci.Plot.GrandAverage
     Deci.SubjectList = {'Group Average'};
 end
@@ -269,7 +271,7 @@ for conds = 1:size(Subjects,2)
             
             tcfg.latency = Deci.Plot.Bar.Toi;
             tcfg.channel = Deci.Plot.Bar.Channel;
-            
+            tcfg.avgovertime = 'yes';
             bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
             
             
@@ -282,49 +284,18 @@ for conds = 1:size(Subjects,2)
     end
 end
 
-if Deci.Plot.do
+if Deci.Plot.Bar.do
     %ExportExcel
-    colnames = [];
-    for blk = 1:size(fullAcc{fig},3)
-        for cond = 1:size(fullAcc{fig},2)
-            
-            colnames{end+1} = [Deci.Plot.Behv.Acc.Subtitle{fig}{cond} ' : Block ' num2str(abs(AccBlock(blk)))];
-        end
-    end
+    colname = Deci.Plot.Subtitle;
+    exceldata = [{'Bar Data'} colname{:}; Subs' arrayfun(@(d) {d},cell2mat(cellfun(@(c) c.avg, bardata, 'UniformOutput', false)))];
     
-    exceldata = reshape(nanmean(fullAcc{fig},4),[size(fullAcc{fig},1) prod([size(fullAcc{fig},2) size(fullAcc{fig},3)])]);
-    
-    exceldata = horzcat(Deci.SubjectList',num2cell(exceldata));
-    exceldata = vertcat([{'Accuracy'} colnames],exceldata);
-    
-    if exist([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ]) == 2
-        writematrix([],[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','TempSheet');
+    if exist([Deci.Folder.Plot filesep  Deci.Plot.Title{1} ' Bar Data' ]) == 2
+        writematrix([],[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' Bar Data' ],'FileType','spreadsheet','Sheet','TempSheet');
         %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Full');
     end
     
-    writecell(exceldata,[Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','Accuracy_Full');
-    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
-    
-    subs= [];
-    conds = [];
-    blks = [];
-    trls = [];
-    
-    
-    for trl = 1:size(Acc{fig},4)
-        for blk = 1:size(Acc{fig},3)
-            for cond = 1:size(Acc{fig},2)
-                for sub = 1:size(Acc{fig},1)
-                    subs(end+1) =  sub;
-                    conds(end+1) = cond;
-                    blks(end+1) = blk;
-                    trls(end+1) = trl;
-                end
-            end
-        end
-    end
-    
-    
+    writecell(exceldata,[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' Bar Data' ],'FileType','spreadsheet','Sheet','Bar Data');
+    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet'); 
 end
 
 if Deci.Plot.Stat.do
