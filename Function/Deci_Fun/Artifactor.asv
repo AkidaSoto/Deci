@@ -343,7 +343,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         
         
-        if Deci.Art.ATR && any(~ismember(data.label(~ismember(data.label,data_rej.label)),cfg.eog))
+        if any(~ismember(data.label(~ismember(data.label,data_rej.label)),cfg.eog))
             rej_chan = data.label(~ismember(data.label,data_rej.label));
             interp_chan = rej_chan(~ismember(rej_chan,cfg.eog));
             
@@ -370,27 +370,10 @@ for subject_list = 1:length(Deci.SubjectList)
             data.postart = postart;
             mkdir([Deci.Folder.Artifact])
             
-            Deci.Art = Exist(Deci.Art,'AppendNewArtifacts',false);
             
-            if Deci.Art.AppendNewArtifacts
-                olddata =  load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info');
-                
-                
-                postart.locks = olddata.info.postart.locks(ismember(olddata.info.postart.trlnum,postart.trlnum),:);
-                postart.events = olddata.info.postart.events(ismember(olddata.info.postart.trlnum,postart.trlnum),:);
-                postart.trlnum = olddata.info.postart.trlnum(ismember(olddata.info.postart.trlnum,postart.trlnum));
-                
-                data = olddata.data;
-                data.postart = postart;
-                info = rmfield(data,'trial');
-                
-                save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info','-v7.3')
-                
-            else
-                
-                info = rmfield(data,'trial');
-                save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info','-v7.3')
-            end
+            info = rmfield(data,'trial');
+            save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info','-v7.3')
+        
             %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
         end
         
@@ -419,18 +402,15 @@ for subject_list = 1:length(Deci.SubjectList)
         data = rmfield(rmfield(data,'unmixing'),'topolabel');
         end
         
-        Deci.Art = Exist(Deci.Art,'AppendNewArtifacts',false);
+        Deci.Artifact = Exist(Deci.Artifact,'AppendNewArtifacts',false);
         
-        if Deci.Art.AppendNewArtifacts
+        if Deci.Artifact.AppendNewArtifacts
         olddata =  load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'info','-v7.3');
             
                   
-        postart.locks = olddata.info.postart.locks(ismember(olddata.info.postart.trlnum,postart.trlnum),:);
-        postart.events = olddata.info.postart.events(ismember(olddata.info.postart.trlnum,postart.trlnum),:);
-        postart.trlnum = olddata.info.postart.trlnum(ismember(olddata.info.postart.trlnum,postart.trlnum));
-        
-        data = olddata;
-        data.postart = postart;
+        postart.locks = olddata.postart.locks(ismember(olddata.postart.trlnum,postart.trlnum),:);
+        postart.events = olddata.postart.events(ismember(olddata.postart.trlnum,postart.trlnum),:);
+        postart.trlnum = olddata.postart.trlnum(ismember(olddata.postart.trlnum,postart.trlnum));
         
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info','-v7.3')
         

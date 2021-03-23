@@ -19,6 +19,10 @@ for Dim = 1:length(Dims)
             Deci.Plot.(Dims{Dim}).Channel = dc_getchans('all');
         end
         
+        if isequal(Deci.Plot.(Dims{Dim}).Channel,'PD-All')
+            Deci.Plot.(Dims{Dim}).Channel = dc_getchans('PD-All');
+        end
+        
         Tois{Dim} = Deci.Plot.(Dims{Dim}).Toi;
         Chois{Dim} = Deci.Plot.(Dims{Dim}).Channel;
     end
@@ -287,7 +291,7 @@ end
 if Deci.Plot.Bar.do
     %ExportExcel
     colname = Deci.Plot.Subtitle;
-    exceldata = [{'Bar Data'} colname{:}; Subs' arrayfun(@(d) {d},cell2mat(cellfun(@(c) c.avg, bardata, 'UniformOutput', false)))];
+    exceldata = [{'Bar Data'} colname{:}; Subs' arrayfun(@(d) {d},cell2mat(cellfun(@(c) c.avg, bardata([Deci.Plot.Draw{:}]), 'UniformOutput', false)))];
     
     if exist([Deci.Folder.Plot filesep  Deci.Plot.Title{1} ' Bar Data' ]) == 2
         writematrix([],[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' Bar Data' ],'FileType','spreadsheet','Sheet','TempSheet');
@@ -482,8 +486,6 @@ for cond = 1:length(Deci.Plot.Draw)
                     title([Deci.SubjectList{subj} ' '  Deci.Plot.Subtitle{cond}{subcond}]);
                 end
                 
-                colorbar('vert');
-                
             end
             
             if Deci.Plot.Wire.do
@@ -496,7 +498,15 @@ for cond = 1:length(Deci.Plot.Draw)
                     bot = squeeze(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1),2)) - squeeze(nanstd(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,2),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1));
                     
                     pgon = polyshape([wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time fliplr(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time)],[top' fliplr(bot')],'Simplify', false);
+                    
+                    Deci.Plot.Wire = Exist(Deci.Plot.Wire,'Styles',[]);
+                    
+                    if ~isempty(Deci.Plot.Wire.Styles)
+                    b(subcond) = plot(pgon,'FaceColor',Deci.Plot.Wire.Styles.graphcolor(subcond,:),'LineStyle',Deci.Plot.Wire.Styles.linestyle{subcond},'HandleVisibility','off');
+                    else
                     b(subcond) = plot(pgon,'HandleVisibility','off');
+                    end
+                    
                     hold on
                     b(subcond).EdgeAlpha = 0;
                     b(subcond).FaceAlpha = .15;
@@ -540,6 +550,18 @@ for cond = 1:length(Deci.Plot.Draw)
             %pcfg.ylim = ylim;
             pcfg.graphcolor = lines;
             pcfg.linewidth = 1;
+            
+          
+            Deci.Plot.Wire = Exist(Deci.Plot.Wire,'Styles',[]);
+            
+            if ~isempty(Deci.Plot.Wire.Styles)
+                fielder = fields(Deci.Plot.Wire.Styles);
+                for f = 1:length(fielder)
+                    pcfg.(fielder{f}) = Deci.Plot.Wire.Styles.(fielder{f});
+                end
+            end
+            
+            
             ft_singleplotER(pcfg,wiredata{subj,Deci.Plot.Draw{cond}});
             set(gca, 'YDir', 'reverse');
             
@@ -661,8 +683,8 @@ for cond = 1:length(Deci.Plot.Draw)
             end
         end
     end
-end
-
+    
+   
 for subj = 1:size(ErpData,1)
     if length(Deci.Plot.Topo.Channel) ~= 1
         
@@ -701,5 +723,9 @@ for subj = 1:size(ErpData,1)
     end
     
 end
+    
+end
+
+
 end
 
