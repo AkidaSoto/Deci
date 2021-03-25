@@ -385,7 +385,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             end 
                         end
                         
-                        alt = 1;
+                        alt = 0;
                         
                         if alt &&  Deci.Analysis.Freq.Evoked.do ~= true
                             freq = freqplaceholder;
