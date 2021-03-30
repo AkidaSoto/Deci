@@ -288,6 +288,8 @@ for conds = 1:size(Subjects,2)
     end
 end
 
+mkdir(Deci.Folder.Plot);
+
 if Deci.Plot.Bar.do
     %ExportExcel
     colname = Deci.Plot.Subtitle;
