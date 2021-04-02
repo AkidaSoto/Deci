@@ -26,12 +26,14 @@ for Conditions = 1:size(Subjects,2)
                     Chans{Channel} = vari;
                     
                 end
+                
+                clear vari
             end
             
             acfg.parameter = info.parameter;
             acfg.appenddim = 'chan';
             
-            if isfield(vari,'freq')
+            if isfield(Chans{Channel},'freq')
                 Bsl{subject_list,Conditions} = rmfield(ft_appendfreq(acfg,Chans{:}),'cfg');
             else
                 Bsl{subject_list,Conditions} = rmfield(ft_appendtimelock(acfg,Chans{:}),'cfg');

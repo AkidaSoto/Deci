@@ -233,20 +233,20 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
     
 end
 %% plot
-
-if Deci.Whatever
-    
-    
-    for subject_list = 1:length(Deci.SubjectList)
-        
-        mkdir([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{subject_list}]);
-        save([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{subject_list}  filesep 'Acc.mat'],'Acc');
-        Deci.SubjectList{subject_list} = Deci.SubjectList{subject_list}([1:6 8:end]);
-        mkdir([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{subject_list}]);
-        save([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{subject_list}  filesep 'Acc.mat'],'Acc');
-        
-    end
-end
+% 
+% if Deci.Whatever
+%     
+%     
+%     for subject_list = 1:length(Deci.SubjectList)
+%         
+%         mkdir([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{subject_list}]);
+%         save([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{subject_list}  filesep 'Acc.mat'],'Acc');
+%         Deci.SubjectList{subject_list} = Deci.SubjectList{subject_list}([1:6 8:end]);
+%         mkdir([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{subject_list}]);
+%         save([Deci.Folder.Analysis filesep 'Extra' filesep Deci.SubjectList{subject_list}  filesep 'Acc.mat'],'Acc');
+%         
+%     end
+% end
     
 for fig = find(Deci.Plot.Behv.Acc.Figure)
     
@@ -269,9 +269,9 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
                 for subj = 1:size(Acc{fig},1)
                     for blk = 1:size(Acc{fig},3)
                         
-                        if Acc{fig}(subj,draw,blk) >= AccMean{fig}(:,draw,blk)+params.std*Accstd{fig}(:,draw,blk) || Acc{fig}(subj,draw,blk) <= AccMean{fig}(:,draw,blk)-params.std*Accstd{fig}(:,draw,blk)
+                        %if Acc{fig}(subj,draw,blk) >= AccMean{fig}(:,draw,blk)+params.std*Accstd{fig}(:,draw,blk) || Acc{fig}(subj,draw,blk) <= AccMean{fig}(:,draw,blk)-params.std*Accstd{fig}(:,draw,blk)
                             text(blk+dx, Acc{fig}(subj,draw,blk)+dy, Deci.SubjectList(subj),'Interpreter','none','FontSize',9);
-                        end
+                       % end
                     end
                 end
 
@@ -317,9 +317,9 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
             for subj = 1:size(RT{fig},1)
                 for blk = 1:size(RT{fig},3)
                     
-                    if RT{fig}(subj,draw,blk) >= RTMean{fig}(:,draw,blk)+params.std*RTstd{fig}(:,draw,blk) || RT{fig}(subj,draw,blk) <= RTMean{fig}(:,draw,blk)-params.std*RTstd{fig}(:,draw,blk)
+                    %if RT{fig}(subj,draw,blk) >= RTMean{fig}(:,draw,blk)+params.std*RTstd{fig}(:,draw,blk) || RT{fig}(subj,draw,blk) <= RTMean{fig}(:,draw,blk)-params.std*RTstd{fig}(:,draw,blk)
                          text(blk+dx, RT{fig}(subj,draw,blk)+dy, Deci.SubjectList(subj),'Interpreter','none','FontSize',9);
-                     end
+                     %end
                 end
             end
             

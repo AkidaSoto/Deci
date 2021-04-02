@@ -124,7 +124,7 @@ if cfg.cpu
      fourierspctrm = cell([ntrials 1]);
      
     parfor itrial = 1:ntrials
-       fourierspctrm{itrial} = complex(zeros(1,nchan,nfoi,ntoi,cfg.precision));
+       fourierspctrm{itrial} = complex(nan(1,nchan,nfoi,ntoi,cfg.precision),nan(1,nchan,nfoi,ntoi,cfg.precision));
         
         % Compute fft
         if cfg.gpu
@@ -166,7 +166,7 @@ if cfg.cpu
     fourierspctrm = cell2mat(fourierspctrm);
 else
     
-    fourierspctrm = complex(zeros(ntrials,nchan,nfoi,ntoi,cfg.precision));
+    fourierspctrm = complex(nan(ntrials,nchan,nfoi,ntoi,cfg.precision),nan(ntrials,nchan,nfoi,ntoi,cfg.precision));
     
     for itrial = 1:ntrials
         

@@ -1,3 +1,4 @@
+
 function [Deci,info] = dc_plotcheck(Deci,Dims)
 
 for Dim = 1:length(Dims)
@@ -8,6 +9,14 @@ for Dim = 1:length(Dims)
         
         if isequal(Deci.Plot.(Dims{Dim}).Channel,'Reinhart-All_eyes')
             Deci.Plot.(Dims{Dim}).Channel = dc_getchans('all');
+        end
+        
+        if isequal(Deci.Plot.(Dims{Dim}).Channel,'RNET')
+            Deci.Plot.(Dims{Dim}).Channel = dc_getchans('RNET');
+        end
+        
+        if isequal(Deci.Plot.(Dims{Dim}).Channel,'PD-All')
+            Deci.Plot.(Dims{Dim}).Channel = dc_getchans('PD-All');
         end
         
         Tois{Dim} = Deci.Plot.(Dims{Dim}).Toi;

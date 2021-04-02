@@ -51,19 +51,12 @@ if ~isempty(Deci.PP.ScalingFactor)
     data_eeg.trial = cellfun(@(c) c*Deci.PP.ScalingFactor,data_eeg.trial,'un',0);
 end
 
-if ~isempty(Deci.PP.Imp)
-    Imp = strsplit(Deci.PP.Imp,':');
-    
-    if ~ismember(Imp{2},data_eeg.label)
-        error('invalid Implicit channels for reference')
-    end
-    Imp_cfg.reref = 'yes';
-    Imp_cfg.channel  = 'all';
-    Imp_cfg.implicitref = Imp{1};
-    Imp_cfg.refchannel = Imp;
-    Imp_cfg.feedback = feedback;
-    evalc('data_eeg = ft_preprocessing(Imp_cfg,data_eeg)');
-    disp('---Implicit Rereference applied---');
+
+Deci.PP = Exist(Deci.PP,'detrend','no');
+
+if strcmpi(Deci.PP.detrend,'yes')
+   dtcfg.detrend = 'yes';
+   evalc('data_eeg = ft_preprocessing(dtcfg,data_eeg)');    
 end
 
 % if ~isempty(Deci.PP.Ocu)
@@ -181,6 +174,8 @@ if Deci.PP.Manual_Trial_Rejection
     cfg =[];
     cfg.method = 'trial';
     cfg.alim = 100;
+    cfg.preproc.detrend = 'yes';
+    cfg.preproc.demean = 'yes';
     tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)]; 
     evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data))');
     
@@ -201,6 +196,13 @@ else
     postart.trlnum = trlnum;
 end
 
+Deci.PP = Exist(Deci.PP,'ShowData',false);
+
+if Deci.PP.ShowData
+    cfg.viewmode = 'vertical';
+    evalc('artf = ft_databrowser(cfg,data)');
+end
+
 %% ICA
 
 display(' ')
@@ -214,15 +216,22 @@ cfg = Deci.ICA;
 cfg.bpfilter = 'yes';
 evalc('data_bp = ft_preprocessing(cfg,data)');
 
+
+compnum = Deci.ICA.CompNum;
+
+if isfield(Deci.ICA,'RankReduction') && compnum > length(data_bp.label)
+   compnum = compnum - Deci.ICA.RankReduction; 
+end
+
 cfg = [];
 cfg.method  = 'runica';
-cfg.numcomponent= Deci.ICA.CompNum;
+cfg.numcomponent= compnum;
 cfg.feedback = feedback;
 cfg.demean     = 'no';
 data_musc = ft_componentanalysis(cfg, data_bp);
 
 cfg           = [];
-cfg.numcomponent= Deci.ICA.CompNum;
+cfg.numcomponent= compnum;
 cfg.unmixing  =data_musc.unmixing;
 cfg.topolabel = data_musc.topolabel;
 

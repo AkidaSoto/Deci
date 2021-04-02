@@ -43,11 +43,6 @@ for brains = 1:length(params.Brain)
             brain = angle(freq.fourierspctrm);
     end
     
-    
-
-    
-    
-    
     for behaviors = 1:length(params.Behavior)
         
         behavior = load([Deci.Folder.Analysis filesep 'Extra' filesep params.Behavior{behaviors} filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.CondTitle{info.Cond}]);
@@ -56,9 +51,7 @@ for brains = 1:length(params.Brain)
         
 
         behavior = behavior.(Type{1});   
-       
-        
-        
+
         time_window = params.window;
         toi = find(round(freq.time,4) >= round(params.toi(1),4) & round(freq.time,4) <= round(params.toi(2),4));
         
