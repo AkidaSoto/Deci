@@ -249,8 +249,7 @@ for subject_list = 1:length(Deci.SubjectList)
             cfg.channel = 'all';
             
             evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,tempdata))');
-           
-        end
+            
             
             if Deci.Art.ShowArt
                 Summary_artifacts = ~data_rej.saminfo;
@@ -264,60 +263,25 @@ for subject_list = 1:length(Deci.SubjectList)
                 savedtrls =  savedtrls(~datacomp_saved.saminfo);
                 Summary_artifacts(savedtrls) = 0;
                 data_rej.saminfo = ~Summary_artifacts;
-            end
-            
-                  
-            
-            if Deci.Art.ShowArt
-                Summary_artifacts = ~data_rej.saminfo;
-                SAcfg.trials = Summary_artifacts;
-                SAcfg.viewmode = 'vertical';
-                evalc('savedtrls = ft_databrowser(SAcfg,ft_selectdata(SAcfg,ft_redefinetrial(tcfg,data)))');
                 
-                evalc('datacomp_saved = ft_rejectartifact(savedtrls,ft_selectdata(SAcfg,ft_redefinetrial(tcfg,data)))');
-                
-                savedtrls = find(Summary_artifacts);
-                savedtrls =  savedtrls(~datacomp_saved.saminfo);
-                Summary_artifacts(savedtrls) = 0;
-                data_rej.saminfo = ~Summary_artifacts;
             end
+
             
-            
->>>>>>> b3fd050640a2249d9278218ccb068ddd55a05c11
             postart.locks = postart.locks(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
             postart.events = postart.events(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
             postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))));
             
             display(' ')
             disp('---Trial Summary Rejection Applied---')
-            disp(['Rejected ' num2str(length(find(~logical(data_rej.saminfo)))) ' trials'])
-            disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
-            disp(['Remaining ' num2str([length(postart.trlnum)/length(trlnum)]*100) '% trials'])
+            disp(['Rejected ' num2str(length(find(~ismember(postart.trlnum,trlnum(data_rej.saminfo))))) ' trials'])
+            %disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
+            disp (['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))]) ' trials'])
+            disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))/length(postart.trlnum)]*100) '% trials'])
             display(' ')
             pause(.05);
+            
         end
         
-<<<<<<< HEAD
-<<<<<<< HEAD
-        
-        display(' ')
-        disp('---Trial Summary Rejection Applied---')
-        disp(['Rejected ' num2str(length(find(~ismember(postart.trlnum,trlnum(data_rej.saminfo))))) ' trials'])
-        %disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
-        disp (['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))]) ' trials'])
-        disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))/length(postart.trlnum)]*100) '% trials'])
-        display(' ')
-        pause(.05);
-        
-        postart.locks = postart.locks(ismember(postart.trlnum,trlnum(data_rej.saminfo)),:);
-        postart.events = postart.events(ismember(postart.trlnum,trlnum(data_rej.saminfo)),:);
-        postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(data_rej.saminfo)));
-        
-        
-=======
->>>>>>> b3fd050640a2249d9278218ccb068ddd55a05c11
-=======
->>>>>>> b3fd050640a2249d9278218ccb068ddd55a05c11
         if ~isempty(Deci.Art.RT)
             
             if Deci.Art.RT.dominlength
