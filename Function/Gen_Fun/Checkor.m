@@ -22,7 +22,7 @@ if Deci.Retroactive && Deci.Step > 3
         if Deci.Analysis.Freq.do
             Deci.Folder.Raw = [Deci.Analysis.Version filesep 'Analysis' filesep 'Freq_TotalPower'];
         else Deci.Analysis.ERP.do
-            Deci.Folder.Raw = [Deci.Analysis.Version filesep 'Analysis' filesep 'Volt_ERP'];
+            Deci.Folder.Raw = [Deci.Analysis.Version filesep 'Analysis' filesep 'Volt_Raw'];
         end
     end
 end

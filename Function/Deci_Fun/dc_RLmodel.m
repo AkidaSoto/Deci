@@ -73,20 +73,31 @@ end
 Values = find(ismember(params.States,trialtypes));
 
 %Sorting data into blocks
-for blk = 1:length(blocknumbers)
+
+for val = Values
     
-    blkmrk = sum(ismember(trialtypes,[blocknumbers(blk)]),2) ==  1;
+    valuetypes = trialtypes(sum(ismember(trialtypes,[params.States(val)]),2) ==  1,:);
     
-    Actmrk = logical(sum(ismember(trialtypes(blkmrk,:),[params.Actions]),1));
-    Actions{blk} = trialtypes(blkmrk,Actmrk);
+    trlnum = find(sum(ismember(trialtypes,[params.States(val)]),2) ==  1);
     
-    Rewmrk = logical(sum(ismember(trialtypes(blkmrk,:),[params.Reward]),1));
-    Rewards{blk} = trialtypes(blkmrk,Rewmrk);
-    
-    for rew = 1:length(params.Reward)
-        Rewards{blk}(Rewards{blk} == params.Reward(rew)) = params.Value{Values}(rew);
+    for blk = 1:length(blocknumbers)
+        
+        blkmrk = sum(ismember(valuetypes,[blocknumbers(blk)]),2) ==  1;
+        
+        trlblk =  trlnum(blkmrk);
+        TrlNums{blk,val} = trlblk;
+        
+        Actmrk = logical(sum(ismember(valuetypes(blkmrk,:),[params.Actions]),1));
+        Actions{blk,val} = valuetypes(blkmrk,Actmrk);
+        
+        Rewmrk = logical(sum(ismember(valuetypes(blkmrk,:),[params.Reward]),1));
+        Rewards{blk,val} = valuetypes(blkmrk,Rewmrk);
+        
+        for rew = 1:length(params.Reward)
+            Rewards{blk,val}(Rewards{blk,val} == params.Reward(rew)) = params.Value{val}(rew);
+        end
+        
     end
-    
 end
 
 % Loop for running models N times with randomized starting conditinos
@@ -106,7 +117,7 @@ LLE2 = nan([7 params.Reps]);
     %AC model with alphaA and alphaC
     %with outside parameters d,c and beta
 
-rng(params.Seed)
+
 
 %try
 
@@ -114,16 +125,24 @@ A_rep = [];
 R_rep = [];
 
 
-A_rep{1,1} = permute([Actions(:)],[2 3 1]);
-R_rep{1,1} = permute([Rewards(:)],[2 3 1]);
+A_rep = permute([Actions],[3 2 1]);
+R_rep = permute([Rewards],[3 2 1]);
+T_rep = permute([TrlNums],[3 2 1]);
 
-
+ 
 for Dim2 = 1:size(A_rep,2)
+    
+    params = Exist(params,'Seed',rand);
+    rng(params.Seed)
+    
     for Dim1 = 1:size(A_rep,1)
         
         
-        Actions = A_rep{Dim1,Dim2};
-        Rewards = R_rep{Dim1,Dim2};
+        Actions = A_rep(Dim1,Dim2,find(~[cellfun(@isempty,A_rep(Dim1,Dim2,:))]));
+        
+        Rewards = R_rep(Dim1,Dim2,find(~[cellfun(@isempty,A_rep(Dim1,Dim2,:))]));
+        
+        Trials = T_rep(Dim1,Dim2,find(~[cellfun(@isempty,A_rep(Dim1,Dim2,:))]));
         
         % Loop for running models N times with randomized starting conditinos
         
@@ -142,7 +161,8 @@ for Dim2 = 1:size(A_rep,2)
         %AC model with alphaA and alphaC
         %with outside parameters d,c and beta
         
-        rng(Deci.Analysis.Extra.QL.Seed)
+       
+        
         
         %try
         
@@ -163,11 +183,11 @@ for Dim2 = 1:size(A_rep,2)
                 
                 
                 [Value{1,init}] = ...
-                    fmincon(@(x) SimpleQ(Deci.Analysis.Extra.QL.Start{1},Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2)),...
+                    fmincon(@(x) SimpleQ(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2)),...
                     [Model1.init],[],[],[],[],[Model1.LB],[Model1.UB],[],...
                     optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
                 
-                [LLE(1,init),out{1,init}] = SimpleQ(Deci.Analysis.Extra.QL.Start{1},Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{1,init}(1),Value{1,init}(2));
+                [LLE(1,init),out{1,init}] = SimpleQ(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{1,init}(1),Value{1,init}(2));
                 LLE(1,init) = -LLE(1,init); %change fmin to fmax     
                 LLE2(1,init) = aicbic(LLE(1,init),[2]);
                 
@@ -185,11 +205,11 @@ for Dim2 = 1:size(A_rep,2)
                 Model2.init =rand(1,length(Model2.LB)).*(Model2.UB-Model2.LB)+Model2.LB;
                 
                 [Value{2,init}] = ...
-                    fmincon(@(x) Model2Pes(Deci.Analysis.Extra.QL.Start{1},Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3)),...
+                    fmincon(@(x) Model2Pes(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3)),...
                     [Model2.init],[],[],[],[],[Model2.LB],[Model2.UB],[],...
                     optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
                 
-                [LLE(2,init),out{2,init}] = Model2Pes(Deci.Analysis.Extra.QL.Start{1},Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{2,init}(1),Value{2,init}(2),Value{2,init}(3));
+                [LLE(2,init),out{2,init}] = Model2Pes(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{2,init}(1),Value{2,init}(2),Value{2,init}(3));
                 LLE(2,init) = -LLE(2,init); %change fmin to fmax    
                 LLE2(2,init) = aicbic(LLE(2,init),[3]);
                 
@@ -229,11 +249,11 @@ for Dim2 = 1:size(A_rep,2)
                 Model4.init =rand(1,length(Model4.LB)).*(Model4.UB-Model4.LB)+Model4.LB;
                 
                 [Value{4,init}] = ...
-                    fmincon(@(x) Model2Q(Deci.Analysis.Extra.QL.Start{1},Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3)),...
+                    fmincon(@(x) Model2Q(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3)),...
                     [Model4.init],[],[],[],[],[Model4.LB],[Model4.UB],[],...
                     optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
                 
-                [LLE(4,init),out{4,init}] = Model2Q(Deci.Analysis.Extra.QL.Start{1},Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{4,init}(1),Value{4,init}(2),Value{4,init}(3));
+                [LLE(4,init),out{4,init}] = Model2Q(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{4,init}(1),Value{4,init}(2),Value{4,init}(3));
                 LLE(4,init) = -LLE(4,init); %change fmin to fmax    
                 LLE2(4,init) = aicbic(LLE(4,init),[3]);
                 
@@ -252,12 +272,12 @@ for Dim2 = 1:size(A_rep,2)
                 
                 
                 [Value{5,init}] = ...
-                    fmincon(@(x) NormalizedQ(Deci.Analysis.Extra.QL.Start{1},Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3)),...
+                    fmincon(@(x) NormalizedQ(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3)),...
                     [Model5.init],[],[],[],[],[Model5.LB],[Model5.UB],[],...
                     optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
                 
-                [LLE(5,init),out{5,init}] = NormalizedQ(Deci.Analysis.Extra.QL.Start{1},Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{5,init}(1),Value{5,init}(2),Value{5,init}(3));
-                LLE(5,init) = -LLE(5,init); %change fmin to fmax    
+                [LLE(5,init),out{5,init}] = NormalizedQ(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{5,init}(1),Value{5,init}(2),Value{5,init}(3));
+                LLE(5,init) = -LLE(5,init); %change fmin to fmax   
                 LLE2(5,init) = aicbic(LLE(5,init),[3]);
                 
                 
@@ -277,11 +297,11 @@ for Dim2 = 1:size(A_rep,2)
                 Model6.init =rand(1,length(Model6.LB)).*(Model6.UB-Model6.LB)+Model6.LB;
                 
                 [Value{6,init}] = ...
-                    fmincon(@(x)  ActorCritic(Deci.Analysis.Extra.QL.Start{2},Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3),x(4)),...
+                    fmincon(@(x)  ActorCritic(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3),x(4)),...
                     [Model6.init],[],[],[],[],[Model6.LB],[Model6.UB],[],...
                     optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
                 
-                [LLE(6,init),out{6,init}] = ActorCritic(Deci.Analysis.Extra.QL.Start{2},Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{6,init}(1),Value{6,init}(2),Value{6,init}(3),Value{6,init}(4));
+                [LLE(6,init),out{6,init}] = ActorCritic(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{6,init}(1),Value{6,init}(2),Value{6,init}(3),Value{6,init}(4));
                 LLE(6,init) = -LLE(6,init); %change fmin to fmax    
                 LLE2(6,init) = aicbic(LLE(6,init),[4]);
                 
@@ -304,11 +324,11 @@ for Dim2 = 1:size(A_rep,2)
                 Model7.init =rand(1,length(Model7.LB)).*(Model7.UB-Model7.LB)+Model7.LB;
                 
                 [Value{7,init}] = ...
-                    fmincon(@(x)  HybridModel(Deci.Analysis.Extra.QL.Start{1},Deci.Analysis.Extra.QL.Start{2},Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3),x(4),x(5),x(6)),...
+                    fmincon(@(x)  HybridModel(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Start{2},Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3),x(4),x(5),x(6)),...
                     [Model7.init],[],[],[],[],[Model7.LB],[Model7.UB],[],...
                     optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
                 
-                [LLE(7,init),out{7,init}] = HybridModel(Deci.Analysis.Extra.QL.Start{1},Deci.Analysis.Extra.QL.Start{2},Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{7,init}(1),Value{7,init}(2),Value{7,init}(3),Value{7,init}(4),Value{7,init}(5),Value{7,init}(6));
+                [LLE(7,init),out{7,init}] = HybridModel(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Start{2},Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{7,init}(1),Value{7,init}(2),Value{7,init}(3),Value{7,init}(4),Value{7,init}(5),Value{7,init}(6));
                 LLE(7,init) = -LLE(7,init); %change fmin to fmax    
                 LLE2(7,init) = aicbic(LLE(7,init),[6]);
                 
@@ -329,11 +349,11 @@ for Dim2 = 1:size(A_rep,2)
                 Model8.init =rand(1,length(Model8.LB)).*(Model8.UB-Model8.LB)+Model8.LB;
                 
                 [Value{8,init}] = ...
-                    fmincon(@(x)  ActorCritic2(Deci.Analysis.Extra.QL.Start{2},Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3)),...
+                    fmincon(@(x)  ActorCritic2(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3)),...
                     [Model8.init],[],[],[],[],[Model8.LB],[Model8.UB],[],...
                     optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
                 
-                [LLE(8,init),out{8,init}] = ActorCritic2(Deci.Analysis.Extra.QL.Start{2},Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{8,init}(1),Value{8,init}(2),Value{8,init}(3));
+                [LLE(8,init),out{8,init}] = ActorCritic2(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{8,init}(1),Value{8,init}(2),Value{8,init}(3));
                 LLE(8,init) = -LLE(8,init); %change fmin to fmax    
                 LLE2(8,init) = aicbic(LLE(8,init),[3]);
                 
@@ -356,11 +376,11 @@ for Dim2 = 1:size(A_rep,2)
                 Model9.init =rand(1,length(Model9.LB)).*(Model9.UB-Model9.LB)+Model9.LB;
                 
                 [Value{9,init}] = ...
-                    fmincon(@(x)  HybridModel2(Deci.Analysis.Extra.QL.Start{1},Deci.Analysis.Extra.QL.Start{2},Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3),x(4),x(5)),...
+                    fmincon(@(x)  HybridModel2(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Start{2},Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3),x(4),x(5)),...
                     [Model9.init],[],[],[],[],[Model9.LB],[Model9.UB],[],...
                     optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
                 
-                [LLE(9,init),out{9,init}] = HybridModel2(Deci.Analysis.Extra.QL.Start{1},Deci.Analysis.Extra.QL.Start{2},Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{9,init}(1),Value{9,init}(2),Value{9,init}(3),Value{9,init}(4),Value{9,init}(5));
+                [LLE(9,init),out{9,init}] = HybridModel2(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Start{2},Deci.Analysis.Extra.QL.Start{3},Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{9,init}(1),Value{9,init}(2),Value{9,init}(3),Value{9,init}(4),Value{9,init}(5));
                 LLE(9,init) = -LLE(9,init); %change fmin to fmax    
                 LLE2(9,init) = aicbic(LLE(9,init),[5]);
                 
@@ -390,6 +410,57 @@ for Dim2 = 1:size(A_rep,2)
                 BestOut(m) = out(m,I2(m));
                 PseudoR(m) = 1 - [Best(m)/[length(cat(1,Actions{:}))*log(.05)]];
                 
+                
+            end
+        end
+        
+        
+        for m = 1:length(I2)
+            if ismember(m,Deci.Analysis.Extra.QL.ModelNum)
+                ExcelMat(1,:) = [cat(1,Trials{:})];
+                ExcelMat(2,:) = BestOut{m}.q';
+                ExcelMat(3,:) = BestOut{m}.q_next';
+                ExcelMat(4,:) =  BestOut{m}.Pe';
+                ExcelMat(5,:) = [sign(BestOut{m}.q') + 3]/2;
+                
+                ExcelMat(5,ExcelMat(5,:) == 1.5) = nan;
+                
+                ExcelMat(6,:) = [sign(BestOut{m}.q_next') + 3]/2;
+                
+                ExcelMat(6,ExcelMat(6,:) == 1.5) = nan;
+                
+                ExcelMat(7,:) = [sign(BestOut{m}.Pe') + 3]/2;
+                
+                ExcelMat(7,ExcelMat(7,:) == 1.5) = nan;
+                
+                ExcelMat(8,:) = [sign(BestOut{m}.q') + 3]/2 + [sign(BestOut{m}.Pe')+1];
+                
+                ExcelMat(8,ExcelMat(8,:) == 1.5 | ExcelMat(8,:) == 3.5) = nan;
+                
+                ExcelMat(9,:) = [sign(BestOut{m}.q_next') + 3]/2 + [sign(BestOut{m}.Pe')+1];
+                
+                ExcelMat(9,ExcelMat(8,:) == 1.5 | ExcelMat(9,:) == 3.5) = nan;
+                
+                ExcelMat = ExcelMat';
+                
+                mkdir([Deci.Folder.Version filesep 'Plot' filesep 'RLModel' filesep num2str(m)  filesep Deci.SubjectList{info.subject_list}]);
+                
+                if sum([Dim1,Dim2]) == 2
+                    delete([ Deci.Folder.Version filesep 'Plot' filesep 'RLModel' filesep num2str(m) filesep Deci.SubjectList{info.subject_list} filesep 'TrlDefs' '.mat'])
+                end
+                
+                if exist([ Deci.Folder.Version filesep 'Plot' filesep 'RLModel' filesep num2str(m) filesep Deci.SubjectList{info.subject_list} filesep 'TrlDefs' '.mat']) ~= 0
+                    
+                    complete = load([ Deci.Folder.Version filesep 'Plot' filesep 'RLModel' filesep num2str(m) filesep Deci.SubjectList{info.subject_list} filesep 'TrlDefs' '.mat'],'ExcelMat');
+                    ExcelMat = cat(1,complete.ExcelMat,ExcelMat);
+                    save([ Deci.Folder.Version filesep 'Plot' filesep 'RLModel' filesep num2str(m) filesep Deci.SubjectList{info.subject_list} filesep 'TrlDefs' '.mat'],'ExcelMat');
+                    
+                else
+                    
+                    save([ Deci.Folder.Version filesep 'Plot' filesep 'RLModel' filesep num2str(m) filesep Deci.SubjectList{info.subject_list} filesep 'TrlDefs' '.mat'],'ExcelMat');
+                    
+                end
+                clear ExcelMat
             end
         end
         
@@ -397,29 +468,40 @@ for Dim2 = 1:size(A_rep,2)
         
         % Let's save some data
         
+        Deci.Analysis.Extra.QL = Exist(Deci.Analysis.Extra.QL,'saveexcel',true);
+        
         if Deci.Analysis.Extra.QL.saveexcel
             
             mkdir([Deci.Folder.Version filesep 'Plot']);
-            if sum([Dim1,Dim2]) == 2
-                delete([Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx']);
+            if info.subject_list == 1 && sum([Dim1,Dim2]) == 2
+                delete([Deci.Folder.Version filesep 'Plot' filesep 'RLModel' filesep 'ModelOutputs' '.xlsx']);
             end
             
-            if sum([Dim1,Dim2]) == 2
-                writecell(['Subject' 'Cond' SheetNames(:)'],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_LLE','Range','A1');
-                writecell(['Subject' 'Cond' SheetNames(:)'],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_AIC','Range','A1');
-                writecell(['Subject' 'Cond' SheetNames(:)'],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_PseudoR','Range','A1');
+            if info.subject_list == 1 && sum([Dim1,Dim2]) == 2
+                writecell(['Subject' 'Cond' SheetNames(:)'],[ Deci.Folder.Version filesep 'Plot' filesep 'RLModel' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_LLE','Range','A1');
+                writecell(['Subject' 'Cond' SheetNames(:)'],[ Deci.Folder.Version filesep 'Plot' filesep 'RLModel' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_AIC','Range','A1');
+                writecell(['Subject' 'Cond' SheetNames(:)'],[ Deci.Folder.Version filesep 'Plot' filesep 'RLModel' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_PseudoR','Range','A1');
             end
             
             
-            writecell([Deci.SubjectList(Dim1) Deci.Analysis.CondTitle(Dim2) mat2cell([Best'],[1],ones([length([Best]) 1]))],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_LLE','Range',['A' num2str(sub2ind(size(A_rep),Dim1,Dim2)+1)]);
-            writecell([Deci.SubjectList(Dim1) Deci.Analysis.CondTitle(Dim2) mat2cell([Best2'],[1],ones([length([Best2]) 1]))],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_AIC','Range',['A' num2str(sub2ind(size(A_rep),Dim1,Dim2)+1)])
-            writecell([Deci.SubjectList(Dim1) Deci.Analysis.CondTitle(Dim2) mat2cell([PseudoR],[1],ones([length([PseudoR]) 1]))],[ Deci.Folder.Version filesep 'Plot' filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_PseudoR','Range',['A' num2str(sub2ind(size(A_rep),Dim1,Dim2)+1)])
+            writecell([Deci.SubjectList(info.subject_list) params.Conditions(Dim2) mat2cell([Best'],[1],ones([length([Best]) 1]))],[ Deci.Folder.Version filesep 'Plot' filesep 'RLModel'  filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_LLE','Range',['A' num2str(sub2ind([length(Deci.SubjectList) size(A_rep,2)],info.subject_list,Dim2)+1)]);
+            writecell([Deci.SubjectList(info.subject_list) params.Conditions(Dim2) mat2cell([Best2'],[1],ones([length([Best2]) 1]))],[ Deci.Folder.Version filesep 'Plot' filesep 'RLModel'  filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_AIC','Range',['A' num2str(sub2ind([length(Deci.SubjectList) size(A_rep,2)],info.subject_list,Dim2)+1)])
+            writecell([Deci.SubjectList(info.subject_list) params.Conditions(Dim2) mat2cell([PseudoR],[1],ones([length([PseudoR]) 1]))],[ Deci.Folder.Version filesep 'Plot' filesep 'RLModel'  filesep 'ModelOutputs' '.xlsx'],'Sheet','Summary_PseudoR','Range',['A' num2str(sub2ind([length(Deci.SubjectList) size(A_rep,2)],info.subject_list,Dim2)+1)])
             
         end
+        
+        Deci.Analysis.Extra.QL = Exist(Deci.Analysis.Extra.QL,'saveparams',true);
         
         if Deci.Analysis.Extra.QL.saveparams
             for m = 1:length(I2)
                 if ismember(m,Deci.Analysis.Extra.QL.ModelNum)
+                    
+                    if  info.subject_list == 1 && sum([Dim1,Dim2]) == 2
+                        writecell(['Subject' ColNames{m}],[ Deci.Folder.Version filesep 'Plot' filesep 'RLModel' filesep 'ModelOutputs.xlsx'],'Sheet',SheetNames{m},'Range','A1')
+                    end
+                    
+                    writecell([Deci.SubjectList(info.subject_list) mat2cell([BestMod{m}],[1],ones([length([BestMod{m}]) 1]))],[ Deci.Folder.Version filesep 'Plot' filesep 'RLModel' filesep 'ModelOutputs.xlsx'],'Sheet',SheetNames{m},'Range',['A' num2str(sub2ind([length(Deci.SubjectList) size(A_rep,2)],info.subject_list,Dim2)+1)]);
+                    
                     
                     ModelDeci.Analysis.Extra.QL = fields(BestOut{m});
                     
@@ -428,7 +510,7 @@ for Dim2 = 1:size(A_rep,2)
                         param = BestOut{m}.(ModelDeci.Analysis.Extra.QL{MP});
                         
                         mkdir([Deci.Folder.Analysis filesep 'Extra' filesep SheetNames{m} filesep ModelDeci.Analysis.Extra.QL{MP} filesep Deci.SubjectList{info.subject_list}])
-                        save([Deci.Folder.Analysis filesep 'Extra' filesep SheetNames{m} filesep ModelDeci.Analysis.Extra.QL{MP} filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.CondTitle{info.Cond}],'param');
+                        save([Deci.Folder.Analysis filesep 'Extra' filesep SheetNames{m} filesep ModelDeci.Analysis.Extra.QL{MP} filesep Deci.SubjectList{info.subject_list}  filesep params.Conditions{Dim2}],'param');
                         
                     end
                     
@@ -539,6 +621,7 @@ for subj = 1:size(a,1)
             
             %get the intial starting expected value
             qout{subj,cond,block}(1,:) = starting_q;
+            q{subj,cond,block}(1) = starting_q(1);
             
             %Now loop through the actions and find reward, Pe, Q(t+1) and P
             for Act = 1:length(a{subj,cond,block})
@@ -547,7 +630,7 @@ for subj = 1:size(a,1)
                 which = find(a{subj,cond,block}(Act) == possible_actions);
                 
                 %What is the expected value of that action?
-                q{block}(Act) = qout{subj,cond,block}(Act,which);
+                q{block}(Act);
                 
                 %What is the Pe?
                 PE{subj,cond,block}(Act) = (r{subj,cond,block}(Act) - qout{subj,cond,block}(Act,which));
@@ -574,10 +657,14 @@ for subj = 1:size(a,1)
                 
                 %keep the unchosen action's expected value the same.
                 qout{subj,cond,block}(Act+1,find(a{subj,cond,block}(Act) ~= possible_actions))  = qout{subj,cond,block}(Act,find(a{subj,cond,block}(Act) ~= possible_actions));
+                
+                % Save Value;
+                q{block}(Act+1) = qout{subj,cond,block}(Act,which);
             end
             
             %remove last, because it's not needed.
-            q{block} = qout{block}(1:end-1);
+            q_next{block} = q{block}(2:end);
+            q{block} = q{block}(1:end-1);
         end
     end
 end
@@ -591,9 +678,10 @@ if ~isfinite(LLE)
     LLE = -sum(numel(a{:})*log(.01));
 end
 
-out.q = qout(:,1);
-out.P = P;
-out.Pe = PE;
+out.q = [q{:}];
+out.q_next = [q_next{:}];
+out.P = [P{:}];
+out.Pe = [PE{:}];
 end
 
 
@@ -615,7 +703,8 @@ for subj = 1:size(a,1)
             
             %get the intial starting expected value
             qout{subj,cond,block}(1,:) = starting_q;
-            
+            q{subj,cond,block}(1) = starting_q(1);
+             
             %Now loop through the actions and find reward, Pe, Q(t+1) and P
             for Act = 1:length(a{subj,cond,block})
                 
@@ -650,10 +739,14 @@ for subj = 1:size(a,1)
                 
                 %keep the unchosen action's expected value the same.
                 qout{subj,cond,block}(Act+1,find(a{subj,cond,block}(Act) ~= possible_actions))  = qout{subj,cond,block}(Act,find(a{subj,cond,block}(Act) ~= possible_actions));
+                
+                % Save Value;
+                q{block}(Act+1) = qout{subj,cond,block}(Act,which);
             end
             
-            %remove last, because it's not needed.
-            qout{subj,cond,block} = qout{subj,cond,block}(1:end-1,:);
+             %remove last, because it's not needed.
+            q_next{block} = q{block}(2:end);
+            q{block} = q{block}(1:end-1);
         end
     end
 end
@@ -667,9 +760,10 @@ if ~isfinite(LLE)
     LLE = -sum(numel(a{:})*log(.01));
 end
 
-out.q = qout;
-out.P = P;
-out.Pe = PE;
+out.q = [q{:}];
+out.q_next = [q_next{:}];
+out.P = [P{:}];
+out.Pe = [PE{:}];
 end
 
 

@@ -17,6 +17,8 @@ for Conditions = 1:size(Subjects,2)
                 load([Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep info.Chois{Channel} '.mat'],info.variable);
                 evalc(['vari =' info.variable]);
                 
+                
+            
                 if isfield(vari,'freq')
                     foi = vari.freq >= round(info.Fois(1),4) & vari.freq <= round(info.Fois(2),4);
                     
@@ -66,6 +68,12 @@ for Conditions = 1:size(Subjects,2)
                 Subjects{subject_list,Conditions}.(info.parameter) = 10*log10( Subjects{subject_list,Conditions}.(info.parameter) ./ Bsl{subject_list,Conditions}.(info.parameter));
         end
         
+%         evalc(['variable =' info.variable ';']);
+       
+       %  if isfield(Subjects{subject_list,Conditions},'time')     
+                info.toi = round(Subjects{subject_list,Conditions}.time,4) >= info.Tois(1) & round(Subjects{subject_list,Conditions}.time,4) <= info.Tois(2);
+      %   end
+                  
         Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(info.toi);
         
         if info.isfreq

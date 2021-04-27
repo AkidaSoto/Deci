@@ -15,8 +15,11 @@ end
 for i = 1:length(trials)
     stimOnSample(i) = cell2mat(trials{i}.samples(strcmp(trials{i}.values,{'S 11'}))); %1
     imp1OnSample(i) = cell2mat(trials{i}.samples(strcmp(trials{i}.values,{'S 13'}))); %2
-    del3OnSample(i) = cell2mat(trials{i}.samples(strcmp(trials{i}.values,{'S 17'}))); %3
     imp2OnSample(i) = cell2mat(trials{i}.samples(strcmp(trials{i}.values,{'S 18'}))); %4
+    del1OnSample(i) = cell2mat(trials{i}.samples(strcmp(trials{i}.values,{'S 12'}))); %3
+    del2OnSample(i) = cell2mat(trials{i}.samples(strcmp(trials{i}.values,{'S 14'}))); %3
+    del3OnSample(i) = cell2mat(trials{i}.samples(strcmp(trials{i}.values,{'S 17'}))); %3
+    del4OnSample(i) = cell2mat(trials{i}.samples(strcmp(trials{i}.values,{'S 19'}))); %3
     resp1Sample(i) = cell2mat(trials{i}.samples(strcmp(trials{i}.values,{'S 71'})));  %5
     resp2Sample(i) = cell2mat(trials{i}.samples(strcmp(trials{i}.values,{'S 81'})));  %6
     fd1OnSample(i) = cell2mat(trials{i}.samples(strcmp(trials{i}.values,{'S 91'})));  %7
@@ -41,7 +44,7 @@ for i = 1:length(trials)
     zerostri(i) = 0;
 end
 
-trl = [begsample' endsample' zerostri' [1:length(trials)]' [begsample - stimOnSample]'  [begsample - del3OnSample]' [begsample - fd2OnSample]'];
+trl = [begsample' endsample' zerostri' [1:length(trials)]' [begsample - stimOnSample]' [begsample - imp1OnSample]' [begsample - imp2OnSample]' [begsample - del1OnSample]' [begsample - del2OnSample]' [begsample - del3OnSample]' [begsample - del4OnSample]' [begsample - fd1OnSample]' [begsample - fd2OnSample]' [begsample-resp1Sample]' [begsample-resp2Sample]' [begsample - Pb1OnSample]' [begsample - Pb2OnSample]'];
 
 trialinfo = [resp1Type'+73 resp2Type'+84 leftOrRight'+50];
 

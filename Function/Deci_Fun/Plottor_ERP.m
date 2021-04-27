@@ -19,6 +19,10 @@ for Dim = 1:length(Dims)
             Deci.Plot.(Dims{Dim}).Channel = dc_getchans('all');
         end
         
+        if isequal(Deci.Plot.(Dims{Dim}).Channel,'PD-All')
+            Deci.Plot.(Dims{Dim}).Channel = dc_getchans('PD-All');
+        end
+        
         Tois{Dim} = Deci.Plot.(Dims{Dim}).Toi;
         Chois{Dim} = Deci.Plot.(Dims{Dim}).Channel;
     end
@@ -52,7 +56,7 @@ for  subject_list = 1:length(Deci.SubjectList)
             
             load([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep Chois{Channel} '.mat'],'raw');
             
-        
+            
             
             Chans{Channel} = raw;
             Chans{Channel}.label = Chois(Channel);
@@ -60,22 +64,22 @@ for  subject_list = 1:length(Deci.SubjectList)
             if isfield(Deci.Plot.ERP,'PP')
                 ppcfg = Deci.Plot.ERP.PP;
                 
-                 Chans{Channel} = ft_preprocessing(ppcfg,  Chans{Channel});
+                Chans{Channel} = ft_preprocessing(ppcfg,  Chans{Channel});
                 
             end
             
             clear raw;
         end
         
-        if isfield(raw,'trllength')
-            trllen(subject_list,Conditions) = raw.trllength;
+        if isfield(Chans{Channel},'trllength')
+            trllen(subject_list,Conditions) = Chans{Channel}.trllength;
         else
             trllen(subject_list,Conditions) = nan;
         end
         
-        if isfield(raw,'lockers')
+        if isfield(Chans{Channel},'lockers')
             LockNum = Deci.Analysis.Locks(ismember(Deci.Analysis.LocksTitle,Deci.Plot.Lock));
-            lockers(subject_list,Conditions,:) = raw.lockers - raw.lockers(LockNum);
+            lockers(subject_list,Conditions,:) = Chans{Channel}.lockers - Chans{Channel}.lockers(LockNum);
         else
             lockers(subject_list,Conditions,:) = nan;
         end
@@ -86,7 +90,7 @@ for  subject_list = 1:length(Deci.SubjectList)
         Subjects{subject_list,Conditions} = rmfield(ft_appendtimelock(acfg,Chans{:}),'cfg');
         Subjects{subject_list,Conditions}.dimord = 'chan_time';
         
-
+        
     end
     clear Chans;
 end
@@ -130,7 +134,7 @@ for Conditions = 1:size(Subjects,2)
         Subjects{subject_list,Conditions}.trial =  Subjects{subject_list,Conditions}.trial - Bsl{subject_list,Conditions}.trial;
         Subjects{subject_list,Conditions}.time = Subjects{subject_list,Conditions}.time(toi);
         Subjects{subject_list,Conditions}.trial = Subjects{subject_list,Conditions}.trial(:,:,toi);
-       
+        
         Subjects{subject_list,Conditions}.avg = permute(mean(Subjects{subject_list,Conditions}.trial,1),[2 3 1]);
     end
 end
@@ -152,6 +156,8 @@ if ~isempty(Deci.Plot.Math)
         Subjects(:,size(Subjects,2)+1) = MathData;
     end
 end
+
+Subs = Deci.SubjectList;
 
 if Deci.Plot.GrandAverage
     Deci.SubjectList = {'Group Average'};
@@ -269,8 +275,33 @@ for conds = 1:size(Subjects,2)
             
             tcfg.latency = Deci.Plot.Bar.Toi;
             tcfg.channel = Deci.Plot.Bar.Channel;
+            tcfg.avgovertime = 'yes';
+           
             
-            bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+            Deci.Plot.Bar = Exist(Deci.Plot.Bar,'Type','mean');
+            
+            switch Deci.Plot.Bar.Type
+                case 'mean'
+                    bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+                case 'max'
+                    bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+                    bardata{subj,conds}.avg = nanmax(ErpData{subj,conds}.avg,[],3);
+                    
+                case 'maxlatency'
+                    bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+                    [~, idx] = nanmax(ErpData{subj,conds}.avg,[],3);
+                    bardata{subj,conds}.avg = ErpData{subj,conds}.time(idx)';
+                case 'min'
+                    bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+                    bardata{subj,conds}.avg = nanmin(ErpData{subj,conds}.avg,[],3);
+                    
+                case 'minlatency'
+                    bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+                    [~, idx] = nanmin(ErpData{subj,conds}.avg,[],3);
+                    bardata{subj,conds}.avg = ErpData{subj,conds}.time(idx)';
+            end
+            
+            
             
             tcfg.avgoverchan = 'yes';
             tcfg.avgovertime = 'yes';
@@ -279,6 +310,22 @@ for conds = 1:size(Subjects,2)
             
         end
     end
+end
+
+mkdir(Deci.Folder.Plot);
+
+if Deci.Plot.Bar.do
+    %ExportExcel
+    colname = Deci.Plot.Subtitle;
+    exceldata = [{'Bar Data'} colname{:}; Subs' arrayfun(@(d) {d},cell2mat(cellfun(@(c) c.avg, bardata([Deci.Plot.Draw{:}]), 'UniformOutput', false)))];
+    
+    if exist([Deci.Folder.Plot filesep  Deci.Plot.Title{1} ' Bar Data' ]) == 2
+        writematrix([],[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' Bar Data' ],'FileType','spreadsheet','Sheet','TempSheet');
+        %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Full');
+    end
+    
+    writecell(exceldata,[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' Bar Data' ],'FileType','spreadsheet','Sheet','Bar Data');
+    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet'); 
 end
 
 if Deci.Plot.Stat.do
@@ -465,8 +512,6 @@ for cond = 1:length(Deci.Plot.Draw)
                     title([Deci.SubjectList{subj} ' '  Deci.Plot.Subtitle{cond}{subcond}]);
                 end
                 
-                colorbar('vert');
-                
             end
             
             if Deci.Plot.Wire.do
@@ -479,7 +524,15 @@ for cond = 1:length(Deci.Plot.Draw)
                     bot = squeeze(nanmean(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1),2)) - squeeze(nanstd(nanmean(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,2),[],1))/sqrt(size(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.avg,1));
                     
                     pgon = polyshape([wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time fliplr(wiredata{subj,Deci.Plot.Draw{cond}(subcond)}.time)],[top' fliplr(bot')],'Simplify', false);
+                    
+                    Deci.Plot.Wire = Exist(Deci.Plot.Wire,'Styles',[]);
+                    
+                    if ~isempty(Deci.Plot.Wire.Styles)
+                    b(subcond) = plot(pgon,'FaceColor',Deci.Plot.Wire.Styles.graphcolor(subcond,:),'LineStyle',Deci.Plot.Wire.Styles.linestyle{subcond},'HandleVisibility','off');
+                    else
                     b(subcond) = plot(pgon,'HandleVisibility','off');
+                    end
+                    
                     hold on
                     b(subcond).EdgeAlpha = 0;
                     b(subcond).FaceAlpha = .15;
@@ -523,6 +576,18 @@ for cond = 1:length(Deci.Plot.Draw)
             %pcfg.ylim = ylim;
             pcfg.graphcolor = lines;
             pcfg.linewidth = 1;
+            
+          
+            Deci.Plot.Wire = Exist(Deci.Plot.Wire,'Styles',[]);
+            
+            if ~isempty(Deci.Plot.Wire.Styles)
+                fielder = fields(Deci.Plot.Wire.Styles);
+                for f = 1:length(fielder)
+                    pcfg.(fielder{f}) = Deci.Plot.Wire.Styles.(fielder{f});
+                end
+            end
+            
+            
             ft_singleplotER(pcfg,wiredata{subj,Deci.Plot.Draw{cond}});
             set(gca, 'YDir', 'reverse');
             
@@ -644,8 +709,8 @@ for cond = 1:length(Deci.Plot.Draw)
             end
         end
     end
-end
-
+    
+   
 for subj = 1:size(ErpData,1)
     if length(Deci.Plot.Topo.Channel) ~= 1
         
@@ -679,10 +744,14 @@ for subj = 1:size(ErpData,1)
             
         end
         
-
+        
         
     end
     
 end
+    
+end
+
+
 end
 

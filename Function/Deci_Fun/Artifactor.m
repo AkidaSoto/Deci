@@ -31,6 +31,15 @@ for subject_list = 1:length(Deci.SubjectList)
         postart.events = data.postart.events;
         postart.trlnum = data.postart.trlnum;
         
+        
+        %cfg.detrend = 'yes';
+        bcfg.bpfreq = Deci.ICA.bpfreq;
+        bcfg.bpfilter = 'yes';
+        bcfg.detrend = 'yes';
+        bcfg.demean = 'yes';
+        
+        tempdata = ft_preprocessing(bcfg,data);
+        
         %% Do ICA
         
         if Deci.ICA.do
@@ -44,11 +53,7 @@ for subject_list = 1:length(Deci.SubjectList)
             cfg.feedback = feedback;
             cfg.demean     = 'no';
             
-            %cfg.detrend = 'yes';
-            bcfg.bpfreq = Deci.ICA.bpfreq;
-            bcfg.bpfilter = 'yes';
-            
-            tempdata = ft_preprocessing(bcfg,data);
+
             
             evalc('data_ica = ft_componentanalysis(cfg, tempdata)');
             data_ica     = rmfield(data_ica,'cfg');
@@ -192,7 +197,7 @@ for subject_list = 1:length(Deci.SubjectList)
             disp('---Implicit Rereference applied---');
         end
         
-        
+        tempdata = ft_preprocessing(bcfg,data);
         %% Manual Trial Rejection
         
         
@@ -203,14 +208,14 @@ for subject_list = 1:length(Deci.SubjectList)
             tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)];
             
             cfg.viewmode = 'vertical';
-            evalc('artf = ft_databrowser(cfg,ft_redefinetrial(tcfg,data))');
+            evalc('artf = ft_databrowser(cfg,ft_redefinetrial(tcfg,tempdata))');
             
-            evalc('datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,data))');
+            evalc('datacomp_rej = ft_rejectartifact(artf,ft_redefinetrial(tcfg,tempdata))');
             
             
-            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)),:);
-            postart.events = postart.events(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)),:);
-            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(datacomp_rej.saminfo)));
+            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(logical(datacomp_rej.saminfo))),:);
+            postart.events = postart.events(ismember(postart.trlnum,trlnum(logical(datacomp_rej.saminfo))),:);
+            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(logical(datacomp_rej.saminfo))));
             %
             %             cfg = [];
             %             cfg.trials = postart.trlnum;
@@ -231,83 +236,124 @@ for subject_list = 1:length(Deci.SubjectList)
         end
         
         %% Artifact Reject
-        cfg =[];
-        cfg.method = 'summary';
-        cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
-        cfg.eog = Deci.Art.eog;
-        cfg.keepchannel = 'no';
-        tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)];
-        cfg.channel = 'all';
         
-         bcfg.bpfreq = Deci.ICA.bpfreq;
-         bcfg.bpfilter = 'yes';
+        Deci.Art = Exist(Deci.Art,'ATR',true);
         
-        evalc('data_rej = ft_rejectvisual(cfg,ft_preprocessing(bcfg,ft_redefinetrial(tcfg,data)))');
-        
-        
-        if Deci.Art.ShowArt
-            Summary_artifacts = ~data_rej.saminfo;
-            SAcfg.trials = Summary_artifacts;
-            SAcfg.viewmode = 'vertical';
-            evalc('savedtrls = ft_databrowser(SAcfg,ft_selectdata(SAcfg,ft_redefinetrial(tcfg,data)))');
+        if Deci.Art.ATR
+            cfg =[];
+            cfg.method = 'summary';
+            cfg.layout    = Deci.Layout.eye; % specify the layout file that should be used for plotting
+            cfg.eog = Deci.Art.eog;
+            cfg.keepchannel = 'no';
+            tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)];
+            cfg.channel = 'all';
             
-            evalc('datacomp_saved = ft_rejectartifact(savedtrls,ft_selectdata(SAcfg,ft_redefinetrial(tcfg,data)))');
+            evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,tempdata))');
             
-            savedtrls = find(Summary_artifacts);
-            savedtrls =  savedtrls(~datacomp_saved.saminfo);
-            Summary_artifacts(savedtrls) = 0;
-            data_rej.saminfo = ~Summary_artifacts;
+            
+            if Deci.Art.ShowArt
+                Summary_artifacts = ~data_rej.saminfo;
+                SAcfg.trials = Summary_artifacts;
+                SAcfg.viewmode = 'vertical';
+                evalc('savedtrls = ft_databrowser(SAcfg,ft_selectdata(SAcfg,ft_redefinetrial(tcfg,data)))');
+                
+                evalc('datacomp_saved = ft_rejectartifact(savedtrls,ft_selectdata(SAcfg,ft_redefinetrial(tcfg,data)))');
+                
+                savedtrls = find(Summary_artifacts);
+                savedtrls =  savedtrls(~datacomp_saved.saminfo);
+                Summary_artifacts(savedtrls) = 0;
+                data_rej.saminfo = ~Summary_artifacts;
+            end
+            
+            
+            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
+            postart.events = postart.events(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
+            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))));
+            
+            display(' ')
+            disp('---Trial Summary Rejection Applied---')
+            disp(['Rejected ' num2str(length(find(~logical(data_rej.saminfo)))) ' trials'])
+            disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
+            disp(['Remaining ' num2str([length(postart.trlnum)/length(trlnum)]*100) '% trials'])
+            display(' ')
+            pause(.05);
         end
         
+<<<<<<< HEAD
+        
+        display(' ')
+        disp('---Trial Summary Rejection Applied---')
+        disp(['Rejected ' num2str(length(find(~ismember(postart.trlnum,trlnum(data_rej.saminfo))))) ' trials'])
+        %disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
+        disp (['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))]) ' trials'])
+        disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))/length(postart.trlnum)]*100) '% trials'])
+        display(' ')
+        pause(.05);
         
         postart.locks = postart.locks(ismember(postart.trlnum,trlnum(data_rej.saminfo)),:);
         postart.events = postart.events(ismember(postart.trlnum,trlnum(data_rej.saminfo)),:);
         postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(data_rej.saminfo)));
         
-        display(' ')
-        disp('---Trial Summary Rejection Applied---')
-        disp(['Rejected ' num2str(length(find(~logical(data_rej.saminfo)))) ' trials'])
-        disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
-        disp(['Remaining ' num2str([length(postart.trlnum)/length(trlnum)]*100) '% trials'])
-        display(' ')
-        pause(.05);
         
+=======
+>>>>>>> b3fd050640a2249d9278218ccb068ddd55a05c11
         if ~isempty(Deci.Art.RT)
-            RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] < Deci.Art.RT.minlength;
+            
+            if Deci.Art.RT.dominlength
+                RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] < Deci.Art.RT.minlength;
+                RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
+            
+                display(' ')
+                disp('---Minimum Reaction Time Rejection Applied---')
+                disp(['Rejected ' num2str(length(find(~ismember(postart.trlnum,trlnum(~RT_Art))))) ' min length trials'])
+                disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(~RT_Art))))]) ' trials'])
+                disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(~RT_Art))))/length(trlnum)]*100) '% trials'])
+                display(' ')
+                pause(.05);
+            
+                postart.locks = postart.locks(ismember(postart.trlnum,trlnum(~RT_Art)),:);
+                postart.events = postart.events(ismember(postart.trlnum,trlnum(~RT_Art)),:);
+                postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(~RT_Art)));
+            end 
+           
+           
+            % auto reject max length trials
+           if Deci.Art.RT.domaxlength
+           RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] > Deci.Art.RT.maxlength;
+           RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
+             
+           
+              display(' ')
+             disp('---Maximum Reaction Time Rejection Applied---')
+             disp(['Rejected ' num2str(length(find(~ismember(postart.trlnum,trlnum(~RT_Art))))) ' max length trials'])
+             disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(~RT_Art))))]) ' trials'])
+             disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(~RT_Art))))/length(trlnum)]*100) '% trials'])
+             display(' ')
+             pause(.05);
+             
+             postart.locks = postart.locks(ismember(postart.trlnum,trlnum(~RT_Art)),:);
+             postart.events = postart.events(ismember(postart.trlnum,trlnum(~RT_Art)),:);
+             postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(~RT_Art)));
+           end
+           
+            %%% auto-reject trials based on 2std    
+           if Deci.Art.RT.dotwostd
+            RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] > 2*std([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
             RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
             
-          
-            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(~RT_Art)),:);
-            postart.events = postart.events(ismember(postart.trlnum,trlnum(~RT_Art)),:);
-            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(~RT_Art)));
-            
-          
             display(' ')
             disp('---Reaction Time Rejection Applied---')
-            disp(['Rejected ' num2str(length(find(RT_Art))) ' min length trials'])
-            disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
-            disp(['Remaining ' num2str([length(postart.trlnum)/length(trlnum)]*100) '% trials'])
+            disp(['Rejected ' num2str(length(find(~ismember(postart.trlnum,trlnum(~RT_Art))))) ' 2*std length trials'])
+            disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(~RT_Art))))]) ' trials'])
+            disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(~RT_Art))))/length(trlnum)]*100) '% trials'])
             display(' ')
             pause(.05);
             
-            
-            RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] > Deci.Art.RT.maxlength;
-            RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
-            
-          
             postart.locks = postart.locks(ismember(postart.trlnum,trlnum(~RT_Art)),:);
             postart.events = postart.events(ismember(postart.trlnum,trlnum(~RT_Art)),:);
             postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(~RT_Art)));
-            
-          
-            display(' ')
-            disp('---Reaction Time Rejection Applied---')
-            disp(['Rejected ' num2str(length(find(RT_Art))) ' max length trials'])
-            disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
-            disp(['Remaining ' num2str([length(postart.trlnum)/length(trlnum)]*100) '% trials'])
-            display(' ')
-            pause(.05);    
-        
+           end
+           
         end
         
         
@@ -336,7 +382,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         
         
-        if any(~ismember(data.label(~ismember(data.label,data_rej.label)),cfg.eog))
+        if Deci.Art.ATR && any(~ismember(data.label(~ismember(data.label,data_rej.label)),cfg.eog))
             rej_chan = data.label(~ismember(data.label,data_rej.label));
             interp_chan = rej_chan(~ismember(rej_chan,cfg.eog));
             
@@ -363,10 +409,27 @@ for subject_list = 1:length(Deci.SubjectList)
             data.postart = postart;
             mkdir([Deci.Folder.Artifact])
             
+            Deci.Art = Exist(Deci.Art,'AppendNewArtifacts',false);
             
-            info = rmfield(data,'trial');
-            save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info','-v7.3')
-        
+            if Deci.Art.AppendNewArtifacts
+                olddata =  load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info');
+                
+                
+                postart.locks = olddata.info.postart.locks(ismember(olddata.info.postart.trlnum,postart.trlnum),:);
+                postart.events = olddata.info.postart.events(ismember(olddata.info.postart.trlnum,postart.trlnum),:);
+                postart.trlnum = olddata.info.postart.trlnum(ismember(olddata.info.postart.trlnum,postart.trlnum));
+                
+                data = olddata.data;
+                data.postart = postart;
+                info = rmfield(data,'trial');
+                
+                save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info','-v7.3')
+                
+            else
+                
+                info = rmfield(data,'trial');
+                save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info','-v7.3')
+            end
             %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
         end
         
@@ -395,9 +458,26 @@ for subject_list = 1:length(Deci.SubjectList)
         data = rmfield(rmfield(data,'unmixing'),'topolabel');
         end
         
-        info = rmfield(data,'trial');
+        Deci.Art = Exist(Deci.Art,'AppendNewArtifacts',false);
+        
+        if Deci.Art.AppendNewArtifacts
+        olddata =  load([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'info','-v7.3');
+            
+                  
+        postart.locks = olddata.info.postart.locks(ismember(olddata.info.postart.trlnum,postart.trlnum),:);
+        postart.events = olddata.info.postart.events(ismember(olddata.info.postart.trlnum,postart.trlnum),:);
+        postart.trlnum = olddata.info.postart.trlnum(ismember(olddata.info.postart.trlnum,postart.trlnum));
+        
+        data = olddata;
+        data.postart = postart;
+        
         save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info','-v7.3')
         
+        else
+        
+        info = rmfield(data,'trial');
+        save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info','-v7.3')
+        end
         %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
 end
 

@@ -43,15 +43,27 @@ for conds = 1:size(Subjects,2)
         tcfg.latency = Deci.Plot.Bar.Toi;
         tcfg.frequency = Deci.Plot.Bar.Foi;
         tcfg.channel = Deci.Plot.Bar.Channel;
-        
-        Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
-        
         tcfg.avgoverchan = 'yes';
         tcfg.avgoverfreq = 'yes';
         tcfg.avgovertime = 'yes';
+        
+        Deci.Plot.Bar = Exist(Deci.Plot.Bar,'Type','mean');
+        
+        Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+        switch Deci.Plot.Bar.Type
+            case 'mean'
+        Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+            case 'max'
+        Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+        Segdata{subj,conds}.powspctrm = nanmax(mean(AvgData{subj,conds}.powspctrm,3),[],4);
+         
+            case 'maxlatency'
+        Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+        [~, idx] = nanmax(mean(AvgData{subj,conds}.powspctrm,3),[],4);
+        Segdata{subj,conds}.powspctrm = AvgData{subj,conds}.time(idx)';
+        end
 
-
-        SegStatdata{subj,conds} = ft_selectdata(tcfg,Segdata{subj,conds});
+        SegStatdata{subj,conds} = Segdata{subj,conds};
         
         if strcmpi(Deci.Plot.FreqYScale,'log')
             Segdata{subj,conds}.freq = log(Segdata{subj,conds}.freq);
@@ -101,6 +113,7 @@ if Deci.Plot.Stat.do
 end
 
 %% Plot
+Subs = Deci.SubjectList;
 
 if Deci.Plot.GrandAverage
     
@@ -118,10 +131,12 @@ if Deci.Plot.GrandAverage
                 tcfg.latency = Deci.Plot.Square.Toi;
                 tcfg.frequency = Deci.Plot.Square.Foi;
                 tcfg.channel = Deci.Plot.Square.Channel;
+                tcfg.avgovertime = 'yes';
+                tcfg.avgoverfreq = 'yes';
+                tcfg.avgoverchan = 'yes';
                 
                 Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
                 
-                tcfg.avgoverchan = 'yes';
                 SegStatdata{subj,conds} = ft_selectdata(tcfg,Segdata{subj,conds});
                 
                 if strcmpi(Deci.Plot.FreqYScale,'log')
@@ -137,6 +152,21 @@ if Deci.Plot.GrandAverage
     Deci.SubjectList = {'Group Average'};
     end
 end
+
+
+
+%ExportExcel
+colname = Deci.Plot.Subtitle;
+exceldata = [{'Bar Data'} colname{:}; Subs' arrayfun(@(d) {d},cell2mat(cellfun(@(c) c.powspctrm, Segdata(:,[Deci.Plot.Draw{:}]), 'UniformOutput', false)))];
+
+if exist([Deci.Folder.Plot filesep  Deci.Plot.Title{1} ' Bar Data' ]) == 2
+    writematrix([],[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' Freq Bar Data' ],'FileType','spreadsheet','Sheet','TempSheet');
+    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Full');
+end
+
+writecell(exceldata,[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' Freq Bar Data' ],'FileType','spreadsheet','Sheet','Bar Data');
+%xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
+
 
 for cond = 1:length(Deci.Plot.Draw)
     if Deci.Plot.Stat.do
