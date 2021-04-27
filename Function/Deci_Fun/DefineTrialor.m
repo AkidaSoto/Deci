@@ -39,7 +39,14 @@ for subject_list = 1:length(Deci.SubjectList)
     
     evalc('cfg = ft_definetrial(cfg);'); % will return cfg.trl, the segmented data
     
-   
+   if strcmpi(cfg.DT.Type,'TD_Module3')
+       [a,b] = fileparts(cfg.dataset);
+       cfg.dataset = [a b '.vhdr'];
+       cfg.datafile = [a b '.vhdr'];
+       cfg.headerfile = [a b '.vhdr'];
+       cfg.dataformat = 'brainvision_eeg';
+       cfg.headerformat = 'brainvision_vhdr';
+   end
     
     cfg.trialnum = cfg.trl(:,4);
     

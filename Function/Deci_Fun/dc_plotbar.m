@@ -47,7 +47,21 @@ for conds = 1:size(Subjects,2)
         tcfg.avgoverfreq = 'yes';
         tcfg.avgovertime = 'yes';
         
+        Deci.Plot.Bar = Exist(Deci.Plot.Bar,'Type','mean');
+        
         Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+        switch Deci.Plot.Bar.Type
+            case 'mean'
+        Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+            case 'max'
+        Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+        Segdata{subj,conds}.powspctrm = nanmax(mean(AvgData{subj,conds}.powspctrm,3),[],4);
+         
+            case 'maxlatency'
+        Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+        [~, idx] = nanmax(mean(AvgData{subj,conds}.powspctrm,3),[],4);
+        Segdata{subj,conds}.powspctrm = AvgData{subj,conds}.time(idx)';
+        end
 
         SegStatdata{subj,conds} = Segdata{subj,conds};
         

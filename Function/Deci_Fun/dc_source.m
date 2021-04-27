@@ -13,8 +13,10 @@ elec = ft_read_sens('standard_1020.elc');
 
 if exist([Deci.Folder.Raw  filesep Deci.SubjectList{info.subject_list} '.bvct']) == 2
     [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{info.subject_list} '.bvct']);
+else
+    elec.label{ismember(elec.label,'Nz')} = 'Nasion';
 end
-eleccheck = find(ismember(elec.label,[data.label; {'Nasion'};{'LPA'};{'RPA'}]));
+eleccheck = find(ismember(elec.label,[data.label'; {'Nasion'};{'LPA'};{'RPA'}]));
 
 elec.elecpos = elec.elecpos(eleccheck,:);
 elec.chanpos = elec.elecpos;
