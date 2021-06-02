@@ -287,7 +287,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     
                     if Deci.Analysis.Freq.Evoked.do == true
                        
-%                         tlcfg.demean        = 'yes';
+                         tlcfg.demean        = 'yes';
 %                         tlcfg.baselinewindow = [Deci.Analysis.Freq.Evoked.bsl];
                         
                         tempdat = ft_preprocessing(tlcfg, dat);
@@ -296,7 +296,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         
                     elseif Deci.Analysis.Freq.Induced.do == true
                         
-%                         tlcfg.demean        = 'yes';
+                         tlcfg.demean        = 'yes';
 %                         tlcfg.baselinewindow = [Deci.Analysis.Freq.Induced.bsl];
 %                         
                         tempdat1 = ft_preprocessing(tlcfg, dat);
