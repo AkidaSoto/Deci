@@ -1,11 +1,8 @@
 clearvars;
 Files = CleanDir('/Users/REINHARTLAB/Downloads/TimeEst_All2');
 
-%Stim = cellfun(@(c) ~rem(str2num(c(end-6)),2),Files,'un',0);
+Stim = cellfun(@(c) ~rem(str2num(c(end-6)),2),Files,'un',0);
 Stim = logical(1:length(Files));
-Stim(1) = false;
-
-halves = false;
 
 Block_start = 5;  % new block signal
 Block_stop = 6;  % end of block signal
@@ -165,7 +162,7 @@ for Sub = 1:length(Files)
                         if Learn
                             LPair{Sub,PMath}(end+1) = Deviation(Trl) - Deviation(Trl-1);
                             
-                            if Type < ceil(length(Block_beg)/2) 
+                            if Type < ceil(length(Block_beg)/2)
                                 LPairFHalf{Sub,PMath}(LPairFHalfCOUNTER) =  LPair{Sub,PMath}(end);
                                 LPairFHalfCOUNTER =LPairFHalfCOUNTER +1;
                             else
