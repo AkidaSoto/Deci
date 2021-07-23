@@ -149,7 +149,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     if ~Deci.Analysis.UniqueConditions.do
         
         maxt = length(find(cellfun(@(c) any(ismember(Deci.Analysis.Conditions{Cond},c)), Deci.DT.Markers)));
-        info.alltrials = find(sum(ismember(events,Deci.Analysis.Conditions{Cond}),2) == maxt);
+        info.alltrials = find(sum(ismember(round(events,4),round(Deci.Analysis.Conditions{Cond},4)),2) == maxt);
         
     else
         

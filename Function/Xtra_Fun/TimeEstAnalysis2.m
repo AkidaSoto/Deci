@@ -1,5 +1,5 @@
 clearvars;
-Files = CleanDir('/Users/REINHARTLAB/Downloads/TimeEst_All2');
+Files = CleanDir('E:\TimeEst_All\');
 
 %Stim = cellfun(@(c) ~rem(str2num(c(end-6)),2),Files,'un',0);
 Stim = logical(1:length(Files));
@@ -57,7 +57,7 @@ UPairLHalf =[];
 
 for Sub = 1:length(Files)
     
-    load(['/Users/REINHARTLAB/Downloads/TimeEst_All2' filesep Files{Sub}]);
+    load(['E:\TimeEst_All\' filesep Files{Sub}]);
     
     if ~exist('RT_lower')
         continue;
