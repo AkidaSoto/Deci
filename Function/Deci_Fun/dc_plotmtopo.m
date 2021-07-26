@@ -70,15 +70,15 @@ for conds = 1:size(Subjects,2)
         
         Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
         
-%         if rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs) ~= 0
+         if rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs) ~= 0
            Segdata{subj,conds}.powspctrm = permute(mean(reshape(Segdata{subj,conds}.powspctrm(:,:,:,1:end-rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs)),[size(Segdata{subj,conds}.powspctrm,1) size(Segdata{subj,conds}.powspctrm,2) size(Segdata{subj,conds}.powspctrm,3) numel(Segdata{subj,conds}.time(1:end-rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs)))/Deci.Plot.MTopo.ToiSegs Deci.Plot.MTopo.ToiSegs]),4),[1 2 3 5 4]);
            Segdata{subj,conds}.time = mean(reshape(Segdata{subj,conds}.time(1:end-rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs)),[numel(Segdata{subj,conds}.time(1:end-rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs)))/Deci.Plot.MTopo.ToiSegs Deci.Plot.MTopo.ToiSegs]),1);
            
         
-%         else
-%            Segdata{subj,conds}.powspctrm = permute(mean(reshape(Segdata{subj,conds}.powspctrm(:,:,:,1:end-rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs)),[size(Segdata{subj,conds}.powspctrm,1) size(Segdata{subj,conds}.powspctrm,2) size(Segdata{subj,conds}.powspctrm,3) numel(Segdata{subj,conds}.time(1:end-rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs)))/Deci.Plot.MTopo.ToiSegs Deci.Plot.MTopo.ToiSegs]),4),[1 2 3 5 4]);
-%            Segdata{subj,conds}.time = mean(reshape(Segdata{subj,conds}.time,[numel(Segdata{subj,conds}.time)/Deci.Plot.MTopo.ToiSegs Deci.Plot.MTopo.ToiSegs]),2);
-%         end
+        else
+           Segdata{subj,conds}.powspctrm = permute(mean(reshape(Segdata{subj,conds}.powspctrm(:,:,:,1:end-rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs)),[size(Segdata{subj,conds}.powspctrm,1) size(Segdata{subj,conds}.powspctrm,2) size(Segdata{subj,conds}.powspctrm,3) numel(Segdata{subj,conds}.time(1:end-rem(numel(Segdata{subj,conds}.time),Deci.Plot.MTopo.ToiSegs)))/Deci.Plot.MTopo.ToiSegs Deci.Plot.MTopo.ToiSegs]),4),[1 2 3 5 4]);
+           Segdata{subj,conds}.time = mean(reshape(Segdata{subj,conds}.time,[numel(Segdata{subj,conds}.time)/Deci.Plot.MTopo.ToiSegs Deci.Plot.MTopo.ToiSegs]),2);
+        end
             
         
         if info.isfreq
