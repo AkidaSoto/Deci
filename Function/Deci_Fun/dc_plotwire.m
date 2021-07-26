@@ -133,7 +133,7 @@ for cond = 1:length(Deci.Plot.Draw)
             
             if Deci.Plot.GrandAverage
                 pgon = polyshape([Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time fliplr(Segdata{subj,Deci.Plot.Draw{cond}(subcond)}.time)],[top' fliplr(bot')],'Simplify', false);
-                b(subcond) = plot(pgon,'FaceColor',Deci.Plot.Wire.Styles.graphcolor(subcond,:),'LineStyle',Deci.Plot.Wire.Styles.linestyle{subcond},'HandleVisibility','off');
+                b(subcond) = plot(pgon,'HandleVisibility','off');
                 hold on
                 b(subcond).EdgeAlpha = 0;
                 b(subcond).FaceAlpha = .15;

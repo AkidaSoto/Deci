@@ -31,7 +31,7 @@ Trial_start = 10; %start of each trial  (600 trials total). essentially the "i" 
 Trial_end = 11; %end of each trial
 
 
-Resp_early = 19; %early response
+Resp_ea rly = 19; %early response
 Resp_late = 20;    %late response
 Resp_correct = 21; %correct response
 
@@ -197,7 +197,7 @@ for Sub = 1:length(NewSubs)
                        
                        if length(RT) > 2 
                            if diff(Correctness(end-2:end-1)) == -1
-                                AdjustmentT{1}(end+1) = Adjust;   
+                                AdjustmentT{1}(end+1) =  abs(RT(end) - RT(end-2));   
                            end
                        end
                        
@@ -211,7 +211,7 @@ for Sub = 1:length(NewSubs)
                        
                        if length(RT) > 2
                            if diff(Correctness(end-2:end-1)) == 0 && Correctness(end-1)
-                               AdjustmentT{2}(end+1) = Adjust;
+                               AdjustmentT{2}(end+1)  =   abs(RT(end) - RT(end-2));   
                            end
                        end
                     elseif diff(Correctness(end-1:end)) == 0 && ~Correctness(end) %Error to Error
@@ -315,6 +315,7 @@ for Sub = 1:length(NewSubs)
 
     end
     
+    DeviationAll = abs(DeviationAll);
     if size(SubDeviationAllL,2) >= length(nanmean(DeviationAll(logical(Learnness),:),1))
         SubDeviationAllL(Sub,:) = nan([1 size(SubDeviationAllL,2)]);
         SubDeviationAllL(Sub,1:length(nanmean(DeviationAll(logical(Learnness),:),1)))  = nanmean(DeviationAll(logical(Learnness),:),1);
@@ -385,7 +386,6 @@ legend({'Learned','Not Learned'})
 title('All Trials Learned')
 
 
-figure
 figure;
 plot(mean(LearnInfo(:,:,1),1))
 hold on
