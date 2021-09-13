@@ -263,8 +263,9 @@ for subject_list = 1:length(Deci.SubjectList)
                 savedtrls =  savedtrls(~datacomp_saved.saminfo);
                 Summary_artifacts(savedtrls) = 0;
                 data_rej.saminfo = ~Summary_artifacts;
+                
             end
-            
+
             
             postart.locks = postart.locks(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
             postart.events = postart.events(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
@@ -272,49 +273,72 @@ for subject_list = 1:length(Deci.SubjectList)
             
             display(' ')
             disp('---Trial Summary Rejection Applied---')
-            disp(['Rejected ' num2str(length(find(~logical(data_rej.saminfo)))) ' trials'])
-            disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
-            disp(['Remaining ' num2str([length(postart.trlnum)/length(trlnum)]*100) '% trials'])
+            disp(['Rejected ' num2str(length(find(~ismember(postart.trlnum,trlnum(data_rej.saminfo))))) ' trials'])
+            %disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
+            disp (['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))]) ' trials'])
+            disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))/length(postart.trlnum)]*100) '% trials'])
             display(' ')
             pause(.05);
+            
         end
         
         if ~isempty(Deci.Art.RT)
-            RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] < Deci.Art.RT.minlength;
+            
+            if Deci.Art.RT.dominlength
+                RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] < Deci.Art.RT.minlength;
+                RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
+            
+                display(' ')
+                disp('---Minimum Reaction Time Rejection Applied---')
+                disp(['Rejected ' num2str(length(find(~ismember(postart.trlnum,trlnum(~RT_Art))))) ' min length trials'])
+                disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(~RT_Art))))]) ' trials'])
+                disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(~RT_Art))))/length(trlnum)]*100) '% trials'])
+                display(' ')
+                pause(.05);
+            
+                postart.locks = postart.locks(ismember(postart.trlnum,trlnum(~RT_Art)),:);
+                postart.events = postart.events(ismember(postart.trlnum,trlnum(~RT_Art)),:);
+                postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(~RT_Art)));
+            end 
+           
+           
+            % auto reject max length trials
+           if Deci.Art.RT.domaxlength
+           RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] > Deci.Art.RT.maxlength;
+           RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
+             
+           
+              display(' ')
+             disp('---Maximum Reaction Time Rejection Applied---')
+             disp(['Rejected ' num2str(length(find(~ismember(postart.trlnum,trlnum(~RT_Art))))) ' max length trials'])
+             disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(~RT_Art))))]) ' trials'])
+             disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(~RT_Art))))/length(trlnum)]*100) '% trials'])
+             display(' ')
+             pause(.05);
+             
+             postart.locks = postart.locks(ismember(postart.trlnum,trlnum(~RT_Art)),:);
+             postart.events = postart.events(ismember(postart.trlnum,trlnum(~RT_Art)),:);
+             postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(~RT_Art)));
+           end
+           
+            %%% auto-reject trials based on 2std    
+           if Deci.Art.RT.dotwostd
+            RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] > 2*std([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
             RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
             
-          
-            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(~RT_Art)),:);
-            postart.events = postart.events(ismember(postart.trlnum,trlnum(~RT_Art)),:);
-            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(~RT_Art)));
-            
-          
             display(' ')
             disp('---Reaction Time Rejection Applied---')
-            disp(['Rejected ' num2str(length(find(RT_Art))) ' min length trials'])
-            disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
-            disp(['Remaining ' num2str([length(postart.trlnum)/length(trlnum)]*100) '% trials'])
+            disp(['Rejected ' num2str(length(find(~ismember(postart.trlnum,trlnum(~RT_Art))))) ' 2*std length trials'])
+            disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(~RT_Art))))]) ' trials'])
+            disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(~RT_Art))))/length(trlnum)]*100) '% trials'])
             display(' ')
             pause(.05);
             
-            
-            RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] > Deci.Art.RT.maxlength;
-            RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
-            
-          
             postart.locks = postart.locks(ismember(postart.trlnum,trlnum(~RT_Art)),:);
             postart.events = postart.events(ismember(postart.trlnum,trlnum(~RT_Art)),:);
             postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(~RT_Art)));
-            
-          
-            display(' ')
-            disp('---Reaction Time Rejection Applied---')
-            disp(['Rejected ' num2str(length(find(RT_Art))) ' max length trials'])
-            disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
-            disp(['Remaining ' num2str([length(postart.trlnum)/length(trlnum)]*100) '% trials'])
-            display(' ')
-            pause(.05);    
-        
+           end
+           
         end
         
         

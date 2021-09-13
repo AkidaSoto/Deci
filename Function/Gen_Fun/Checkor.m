@@ -14,14 +14,14 @@ if Deci.Retroactive && Deci.Step > 3
         Deci.Folder.Raw = [Deci.Folder.Artifact] ;
     else
         
-        Deci.Analysis = Exist(Deci.Analysis,'ERP',[]);
-        Deci.Analysis = Exist(Deci.Analysis,'Freq',[]);
-        Deci.Analysis.ERP = Exist(Deci.Analysis.ERP,'do',false);
-        Deci.Analysis.Freq = Exist(Deci.Analysis.Freq,'do', false);
+        Deci.Run = Exist(Deci.Run,'ERP',false);
+        Deci.Run = Exist(Deci.Run,'Freq',false);
+        Deci.Run = Exist(Deci.Run,'Behavior',false);
+
         
-        if Deci.Analysis.Freq.do
+        if Deci.Run.Freq
             Deci.Folder.Raw = [Deci.Analysis.Version filesep 'Analysis' filesep 'Freq_TotalPower'];
-        else Deci.Analysis.ERP.do
+        else Deci.Run.ERP
             Deci.Folder.Raw = [Deci.Analysis.Version filesep 'Analysis' filesep 'Volt_Raw'];
         end
     end

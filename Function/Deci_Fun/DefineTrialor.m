@@ -35,11 +35,18 @@ for subject_list = 1:length(Deci.SubjectList)
     cfg.trialfun = cfg.DT.Type;
     cfg.file_ending = files_ending{1};
     
-     Deci.DT = Exist(Deci.DT,'NanLocks',false);
+    Deci.DT = Exist(Deci.DT,'NanLocks',false);
     
     evalc('cfg = ft_definetrial(cfg);'); % will return cfg.trl, the segmented data
     
-   
+   if strcmpi(cfg.DT.Type,'TD_Module3')
+       [a,b] = fileparts(cfg.dataset);
+       cfg.dataset = [a b '.vhdr'];
+       cfg.datafile = [a b '.vhdr'];
+       cfg.headerfile = [a b '.vhdr'];
+       cfg.dataformat = 'brainvision_eeg';
+       cfg.headerformat = 'brainvision_vhdr';
+   end
     
     cfg.trialnum = cfg.trl(:,4);
     

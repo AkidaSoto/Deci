@@ -149,7 +149,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
     if ~Deci.Analysis.UniqueConditions.do
         
         maxt = length(find(cellfun(@(c) any(ismember(Deci.Analysis.Conditions{Cond},c)), Deci.DT.Markers)));
-        info.alltrials = find(sum(ismember(events,Deci.Analysis.Conditions{Cond}),2) == maxt);
+        info.alltrials = find(sum(ismember(round(events,4),round(Deci.Analysis.Conditions{Cond},4)),2) == maxt);
         
     else
         
@@ -235,6 +235,11 @@ for Cond = 1:length(Deci.Analysis.Conditions)
             end
             info.lockers = lockers;
             
+            Deci.Analysis = Exist(Deci.Analysis,'Rsplock',[]);
+            if ~isempty(Deci.Analysis.Rsplock)
+               lcfg.latency = Deci.Analysis.Rsplock;
+               dat = ft_selectdata(lcfg,dat);
+            end    
             %% Do ERP Analysis
             if Deci.Analysis.ERP.do
                 mkdir([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list} filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
@@ -282,7 +287,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     
                     if Deci.Analysis.Freq.Evoked.do == true
                        
-%                         tlcfg.demean        = 'yes';
+                         tlcfg.demean        = 'yes';
 %                         tlcfg.baselinewindow = [Deci.Analysis.Freq.Evoked.bsl];
                         
                         tempdat = ft_preprocessing(tlcfg, dat);
@@ -291,7 +296,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         
                     elseif Deci.Analysis.Freq.Induced.do == true
                         
-%                         tlcfg.demean        = 'yes';
+                         tlcfg.demean        = 'yes';
 %                         tlcfg.baselinewindow = [Deci.Analysis.Freq.Induced.bsl];
 %                         
                         tempdat1 = ft_preprocessing(tlcfg, dat);

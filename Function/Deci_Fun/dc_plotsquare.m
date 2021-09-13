@@ -220,7 +220,7 @@ for cond = 1:length(Deci.Plot.Draw)
         
  
         square(subj) = figure;
-        
+        square(subj).Position = [200 200 750 750];
         if Deci.Plot.Stat.do
             dc_pmask(square(subj))
         end
@@ -248,8 +248,9 @@ for cond = 1:length(Deci.Plot.Draw)
             
             pcfg.imagetype = Deci.Plot.ImageType;
             pcfg.colormap = Deci.Plot.ColorMap;
+            pcfg.colorbar = 'yes';
             evalc('ft_singleplotTFR(pcfg,tsquare)');
-            
+            colorbar;
             
             
             if Deci.Plot.Draw{cond}(subcond) <= size(info.lockers,2) && ~Deci.Plot.GroupLevel
@@ -327,6 +328,8 @@ for cond = 1:length(Deci.Plot.Draw)
                     childs(r).CLim = minmax([k.findobj('Type','Axes').CLim]);
             elseif strcmp(Deci.Plot.Roi,'maxabs')
                     childs(r).CLim = [-1*max(abs(minmax([k.findobj('Type','Axes').CLim]))) max(abs(minmax([k.findobj('Type','Axes').CLim])))];
+            elseif strcmp(Deci.Plot.Roi,'maxabs2')
+                childs(r).CLim = [-1*max(abs(minmax(childs(r).CLim))) max(abs(minmax(childs(r).CLim)))];
             end
         end
         
@@ -337,9 +340,14 @@ for cond = 1:length(Deci.Plot.Draw)
             end
         end
         
-        if ~isempty(Deci.Folder.Plot)
-            %mkdir([Deci.Folder.Plot filesep Deci.Plot.Title{cond}]);
-            %saveas(square(subj),[Deci.Folder.Plot filesep Deci.Plot.Title{cond} filesep Deci.SubjectList{subj} '_square'],Deci.Plot.Save.Format);
+        Deci.Folder = Exist(Deci.Folder,'Output',[]);
+        if ~isempty(Deci.Folder.Output)
+            Exist(Deci.Folder.Output,'Dir');
+            Deci.Folder.Output = Exist(Deci.Folder.Output,'Format','png');
+            for r = 1:length(childs)
+            mkdir([Deci.Folder.Output.Dir filesep Deci.SubjectList{subj}]);
+            saveas(square(subj),[Deci.Folder.Output.Dir filesep Deci.SubjectList{subj} filesep  Deci.SubjectList{subj} '_' Deci.Plot.Title{cond}],Deci.Folder.Output.Format);
+            end
         end
     end
     

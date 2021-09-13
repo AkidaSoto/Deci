@@ -47,7 +47,21 @@ for conds = 1:size(Subjects,2)
         tcfg.avgoverfreq = 'yes';
         tcfg.avgovertime = 'yes';
         
+        Deci.Plot.Bar = Exist(Deci.Plot.Bar,'Type','mean');
+        
         Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+        switch Deci.Plot.Bar.Type
+            case 'mean'
+        Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+            case 'max'
+        Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+        Segdata{subj,conds}.powspctrm = nanmax(mean(AvgData{subj,conds}.powspctrm,3),[],4);
+         
+            case 'maxlatency'
+        Segdata{subj,conds} = ft_selectdata(tcfg,AvgData{subj,conds});
+        [~, idx] = nanmax(mean(AvgData{subj,conds}.powspctrm,3),[],4);
+        Segdata{subj,conds}.powspctrm = AvgData{subj,conds}.time(idx)';
+        end
 
         SegStatdata{subj,conds} = Segdata{subj,conds};
         
@@ -146,11 +160,11 @@ colname = Deci.Plot.Subtitle;
 exceldata = [{'Bar Data'} colname{:}; Subs' arrayfun(@(d) {d},cell2mat(cellfun(@(c) c.powspctrm, Segdata(:,[Deci.Plot.Draw{:}]), 'UniformOutput', false)))];
 
 if exist([Deci.Folder.Plot filesep  Deci.Plot.Title{1} ' Bar Data' ]) == 2
-    writematrix([],[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' Freq Bar Data' ],'FileType','spreadsheet','Sheet','TempSheet');
+    writematrix([],[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' ' Deci.Plot.Freq.Type ' Bar Data' ],'FileType','spreadsheet','Sheet','TempSheet');
     %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Full');
 end
 
-writecell(exceldata,[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' Freq Bar Data' ],'FileType','spreadsheet','Sheet','Bar Data');
+writecell(exceldata,[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' ' Deci.Plot.Freq.Type ' Data' ],'FileType','spreadsheet','Sheet','Bar Data');
 %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
 
 

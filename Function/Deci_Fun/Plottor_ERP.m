@@ -276,7 +276,31 @@ for conds = 1:size(Subjects,2)
             tcfg.latency = Deci.Plot.Bar.Toi;
             tcfg.channel = Deci.Plot.Bar.Channel;
             tcfg.avgovertime = 'yes';
-            bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+           
+            
+            Deci.Plot.Bar = Exist(Deci.Plot.Bar,'Type','mean');
+            
+            switch Deci.Plot.Bar.Type
+                case 'mean'
+                    bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+                case 'max'
+                    bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+                    bardata{subj,conds}.avg = nanmax(ErpData{subj,conds}.avg,[],3);
+                    
+                case 'maxlatency'
+                    bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+                    [~, idx] = nanmax(ErpData{subj,conds}.avg,[],3);
+                    bardata{subj,conds}.avg = ErpData{subj,conds}.time(idx)';
+                case 'min'
+                    bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+                    bardata{subj,conds}.avg = nanmin(ErpData{subj,conds}.avg,[],3);
+                    
+                case 'minlatency'
+                    bardata{subj,conds} = ft_selectdata(tcfg,ErpData{subj,conds});
+                    [~, idx] = nanmin(ErpData{subj,conds}.avg,[],3);
+                    bardata{subj,conds}.avg = ErpData{subj,conds}.time(idx)';
+            end
+            
             
             
             tcfg.avgoverchan = 'yes';

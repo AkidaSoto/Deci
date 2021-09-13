@@ -30,7 +30,6 @@ if length(Subjects{subject_list,Conditions}.time) > 1
     display(['Using Lock: ' Deci.Plot.Lock]);
     display(['Using Ref: ' Deci.Plot.BslRef ' at times ' strrep(regexprep(num2str(Deci.Plot.Freq.Bsl),' +',' '),' ','-')]);
     
-    if Params.Bsl
         for Conditions = 1:size(Subjects,2)
             for subject_list = 1:size(Subjects,1)
                 
@@ -79,7 +78,6 @@ if length(Subjects{subject_list,Conditions}.time) > 1
                 
             end
         end
-    end
     
 end
 
@@ -137,7 +135,7 @@ clear source
 %% Stat
 Params = Exist(Params,'Stat',false);
 
-if Deci.Plot.GrandAverage && s1
+if Deci.Plot.GrandAverage && s1 && Params.Stat
     
     display(' ')
     display('Calculating Statistics')
@@ -216,21 +214,21 @@ for cond = 1:length(Deci.Plot.Draw)
             subtraction = SourceData{subj,Deci.Plot.Draw{cond}(2)};
             subtraction.pow = (subtraction.pow - SourceData{subj,Deci.Plot.Draw{cond}(1)}.pow)./ subtraction.pow;
             
-            if Deci.Plot.GrandAverage && s1
+            if Deci.Plot.GrandAverage && s1 && Params.Stat
                 
                 try
                 subtraction.pow(~Sourcestat{cond}.prob.mask) = nan;
                 
-                if ~any(Sourcestat{cond}.prob.mask)
-                    continue
-                end
+%                 if ~any(Sourcestat{cond}.prob.mask)
+%                     continue
+%                 end
                 
                 catch
                 subtraction.pow(~Sourcestat{cond}.mask) = nan;
                    
-                if ~any(Sourcestat{cond}.mask)
-                    continue
-                end
+%                 if ~any(Sourcestat{cond}.mask)
+%                     continue
+%                 end
                 
                 end
                 
@@ -268,21 +266,21 @@ for cond = 1:length(Deci.Plot.Draw)
             
             plotdata = SourceData{subj,Deci.Plot.Draw{cond}(subcond)};
             
-            if Deci.Plot.GrandAverage && s1
+            if Deci.Plot.GrandAverage && s1 && Params.Stat
                 
                 try
                     plotdata.pow(~Sourcestat{cond}.prob.mask) = nan;
-                    
-                    if ~any(Sourcestat{cond}.prob.mask)
-                        continue
-                    end
+%                     
+%                     if ~any(Sourcestat{cond}.prob.mask)
+%                         continue
+%                     end
                     
                 catch
                      plotdata.pow(~Sourcestat{cond}.mask) = nan;
                      
-                     if ~any(Sourcestat{cond}.mask)
-                         continue
-                     end
+%                      if ~any(Sourcestat{cond}.mask)
+%                          continue
+%                      end
                      
                 end
                 

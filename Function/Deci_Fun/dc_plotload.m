@@ -21,9 +21,6 @@ for  subject_list = 1:length(Deci.SubjectList)
             end
             
             evalc(['variable =' info.variable ';']);
-            if isfield(variable,'time')
-                info.toi = round(variable.time,4) >= info.Tois(1) & round(variable.time,4) <= info.Tois(2);
-            end
             
             if isfield(variable,'freq')
                 foi = variable.freq >= round(info.Fois(1),4) & variable.freq <= round(info.Fois(2),4);

@@ -51,5 +51,8 @@ for dts = 1:length(dt)
     end
     
     info = rmfield(data,'trial');
-    save([art_outpath filesep art{dts}],'data','info','-v7.3');
+    save([art_outpath filesep art{dts}],'data');
+    
+    save([art_outpath filesep art{dts} '_info'],'data');
+    
 end
