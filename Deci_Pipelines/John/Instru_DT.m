@@ -87,14 +87,28 @@ for j = 1:length(startstopseg)
     trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = -1; 
     end
     
+    trialinfo(size(trl,1),length(cfg.DT.Markers)+2:length(cfg.DT.Markers)+3) = nan;
+    
+    if all(ismember(trialinfo(size(trl,1),:),{20 52})) || all(ismember(trialinfo(size(trl,1),:),{21 51}))
+         trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 261;
+    elseif  all(ismember(trialinfo(size(trl,1),:),{23 52})) || all(ismember(trialinfo(size(trl,1),:),{24 51}))
+        trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 262;
+    else
+        trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 260;
+    end
+    
+    if all(ismember(trialinfo(size(trl,1),:),{20 52})) || all(ismember(trialinfo(size(trl,1),:),{21 51}))
+        trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 261;
+    elseif  all(ismember(trialinfo(size(trl,1),:),{23 52})) || all(ismember(trialinfo(size(trl,1),:),{24 51}))
+        trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 262;
+    else
+        trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 260;
+    end
     
 end
 
 if ~isempty(cfg.DT.Block)
     if isfield(cfg.DT.Block,'Bisect')
-        
-        cfg.DT.Block = Exist(cfg.DT.Block,'Num',2);
-        
         if cfg.DT.Block.Bisect
             bindex =  find(trialinfo(1,:) < 0);
             
@@ -104,13 +118,11 @@ if ~isempty(cfg.DT.Block)
                 
                 onebi = find(ismember(trialinfo(:,bindex),ab));
                 
-                onebi = cat(1,reshape(onebi(1:end-rem(length(onebi),cfg.DT.Block.Num)), [[length(onebi)-rem(length(onebi),cfg.DT.Block.Num)]/cfg.DT.Block.Num cfg.DT.Block.Num]), ...
-                    [nan([1 cfg.DT.Block.Num-rem(length(onebi),cfg.DT.Block.Num)]) onebi(end-rem(length(onebi),cfg.DT.Block.Num)+1:end)']);
+                onebi = {onebi(1:floor(length(onebi)/2)) onebi(ceil(length(onebi)/2):end)};
 
-                
-                for eachsect = 1:cfg.DT.Block.Num
+                for eachsect = 1:2
                     
-                    trialinfo(min(onebi(:,eachsect)):max(onebi(:,eachsect)),bindex) = trialinfo(min(onebi(:,eachsect)):max(onebi(:,eachsect)),bindex) + [-1/cfg.DT.Block.Num]*(eachsect-1);
+                    trialinfo(onebi{eachsect},bindex) = trialinfo(onebi{eachsect},bindex) -.5*(eachsect-1);
                     
                 end
                 

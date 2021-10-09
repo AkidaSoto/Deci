@@ -34,7 +34,7 @@ for brains = 1:length(params.Brain)
             brain = angle(freq.fourierspctrm);
     end
     
-     toi = freq.time;
+     toi = find(freq.time >= round(params.toi(1),4) & freq.time <= round(params.toi(2),4));
 
     for behaviors = 1:length(params.Behavior)
         
@@ -48,7 +48,7 @@ for brains = 1:length(params.Brain)
             
             for ti = 1:length(toi)
                                
-                b_time = brain(:,:,foi,toi(ti) == toi);
+                b_time = brain(:,:,foi,toi(ti));
                 
                 if ~isequal(size(b_time),size(behavior))
                     behavior = behavior';

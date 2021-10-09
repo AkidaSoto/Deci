@@ -455,7 +455,7 @@ if Deci.Plot.Behv.WriteExcel
             %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'RT_Summary');
         end
         
-        excelAccdata = table(Sub.RT(subs)',Deci.Plot.Behv.RT.Subtitle{fig}(conds)',abs(RTBlock(blks))',trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
+        excelAccdata = table(Sub.RT(subs)',Deci.Plot.Behv.RT.Subtitle{fig}(conds)',abs(RTBlock(blks)),trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
         writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Summary');
         %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'TempSheet');
         
@@ -672,7 +672,7 @@ end
                     if draw == 1
                         
                         
-                        if  Deci.Plot.Behv.Acc.Dot
+                        if  Deci.Plot.Behv.RT.Dot
                             CleanBars(RT{fig}(subj,:,:,:),RTsem{fig}(subj,:,:,:),RTDots{fig})
                         else
                             CleanBars(RT{fig}(subj,:,:,:),RTsem{fig}(subj,:,:,:))

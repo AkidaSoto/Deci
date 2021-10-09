@@ -140,7 +140,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 display(['Using unique Trial Def:' Deci.DT.Type])
             end
         end
-        warning('1 or More Marker Codes not found in events. If using own DT, make sure Step 4 contains updated DT.Markers field')
+        error('1 or More Marker Codes not found in events. If using own DT, make sure Step 4 contains updated DT.Markers field')
     end
     
     Deci.Analysis = Exist(Deci.Analysis,'UniqueConditions',[]);
@@ -491,28 +491,30 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                 rawfreq.trialpow{j} = tpowcorr.powspctrm(ceil(events(ccfg.trials,5)) == uniqueblocks(j),:);
                                 rawfreq.trialnums{j} = trlnums;
                                 
-                            end     
-                            
-                           if Deci.Analysis.Freq.PowCorrAcrossTrials.sigmoid
-                              strlnum{j} = trlnums; 
-                           end
-                            
-                            
+                            end                            
                         end
                         
                         
                         
                         if Deci.Analysis.Freq.PowCorrAcrossTrials.sigmoid
-                            param =sigm_fit(cat(1,strlnum{:}),spowcorr.powspctrm,[],[],0);
                             
-                            startS = param(1);
-                            endS = param(2);
-                            
-                            if startS > endS
-                                slopeS = -1*param(4);
+                            if length(trlnums) >4
+                                param =sigm_fit(abs(trlnums),spowcorr.powspctrm(ceil(events(ccfg.trials,5)) == uniqueblocks(j),:)',[],[],0);
+                                
+                                startS(j) = param(1);
+                                endS(j) = param(2);
+                                
+                                if startS(j) > endS(j)
+                                    slopeS(j) = -1*param(4);
+                                else
+                                    slopeS(j) = param(4);
+                                end
                             else
-                                slopeS = param(4);
-                            end    
+                                startS(j) = nan;
+                                endS(j) = nan;
+                                slopeS(j) = nan;
+                            end
+                            
                         end
                         
                         

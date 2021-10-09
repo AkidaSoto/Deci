@@ -9,11 +9,7 @@ function dc_updatetrials(dt_path,art_inpath,art_outpath)
 % switch labels between two arts
 
 dt = CleanDir(dt_path);
-art = CleanDir(art_inpath);
 
-% if ~all(ismember(dt,art))
-%    error('unequal dt and art lengths') 
-% end
 
 for dts = 1:length(dt)
 
@@ -21,7 +17,7 @@ for dts = 1:length(dt)
     load([dt_path filesep dt{dts}]);
 
     data = [];
-    load([art_inpath filesep art{dts}]);
+    load([art_inpath filesep dt{dts}]);
     
     if isfield(data,'condinfo')  %replacer starting 12/22, lets keep for ~4 months
         data.postart.locks = data.condinfo{1};
@@ -51,5 +47,5 @@ for dts = 1:length(dt)
     end
     
     info = rmfield(data,'trial');
-    save([art_outpath filesep art{dts}],'data','info','-v7.3');
+    save([art_outpath filesep dt{dts}],'data','info','-v7.3');
 end
