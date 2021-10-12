@@ -45,14 +45,44 @@ for j = 1:length(startstopseg)
      
     if length(find(ismember([16 45 15],value))) == 2 || length(find(ismember([46 19 14],value))) == 2
         
+        if length(find(ismember([16 45],value))) == 1
+           state = 500;
+        else
+           state = 600;
+        end
+        
+        if length(find(ismember([37],value))) == 1
+           action = 800;
+        elseif length(find(ismember([38],value))) == 1
+           action = 700;
+        else
+           action = 900;
+        end
+        
         stim1 = find(ismember(value,[16 45 46 19]));
-        value = [value(1:stim1) 300 value(stim1+1:end)];
-        sample = [sample(1:stim1) sample(stim1) sample(stim1+1:end)];
+        value = [value(1:stim1) 300 state action value(stim1+1:end)];
+        sample = [sample(1:stim1) sample(stim1) sample(stim1) sample(stim1) sample(stim1+1:end)];
         
     elseif length(find(ismember([16 45 14],value))) == 2 || length(find(ismember([46 19 15],value))) == 2
+        
+                
+        if length(find(ismember([16 45],value))) == 1
+           state = 500;
+        else
+           state = 600;
+        end
+        
+        if length(find(ismember([37],value))) == 1
+           action = 700;
+        elseif length(find(ismember([38],value))) == 1
+           action = 800;
+        else
+           action = 900;
+        end
+                
         stim1 = find(ismember(value,[16 45 46 19]));
-        value = [value(1:stim1) 400 value(stim1+1:end)];
-        sample = [sample(1:stim1) sample(stim1) sample(stim1+1:end)];
+        value = [value(1:stim1) 400 state action value(stim1+1:end)];
+        sample = [sample(1:stim1) sample(stim1) sample(stim1) sample(stim1) sample(stim1+1:end)];
     end
     
     begsample = sample{ismember(value,cfg.DT.Locks(1))} + sstime(1)*hdr.Fs;
