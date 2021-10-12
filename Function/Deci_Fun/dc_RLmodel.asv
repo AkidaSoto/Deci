@@ -181,14 +181,14 @@ for Dim2 = 1:size(A_rep,2)
             %1.) Classic model with 2 parameters, alpha and beta
             
             if ismember(1, Deci.Analysis.Extra.QL.ModelNum)
-                Model10.LB = [0 1e-6];
-                Model10.UB = [1 30];
-                Model10.init =rand(1,length(Model10.LB)).*(Model10.UB-Model10.LB)+Model10.LB;
+                Model1.LB = [0 1e-6];
+                Model1.UB = [1 30];
+                Model1.init =rand(1,length(Model1.LB)).*(Model1.UB-Model1.LB)+Model1.LB;
                 
                 
                 [Value{1,init}] = ...
                     fmincon(@(x) SimpleQ(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2)),...
-                    [Model10.init],[],[],[],[],[Model10.LB],[Model10.UB],[],...
+                    [Model1.init],[],[],[],[],[Model1.LB],[Model1.UB],[],...
                     optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
                 
                 [LLE(1,init),out{1,init}] = SimpleQ(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{1,init}(1),Value{1,init}(2));
@@ -399,19 +399,19 @@ for Dim2 = 1:size(A_rep,2)
                         %1.) Classic model with 2 parameters, alpha and beta
             
             if ismember(10, Deci.Analysis.Extra.QL.ModelNum)
-                Model10.LB = [0 0 0 0 1e-6];
-                Model10.UB = [1 1 1 1 30];
-                Model10.init =rand(1,length(Model10.LB)).*(Model10.UB-Model10.LB)+Model10.LB;
+                Model1.LB = [0 0 0 0 1e-6];
+                Model1.UB = [1 1 1 1 30];
+                Model1.init =rand(1,length(Model1.LB)).*(Model1.UB-Model1.LB)+Model1.LB;
                 
                 
                 [Value{10,init}] = ...
                     fmincon(@(x) unChosenQ(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3),x(4),x(5)),...
-                    [Model10.init],[],[],[],[],[Model10.LB],[Model10.UB],[],...
+                    [Model1.init],[],[],[],[],[Model1.LB],[Model1.UB],[],...
                     optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
                 
-                [LLE(10,init),out{10,init}] = unChosenQ(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{10,init}(1),Value{10,init}(2),Value{10,init}(3),Value{10,init}(4),Value{10,init}(5));
-                LLE(10,init) = -LLE(10,init); %change fmin to fmax     
-                LLE2(10,init) = aicbic(LLE(10,init),[2]);
+                [LLE(10,init),out{1,init}] = unChosenQ(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{1,init}(1),Value{1,init}(2),Value{1,init}(3),Value{1,init}(4),Value{1,init}(5));
+                LLE(10,init) = -LLE(1,init); %change fmin to fmax     
+                LLE2(1,init) = aicbic(LLE(1,init),[2]);
                 
                 if init == 1
                     ColNames{10} = {'10_Unchosen_AlpCP' '10_Unchosen_AlpCN' '10_Unchosen_AlpUP' '10_Unchosen_AlpUN' '10_Classic_Beta'};

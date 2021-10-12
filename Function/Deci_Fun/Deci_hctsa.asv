@@ -271,13 +271,13 @@ elseif params.pooled==1
 
     clear variable Fpowspctrm_int
 end
-savedchanfreq=[Deci.SubjectList{info.subject_list} 'Sing_chanfreq_burst.mat'];
 if newloop~=1
-saved_chanfreq_burst=load(savedchanfreq);
+savedchanfreq=[ 'sing_chanfreq_burst.mat'
+saved_chanfreq_burst=load('sing_chanfreq_burst.mat');
 sing_chanfreq_burst=saved_chanfreq_burst.sing_chanfreq_burst;
 end
 sing_chanfreq_burst(:,newloop)=hctsa_norm_mat.TS_DataMat(:,1); %concatenate the channels
-save(savedchanfreq)
+save('sing_chanfreq_burst')
 
 clearvars -except Deci info data params
 end

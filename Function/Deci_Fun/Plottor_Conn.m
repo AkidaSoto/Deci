@@ -1,3 +1,4 @@
+
 function Plottor_Conn(Deci,Params)
 
 %% Load
@@ -647,7 +648,7 @@ for ConnList = 1:length(Params.List)
 
                         nonsingleton = sum(size(AllData{DataType}{subj,Plot.Draw{cond}(subcond)}.(param)) ~= 1);
                         
-                        if nonsingleton == 2
+                       if nonsingleton == 2
                             pcfg.imagetype = 'imagesc';
                             pcfg.colormap = Deci.Plot.ColorMap;
                             

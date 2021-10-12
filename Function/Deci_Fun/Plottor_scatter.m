@@ -211,6 +211,52 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
         Sub.Acc = {'SubjAvg'}
         
     end
+    
+    display('reject');
+    display(Deci.SubjectList(max(sum(nanmean(Acc{fig},4) < .6,3),[],2) >= 2))
+    
+    display('-----------')
+            
+    missing1block = find(max(sum(nanmean(Acc{fig},4) < .6,3),[],2) == 1);
+    
+    
+    for subj = 1:length(missing1block)
+    
+        
+        load([Deci.Folder.Artifact filesep Deci.SubjectList{missing1block(subj)}],'data','info');
+        
+        condition = sum(nanmean(Acc{fig}(missing1block(subj),:,:,:),4) < .6,3);
+
+       
+        display(Deci.SubjectList{missing1block(subj)});
+        
+        
+         
+        for cond = find(condition)
+            missingcond = [Deci.Analysis.Conditions{Deci.Plot.Behv.Acc.Total{fig}{cond}}];
+            missingcond = sum(ismember(info.postart.events,missingcond),2) == max(sum(ismember(info.postart.events,missingcond),2));
+            
+            display(cond);
+            block = squeeze(sum(nanmean(Acc{fig}(missing1block(subj),cond,:,:),4) < .6,2));
+            display(find(block));   
+            display('-----------')
+            
+            
+            for blk = find(block)
+            missingblock = ceil(info.postart.events(:,5)) == -blk;
+                
+            info.postart.locks = info.postart.locks(~(missingblock & missingcond),:);
+            info.postart.events = info.postart.events(~(missingblock & missingcond),:);
+            info.postart.trlnum = info.postart.trlnum(~(missingblock & missingcond),:);
+            
+            display(length(find(missingcond & missingblock)))
+            end
+        end
+        
+        save([Deci.Folder.Artifact filesep Deci.SubjectList{missing1block(subj)}],'data','info','-v7.3');
+        
+    end
+    
 end
 
 for fig = find(Deci.Plot.Behv.RT.Figure)

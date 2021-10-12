@@ -197,7 +197,8 @@ for subject_list = 1:length(Deci.SubjectList)
             disp('---Implicit Rereference applied---');
         end
         
-        tempdata = ft_preprocessing(bcfg,data);
+        %tempdata = ft_preprocessing(bcfg,data);
+        tempdata = data;
         %% Manual Trial Rejection
         
         
@@ -323,7 +324,9 @@ for subject_list = 1:length(Deci.SubjectList)
            
             %%% auto-reject trials based on 2std    
            if Deci.Art.RT.dotwostd
-            RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] > 2*std([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
+            RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] > mean([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))])+2*std([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]) ...
+                    | [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] < mean([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))])-2*std([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]) ;
+            
             RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
             
             display(' ')
