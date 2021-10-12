@@ -8,7 +8,7 @@ end
 
 AllFiles = unique(cellfun(@(d) d(1),cellfun(@(c) strsplit(c,'.'),AllFiles,'un',0)));
 
-IsCopy = cellfun(@(c) isstrprop(c{end}(1),'digit'),cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',false));
+IsCopy = cellfun(@(c) all(isstrprop(c{end},'digit')),cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',false));
 
 BaseFiles = AllFiles(~IsCopy);
 CopyFiles = AllFiles(IsCopy);

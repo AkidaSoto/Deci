@@ -203,6 +203,27 @@ if Deci.PP.ShowData
     evalc('artf = ft_databrowser(cfg,data)');
 end
 
+        
+%% Impicit
+
+if ~isempty(Deci.PP.Imp)
+    Imp = strsplit(Deci.PP.Imp,':');
+
+    if ~ismember(Imp{2},data.label)
+        error('invalid Implicit channels for reference')
+    end
+    Imp_cfg.reref = 'yes';
+    Imp_cfg.channel  = 'all';
+    Imp_cfg.implicitref = Imp{1};
+    Imp_cfg.refchannel = Imp;
+    %Imp_cfg.feedback = feedback;
+    evalc('data = ft_preprocessing(Imp_cfg,data)');
+    disp('---Implicit Rereference applied---');
+end
+
+%tempdata = ft_preprocessing(bcfg,data);
+tempdata = data;
+
 %% ICA
 
 display(' ')

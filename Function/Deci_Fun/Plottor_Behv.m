@@ -244,13 +244,13 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
         fullAcc{fig} = Acc{fig};
         
         if Deci.Plot.Behv.Acc.Collapse.Trial
-            Accsem{fig} = nanstd(Acc{fig},[],4)/sqrt(size(Acc{fig},4));
+            Accsem{fig} = std(Acc{fig},[],4,'omitnan')/sqrt(size(Acc{fig},4));
             Acc{fig} = nanmean(Acc{fig},4);
             
         end
         
         if Deci.Plot.Behv.Acc.Collapse.Block
-            Accsem{fig} = nanstd(Acc{fig},[],3)/sqrt(size(Acc{fig},3));
+            Accsem{fig} = std(Acc{fig},[],3,'omitnan')/sqrt(size(Acc{fig},3));
             Acc{fig} = nanmean(Acc{fig},3);
             
         end
@@ -263,7 +263,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
              end
             
             if ~Deci.Plot.Behv.Acc.BaW
-            Accsem{fig} =  nanstd(Acc{fig},[],1)/sqrt(size(Acc{fig},1));
+            Accsem{fig} =  std(Acc{fig},[],1,'omitnan')/sqrt(size(Acc{fig},1));
             Acc{fig} =  nanmean(Acc{fig},1);
             Sub.Acc = {'SubjAvg'};
             else
@@ -290,12 +290,12 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
         fullRT{fig} = RT{fig};
         
         if Deci.Plot.Behv.RT.Collapse.Trial
-            RTsem{fig} = nanstd(RT{fig},[],4)/sqrt(size(RT{fig},4));
+            RTsem{fig} = std(RT{fig},[],4,'omitnan')/sqrt(size(RT{fig},4));
             RT{fig} = nanmean(RT{fig},4);
         end
         
         if Deci.Plot.Behv.RT.Collapse.Block
-            RTsem{fig} = nanstd(RT{fig},[],3)/sqrt(size(RT{fig},3));
+            RTsem{fig} = std(RT{fig},[],3,'omitnan')/sqrt(size(RT{fig},3));
             RT{fig} = nanmean(RT{fig},3);
         end
         
@@ -308,7 +308,7 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
             
             if ~Deci.Plot.Behv.RT.BaW
                 
-                RTsem{fig} = nanstd(RT{fig},[],1)/sqrt(size(RT{fig},1));
+                RTsem{fig} = std(RT{fig},[],1,'omitnan')/sqrt(size(RT{fig},1));
                 RT{fig} =  nanmean(RT{fig},1);
                 Sub.RT = {'SubjAvg'};
             else

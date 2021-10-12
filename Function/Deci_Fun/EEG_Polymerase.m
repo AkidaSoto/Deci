@@ -104,13 +104,17 @@ if ~isempty(cfg.DT.Block)
                 
                 onebi = find(ismember(trialinfo(:,bindex),ab));
                 
+
+                minnum = min(onebi);
+                minpairs = min(length(onebi)/cfg.DT.Block.Num);
+
                 onebi = cat(1,reshape(onebi(1:end-rem(length(onebi),cfg.DT.Block.Num)), [[length(onebi)-rem(length(onebi),cfg.DT.Block.Num)]/cfg.DT.Block.Num cfg.DT.Block.Num]), ...
                     [nan([1 cfg.DT.Block.Num-rem(length(onebi),cfg.DT.Block.Num)]) onebi(end-rem(length(onebi),cfg.DT.Block.Num)+1:end)']);
 
                 
                 for eachsect = 1:cfg.DT.Block.Num
                     
-                    trialinfo(min(onebi(:,eachsect)):max(onebi(:,eachsect)),bindex) = trialinfo(min(onebi(:,eachsect)):max(onebi(:,eachsect)),bindex) + [-1/cfg.DT.Block.Num]*(eachsect-1);
+                    trialinfo(floor(minpairs*[eachsect-1])+minnum:floor(minpairs*[eachsect])+minnum-1,bindex) = trialinfo(floor(minpairs*[eachsect-1])+minnum:floor(minpairs*[eachsect])+minnum-1,bindex) + [-1/cfg.DT.Block.Num]*(eachsect-1);
                     
                 end
                 

@@ -82,28 +82,26 @@ for j = 1:length(startstopseg)
     if ~isempty(cfg.DT.Block)   
         
         
-            trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = [-1*find([event(startstopseg(1,j)).sample] >  [event(bstartstop).sample],1,'last')];
+    trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = [-1*find([event(startstopseg(1,j)).sample] >  [event(bstartstop).sample],1,'last')];
     else
     trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = -1; 
     end
     
     trialinfo(size(trl,1),length(cfg.DT.Markers)+2:length(cfg.DT.Markers)+3) = nan;
     
-    if all(ismember(trialinfo(size(trl,1),:),{20 52})) || all(ismember(trialinfo(size(trl,1),:),{21 51}))
+    if all(ismember([24 31 51],trialinfo(size(trl,1),:))) || all(ismember([24 32 52],trialinfo(size(trl,1),:)))
          trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 261;
-    elseif  all(ismember(trialinfo(size(trl,1),:),{23 52})) || all(ismember(trialinfo(size(trl,1),:),{24 51}))
+    elseif  all(ismember([24 31 52],trialinfo(size(trl,1),:))) || all(ismember([24 32 51],trialinfo(size(trl,1),:)))
         trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 262;
-    else
-        trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 260;
     end
     
-    if all(ismember(trialinfo(size(trl,1),:),{20 52})) || all(ismember(trialinfo(size(trl,1),:),{21 51}))
-        trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 261;
-    elseif  all(ismember(trialinfo(size(trl,1),:),{23 52})) || all(ismember(trialinfo(size(trl,1),:),{24 51}))
-        trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 262;
-    else
-        trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 260;
-    end
+%     if all(ismember(trialinfo(size(trl,1),:),{20 52})) || all(ismember(trialinfo(size(trl,1),:),{21 51}))
+%         trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 261;
+%     elseif  all(ismember(trialinfo(size(trl,1),:),{23 52})) || all(ismember(trialinfo(size(trl,1),:),{24 51}))
+%         trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 262;
+%     else
+%         trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 260;
+%     end
     
 end
 

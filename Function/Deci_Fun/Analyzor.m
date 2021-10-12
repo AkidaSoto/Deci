@@ -58,6 +58,14 @@ if Deci.Analysis.Laplace
     evalc('data = ft_scalpcurrentdensity(ecfg, data)');
     
     display('Laplace Transform Applied')
+
+    data.locks = locks;
+    data.events = events;
+    data.trlnum = trlnum;
+    data.postart.locks = postart.locks;
+    data.postart.events = postart.events;
+    data.postart.trlnum = postart.trlnum;
+    info.postart = data.postart;
 end
 
 %% HemifieldFlip
@@ -445,21 +453,28 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             tpowcorr = ft_selectdata(struct('latency',Deci.Analysis.Freq.PowCorrAcrossTrials.toi,'frequency',Deci.Analysis.Freq.PowCorrAcrossTrials.foi, ...
                                     'avgovertime','yes','avgoverfreq','yes'),tpowcorr);
                         end
-                                                               
-                        uniqueblocks = unique(ceil(events(ccfg.trials,5)));
+                                               
+
+                        if any(any(events < 0))
+                            events(:,find(events(1,:) < 1)) = ceil(events(:,find(events(1,:) < 1)));
+                            uniqueblocks = sort(unique(events(ccfg.trials,find(events(1,:) < 1))),'descend');
+                        else
+                            uniqueblocks = -1;
+                        end
+
                         for j = 1:length(uniqueblocks)
                             
                             if  isempty(Deci.Analysis.Freq.PowCorrAcrossTrials.Static)
-                                trials = ceil(events(ccfg.trials,5));
+                                trials = ceil(events(ccfg.trials,find(events(1,:) < 1)));
                                 block = trials == uniqueblocks(j);
                                 trlnums = ccfg.trials(block) - (abs(uniqueblocks(j))-1)*80;
                             else
-                                trials = ceil(events(ccfg.trials,5));
                                 static = Deci.Analysis.Conditions{Cond}(ismember(Deci.Analysis.Conditions{Cond},Deci.Analysis.Freq.PowCorrAcrossTrials.Static));
-                                staticlength = trlnum(events(:,1) == static & ceil(events(:,5)) == uniqueblocks(j));
-                                trlnums = find(ismember(staticlength,ccfg.trials));
-                                
+                                trials = events(ccfg.trials,:);
+                                trlnums = ccfg.trials(trials(:,1) == static & trials(:,find(events(1,:) < 1)) == uniqueblocks(j));
+                                staticlength = trlnum(trlnums) - min(trlnum(trlnums)) + 1;
                             end
+
                             
                             for fois = 1:size(freq.powspctrm,3)
                                 for tois = 1:size(freq.powspctrm,4)
@@ -468,7 +483,11 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                     
                                     
                                     if Deci.Analysis.Freq.PowCorrAcrossTrials.polyfit
-                                    [y] = polyfit(trlnums,powcorr.powspctrm(ceil(events(ccfg.trials,5)) == uniqueblocks(j),:,fois,tois),1);
+                                        try
+                                    [y] = polyfit(staticlength,powcorr.powspctrm(ismember(ccfg.trials,trlnums),:,fois,tois),1);
+                                        catch
+k = 0;
+                                        end
                                     m = y(1);
                                     b = y(2);
                                     
@@ -488,7 +507,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             end
                             
                             if Deci.Analysis.Freq.PowCorrAcrossTrials.raw
-                                rawfreq.trialpow{j} = tpowcorr.powspctrm(ceil(events(ccfg.trials,5)) == uniqueblocks(j),:);
+                                rawfreq.trialpow{j} = tpowcorr.powspctrm(ceil(events(ccfg.trials,find(events(1,:) < 1))) == uniqueblocks(j),:);
                                 rawfreq.trialnums{j} = trlnums;
                                 
                             end     
@@ -531,6 +550,13 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         
                         mkdir([Deci.Folder.Analysis filesep 'Freq_PowerIntercept2' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
                         save([Deci.Folder.Analysis filesep 'Freq_PowerIntercept2' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
+                        
+                        powcorr.powspctrm = permute(nanmean(intercept,1),[2 3 4 1]) + trllength*permute(nanmean(slope,1),[2 3 4 1]);
+                        freq = powcorr;
+
+                        mkdir([Deci.Folder.Analysis filesep 'Freq_PowerEnd2' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        save([Deci.Folder.Analysis filesep 'Freq_PowerEnd2' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
+                        
                         end
                         
                         if Deci.Analysis.Freq.PowCorrAcrossTrials.sigmoid
