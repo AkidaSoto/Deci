@@ -1,4 +1,16 @@
-function AppendEEGs(Dir,datatype)
+function AppendEEGs(Dir,datatype,varargin)
+
+if length(varargin) < 1
+    pos = 4;
+else
+    pos = varargin{1};
+end
+
+if length(varargin) < 2
+    base = 3;
+else
+    base = varargin{3};
+end
 
 AllFiles = CleanDir(Dir);
 
@@ -8,31 +20,34 @@ end
 
 AllFiles = unique(cellfun(@(d) d(1),cellfun(@(c) strsplit(c,'.'),AllFiles,'un',0)));
 
-IsCopy = cellfun(@(c) all(isstrprop(c{end},'digit')),cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',false));
+IsCopy = cellfun(@(c) ~isempty(regexp(c{pos},'\d*','Match')),cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',false));
 
 BaseFiles = AllFiles(~IsCopy);
 CopyFiles = AllFiles(IsCopy);
 
-CopysBaseName = cellfun(@(a) strjoin(a(1:end-1),'_'),cellfun(@(c) strsplit(c,'_'),CopyFiles,'UniformOutput',false),'un',false);
+BaseName  = cellfun(@(a) a(base),cellfun(@(c) strsplit(c,'_'),BaseFiles,'UniformOutput',false));
+CopysBaseName = cellfun(@(a) a(base),cellfun(@(c) strsplit(c,'_'),CopyFiles,'UniformOutput',false));
 
 
 mkdir(strcat(Dir,'_new'));
 for Each = 1:length(BaseFiles)
     
-    Copies = CopyFiles(ismember(CopysBaseName,BaseFiles{Each}));
+    Copies = CopyFiles(ismember(CopysBaseName,BaseName{Each}));
     
     if ~isempty(Copies)
     hdr   = ft_read_header([Dir filesep BaseFiles{Each} '.' datatype]);
     event = ft_read_event([Dir filesep BaseFiles{Each} '.' datatype]); 
     dat   = ft_read_data([Dir filesep BaseFiles{Each} '.' datatype]);
     
+    event = StandardizeEventMarkers(event);
     for cop = 1:length(Copies)
         
         event2 = ft_read_event([Dir filesep Copies{cop} '.' datatype]);
         dat2   = ft_read_data([Dir filesep Copies{cop} '.' datatype]);
-        
-        event = [event arrayfun(@(c) setfield(c,'sample',c.sample + event(end).sample),event2)];
-        dat = cat(2,dat,dat2);
+        event2 = StandardizeEventMarkers(event2);
+
+      event = [event arrayfun(@(c) setfield(c,'sample',c.sample + event(end).sample+1),event2)];
+      dat = cat(2,dat,dat2);
     end
    
     ft_write_data([Dir '_new' filesep BaseFiles{Each}],dat,'header',hdr,'dataformat','brainvision_eeg','event',event)

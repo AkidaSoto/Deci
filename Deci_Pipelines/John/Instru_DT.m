@@ -89,9 +89,9 @@ for j = 1:length(startstopseg)
     
     trialinfo(size(trl,1),length(cfg.DT.Markers)+2:length(cfg.DT.Markers)+3) = nan;
     
-    if all(ismember([24 31 51],trialinfo(size(trl,1),:))) || all(ismember([24 32 52],trialinfo(size(trl,1),:)))
+    if all(ismember([124 31 51],trialinfo(size(trl,1),:))) || all(ismember([124 32 52],trialinfo(size(trl,1),:)))
          trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 261;
-    elseif  all(ismember([24 31 52],trialinfo(size(trl,1),:))) || all(ismember([24 32 51],trialinfo(size(trl,1),:)))
+    elseif  all(ismember([124 31 52],trialinfo(size(trl,1),:))) || all(ismember([124 32 51],trialinfo(size(trl,1),:)))
         trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = 262;
     end
     

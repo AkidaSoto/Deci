@@ -14,7 +14,13 @@ for brains = 1:length(params.Brain)
                 toi = freq.time >= round(params.bsl.time(1),4) & freq.time <= round(params.bsl.time(2),4);
 
                 Bsl = nanmean(Bsl(:,:,:,toi),4);
+                
+                if ~strcmpi(params.bsl.type,'meanrelchange')
                 Bsl = repmat(Bsl,[1 1 1 size(brain,4)]);
+                else
+                Bsl = nanmean(Bsl(:,:,:),1);
+                Bsl = repmat(Bsl,[size(brain,1) 1 1 size(brain,4)]);
+                end
 
                 switch params.bsl.type
                     case 'none'
@@ -31,31 +37,37 @@ for brains = 1:length(params.Brain)
             end
 
         case 'Phase'
-            brain = ang2rad(angle(freq.fourierspctrm));
+            brain = angle(freq.fourierspctrm);
     end
 
     toi = freq.time;
 
-    if ~strcmpi(params.type,'regress')
+    if strcmpi(params.type,'regress')
         for behaviors = 1:length(params.Behavior)
 
             behavior = load([Deci.Folder.Analysis filesep 'Extra' filesep params.Behavior{behaviors} filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.CondTitle{info.Cond}]);
 
             Type = fieldnames(behavior);
 
-            behavior = behavior.(Type{1});
+            try
+                behavior = cat(1,behavior.(Type{1}){:});
+            catch
+                behavior = cat(2,behavior.(Type{1}){:});
+            end
+
+            behavior = behavior(info.trials);
+
+            if ~isequal(size(brain,1),size(behavior,1))
+                behavior = behavior';
+            end
+
+            parameter{behaviors} = behavior;
 
             for foi = 1:length(freq.freq)
 
                 for ti = 1:length(toi)
 
                     b_time = brain(:,:,foi,toi(ti) == toi);
-
-                    if ~isequal(size(b_time),size(behavior))
-                        behavior = behavior';
-                    end
-
-                    parameter{behaviors} = behavior;
 
                     switch params.Brain{brains}
                         case 'Magnitude'
@@ -68,14 +80,14 @@ for brains = 1:length(params.Brain)
 
                                 params = Exist(params,'type',[]);
 
-                                [R(1,foi,ti), P(1,foi,ti)] = corr(b_time,parameter{behaviors},'Type','Spearman');
+                                [R(1,foi,ti), P(1,foi,ti)] = corr(b_time,parameter{behaviors},'type','Spearman');
                             elseif strcmpi(params.type,'linear')
 
                                 [y] = polyfit(b_time,parameter{behaviors},1);
                                 R(1,foi,ti) = y(1);
                                 P(1,foi,ti) = y(2);
 
-                            else
+                            elseif strcmpi(params.type,'pearson')
                                 [r,p] = corrcoef(b_time,parameter{behaviors});
                                 R(1,foi,ti) = r(1,2);
                                 P(1,foi,ti) = p(1,2);
@@ -88,66 +100,69 @@ for brains = 1:length(params.Brain)
                     end
                 end
             end
+      
+
+        %         if any(any(arrayfun(@(c) iscomplex(c),R)))
+        %            k = 0;
+        %         end
+
+        extracorr.label = freq.label;
+        extracorr.freq = freq.freq;
+        extracorr.time = freq.time;
+        extracorr.dimord =  'chan_freq_time';
+
+        extracorr.powspctrm = R;
+        R = extracorr;
+
+        extracorr.powspctrm = P;
+        P = extracorr;
+
+        mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Brain{brains} '_' params.Behavior{behaviors}  filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}])
+        save([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Brain{brains} '_' params.Behavior{behaviors}  filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep info.Channels{info.ChanNum}],'R','P');
+        clear R P
         end
+   else
+       for behaviors = 1:length(params.Behavior)
 
-    else
+           behavior = load([Deci.Folder.Analysis filesep 'Extra' filesep params.Behavior{behaviors} filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.CondTitle{info.Cond}]);
 
-        for behaviors = 1:length(params.Behavior)
+           Type = fieldnames(behavior);
 
-            behavior = load([Deci.Folder.Analysis filesep 'Extra' filesep params.Behavior{behaviors} filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.CondTitle{info.Cond}]);
+           try
+               behavior = cat(1,behavior.(Type{1}){:});
+           catch
+               behavior = cat(2,behavior.(Type{1}){:});
+           end
 
-            Type = fieldnames(behavior);
+           behavior = behavior(info.trials);
 
-            behavior = behavior.(Type{1});
+           if ~isequal(size(brain,1),size(behavior,1))
+               behavior = behavior';
+           end
 
-            if ~isequal(size(b_time,1),size(behavior,1))
-                behavior = behavior';
-            end
+           parameter{behaviors} = behavior;
+       end
 
-            parameter{behaviors} = behavior;
-        end
 
-        for foi = 1:length(freq.freq)
+            for foi = 1:length(freq.freq)
 
-            for ti = 1:length(toi)
+                for ti = 1:length(toi)
 
-                b_time = brain(:,:,foi,toi(ti) == toi);
+                    b_time = brain(:,:,foi,toi(ti) == toi);
 
-                switch params.Brain{brains}
-                    case 'Magnitude'
-                        mdl = fitlm(parameter,b_time);
-                    case 'Phase'
-                        [beta,R2,p] = CircularRegression(parameter,b_time);
+                    switch params.Brain{brains}
+                        case 'Magnitude'
+                            mdl = fitlm(cat(2,parameter{:}),b_time,params.formula,'CategoricalVars',params.categorical,'VarNames',[params.Behavior,'Magnitude']);
+                        case 'Phase'
+                            [beta,R2,p] = CircularRegression(cat(2,parameter{:}),b_time);
+                    end
+
                 end
-
             end
-        end
-
-
-
+        
     end
 
-    %         if any(any(arrayfun(@(c) iscomplex(c),R)))
-    %            k = 0;
-    %         end
-
-    extracorr.label = freq.label;
-    extracorr.freq = freq.freq;
-    extracorr.time = freq.time(toi);
-    extracorr.dimord =  'chan_freq_time';
-
-    extracorr.powspctrm = R;
-    R = extracorr;
-
-    extracorr.powspctrm = P;
-    P = extracorr;
-
-    mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Brain{brains} '_' params.Behavior{behaviors}  filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}])
-    save([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Brain{brains} '_' params.Behavior{behaviors}  filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep info.Channels{info.ChanNum}],'R','P');
-    clear R P
-
 end
 
-end
 
 %%

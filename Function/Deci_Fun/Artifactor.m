@@ -34,7 +34,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         %cfg.detrend = 'yes';
         bcfg.bpfreq = Deci.ICA.bpfreq;
-        bcfg.bpfilter = 'yes';
+        bcfg.bpfilter = 'no';
         bcfg.detrend = 'yes';
         bcfg.demean = 'yes';
         

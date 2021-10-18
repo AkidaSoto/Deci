@@ -164,7 +164,7 @@ if exist([Deci.Folder.Plot filesep  Deci.Plot.Title{1} ' Bar Data' ]) == 2
     %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Full');
 end
 
-writecell(exceldata,[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' ' Deci.Plot.Freq.Type ' Data' ],'FileType','spreadsheet','Sheet','Bar Data');
+%writecell(exceldata,[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' ' Deci.Plot.Freq.Type ' Data' ],'FileType','spreadsheet','Sheet','Bar Data');
 %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
 
 
