@@ -279,7 +279,7 @@ end
         if ~isempty(Deci.Art.RT)
             
             if Deci.Art.RT.dominlength
-                RT_Art = abs([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] < Deci.Art.RT.minlength;
+                RT_Art = abs([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]) < Deci.Art.RT.minlength;
                 RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
             
                 display(' ')
