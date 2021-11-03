@@ -6,7 +6,7 @@ ButtonH=uicontrol('Parent', mainfig,'Style','pushbutton','String','p Mask','Posi
     function pmask(PushButton, EventData)
         
         Axes = PushButton.Parent.Children.findobj('Type','Axes');
-        Axes = Axes(arrayfun(@(c) ~isempty(c.String), [Axes.Title]));
+        %Axes = Axes(arrayfun(@(c) ~isempty(c.String), [Axes.Title]));
         
         for a = 1:length(unique([PushButton.Parent.Children.findobj('Type','Axes').UserData]))
             

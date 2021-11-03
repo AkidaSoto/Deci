@@ -472,8 +472,12 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         freq.powspctrm = abs(freq.fourierspctrm).^2;
                         freq  = rmfield(freq,'fourierspctrm');
                         freq.dimord = 'rpt_chan_freq_time';
-                        powcorr = ft_freqbaseline(struct('baseline',Deci.Analysis.Freq.PowCorrAcrossTrials.bsl,'baselinetype',Deci.Analysis.Freq.PowCorrAcrossTrials.bsltype),freq);
 
+                        if ~strcmp(Deci.Analysis.Freq.PowCorrAcrossTrials.bsltype,'none')
+                        powcorr = ft_freqbaseline(struct('baseline',Deci.Analysis.Freq.PowCorrAcrossTrials.bsl,'baselinetype',Deci.Analysis.Freq.PowCorrAcrossTrials.bsltype),freq);
+                        else 
+                        powcorr = freq;
+                        end
                         
                         if Deci.Analysis.Freq.PowCorrAcrossTrials.sigmoid
                             spowcorr = powcorr;
@@ -482,8 +486,13 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         
                         if Deci.Analysis.Freq.PowCorrAcrossTrials.raw
                             tpowcorr = powcorr;
+                            time_powcorr =  ft_selectdata(struct('frequency',Deci.Analysis.Freq.PowCorrAcrossTrials.foi, ...
+                                    'avgoverfreq','yes'),tpowcorr);
+
+                            tpowcorr = powcorr;
                             tpowcorr = ft_selectdata(struct('latency',Deci.Analysis.Freq.PowCorrAcrossTrials.toi,'frequency',Deci.Analysis.Freq.PowCorrAcrossTrials.foi, ...
-                                    'avgovertime','yes','avgoverfreq','yes'),tpowcorr);
+                                'avgovertime','yes','avgoverfreq','yes'),tpowcorr);
+
                         end
                                                
 
@@ -541,7 +550,15 @@ k = 0;
                             if Deci.Analysis.Freq.PowCorrAcrossTrials.raw
                                 rawfreq.trialpow{j} = tpowcorr.powspctrm(ceil(events(ccfg.trials,find(events(1,:) < 1))) == uniqueblocks(j),:);
                                 rawfreq.trialnums{j} = trlnums;
-                                
+                                rawfreq.trials = ccfg.trials;
+                                rawfreq.time = tpowcorr.time;
+                                rawfreq.events = events(ccfg.trials,:);
+
+                                time_rawfreq.trialpow{j} = time_powcorr.powspctrm(ceil(events(ccfg.trials,find(events(1,:) < 1))) == uniqueblocks(j),:,:,:);
+                                time_rawfreq.trialnums{j} = trlnums;
+                                time_rawfreq.trials = ccfg.trials;
+                                time_rawfreq.time = time_powcorr.time;
+                                time_rawfreq.events = events(ccfg.trials,:);
                             end     
                             
                            if Deci.Analysis.Freq.PowCorrAcrossTrials.sigmoid
@@ -621,6 +638,9 @@ k = 0;
                         if Deci.Analysis.Freq.PowCorrAcrossTrials.raw    
                         mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'RawFreq' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
                         save([Deci.Folder.Analysis filesep 'Extra' filesep 'RawFreq' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'rawfreq','-v7.3');
+                        
+                        mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'TRawFreq' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        save([Deci.Folder.Analysis filesep 'Extra' filesep 'TRawFreq' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'time_rawfreq','-v7.3');
                         end
                         
                         

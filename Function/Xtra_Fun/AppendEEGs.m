@@ -46,7 +46,7 @@ for Each = 1:length(BaseFiles)
         dat2   = ft_read_data([Dir filesep Copies{cop} '.' datatype]);
         event2 = StandardizeEventMarkers(event2);
 
-      event = [event arrayfun(@(c) setfield(c,'sample',c.sample + event(end).sample+1),event2)];
+      event = [event arrayfun(@(c) setfield(c,'sample',c.sample + size(dat,2)+1open ),event2)];
       dat = cat(2,dat,dat2);
     end
    

@@ -32,6 +32,8 @@ for brains = 1:length(params.Brain)
                         brain = ( brain - Bsl) ./ Bsl;
                     case 'db'
                         brain = 10*log10( brain ./ Bsl);
+                    case 'meanrelchange'
+                        brain = ( brain - Bsl) ./ Bsl;
                 end
 
             end
@@ -42,7 +44,7 @@ for brains = 1:length(params.Brain)
 
     toi = freq.time;
 
-    if strcmpi(params.type,'regress')
+    if ~strcmpi(params.type,'regress')
         for behaviors = 1:length(params.Behavior)
 
             behavior = load([Deci.Folder.Analysis filesep 'Extra' filesep params.Behavior{behaviors} filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.CondTitle{info.Cond}]);
@@ -140,6 +142,11 @@ for brains = 1:length(params.Brain)
                behavior = behavior';
            end
 
+           if ismember(behaviors,params.signed)
+                %make it so that 0 is reference instead of neg 1
+                behavior(behavior == -1) = 2;
+           end
+
            parameter{behaviors} = behavior;
        end
 
@@ -152,13 +159,29 @@ for brains = 1:length(params.Brain)
 
                     switch params.Brain{brains}
                         case 'Magnitude'
-                            mdl = fitlm(cat(2,parameter{:}),b_time,params.formula,'CategoricalVars',params.categorical,'VarNames',[params.Behavior,'Magnitude']);
+                            mdl = fitlm(cat(2,parameter{:}),b_time,params.formula,'CategoricalVars',params.categorical);
+
+                             R(1,foi,ti,:) = table2array(mdl.Coefficients(:,1));
                         case 'Phase'
-                            [beta,R2,p] = CircularRegression(cat(2,parameter{:}),b_time);
+                            %[beta,R2,p] = CircularRegression(cat(2,parameter{:}),b_time);
                     end
 
                 end
             end
+
+            extracorr.label = freq.label;
+            extracorr.freq = freq.freq;
+            extracorr.time = freq.time;
+            extracorr.dimord =  'chan_freq_time_slope';
+            extracorr.formula = params.formula;
+            extracorr.slope = params.Behavior;
+            extracorr.coefnames = mdl.CoefficientNames;
+            extracorr.powspctrm = R;
+            R = extracorr;
+
+            mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Brain{brains} '_regress'  filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}])
+            save([Deci.Folder.Analysis filesep 'Extra' filesep 'Corr' filesep params.Brain{brains} '_regress'  filesep Deci.SubjectList{info.subject_list}  filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep info.Channels{info.ChanNum}],'R');
+
         
     end
 
