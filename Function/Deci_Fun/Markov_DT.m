@@ -88,7 +88,8 @@ for j = 1:length(startstopseg)
     if ~isempty(cfg.DT.Block)   
         
         for blktypes = 1:length(cfg.DT.Block.Markers)
-            trialinfo(size(trl,1),length(cfg.DT.Markers)+blktypes) = power(1,blktypes)*[-1*find([event(startstopseg(1,j)).sample] >  [event(bss{blktype}).sample],1,'last')];
+            trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = power(1,blktypes)*-1*find([event(startstopseg(1,j)).sample] >  [event(bss{blktype}).sample],1,'last');
+            trialinfo(size(trl,1),length(cfg.DT.Markers)+2) = power(1,blktypes)*10*[bsstype{blktypes}{find([event(startstopseg(1,j)).sample] >  [event(bss{blktype}).sample],1,'last')}];
         end
     else
     trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = -1; 

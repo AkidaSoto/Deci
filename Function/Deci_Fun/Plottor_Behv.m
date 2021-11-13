@@ -64,7 +64,15 @@ for subject_list = 1:length(Deci.SubjectList)
             if isa(Deci.Plot.Behv.RT.Block,'function_handle')
                 RTevents(:,find(data.event(1,:) < 1)) = Deci.Plot.Behv.RT.Block(RTevents(:,find(data.event(1,:) < 1)));
                 
-                RTBlock= unique(RTevents(:,find(RTevents(1,:) < 1)),'stable');
+                if size(RTevents(:,find(data.event(1,:) < 1)),2) > 1 && ~isfield(Deci.Plot.Behv,'blockcol')
+                    error('multiple block types cols found, specify which one you want to  use')
+                elseif size(RTevents(:,find(data.event(1,:) < 1)),2) > 1
+                    RTBlock= unique(RTevents(:,Deci.Plot.Behv.blockcol),'stable');
+                else
+                    RTBlock= unique(RTevents(:,find(RTevents(1,:) < 1)),'stable');
+                end
+
+                
             elseif isempty(Deci.Plot.Behv.RT.Block)
                 RTBlock = {-1};
             end
@@ -142,11 +150,19 @@ for subject_list = 1:length(Deci.SubjectList)
             if isa(Deci.Plot.Behv.Acc.Block,'function_handle')
                 Accevents(:,find(data.event(1,:) < 1)) = Deci.Plot.Behv.Acc.Block(data.event(:,find(data.event(1,:) < 1)));
                 
-                AccBlock= unique(Accevents(:,find(Accevents(1,:) < 1)),'stable');
+                if size(Accevents(:,find(data.event(1,:) < 1)),2) > 1 && ~isfield(Deci.Plot.Behv,'blockcol')
+                    error('multiple block types cols found, specify which one you want to  use')
+                elseif size(Accevents(:,find(data.event(1,:) < 1)),2) > 1
+                    AccBlock= unique(Accevents(:,Deci.Plot.Behv.blockcol),'stable');
+                else
+                   AccBlock= unique(Accevents(:,find(Accevents(1,:) < 1)),'stable');
+                end
+
+                
             elseif isempty(Deci.Plot.Behv.Acc.Block)
                 AccBlock = {-1};
             end
-            
+     
             for blk = 1:length(AccBlock)
                 for draw = 1:length(Deci.Plot.Behv.Acc.Total{fig})
                     
