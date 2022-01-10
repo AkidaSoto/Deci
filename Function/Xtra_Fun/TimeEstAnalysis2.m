@@ -1,8 +1,11 @@
 clearvars;
-Files = CleanDir('C:\Users\User\Desktop\Radhika\TimeEst_Raw');
+Files = CleanDir('E:\TimeEst_All\');
 
-Stim = cellfun(@(c) ~rem(str2num(c(end-6)),2),Files);
+%Stim = cellfun(@(c) ~rem(str2num(c(end-6)),2),Files,'un',0);
+Stim = logical(1:length(Files));
+Stim(1) = false;
 
+halves = false;
 
 Block_start = 5;  % new block signal
 Block_stop = 6;  % end of block signal
@@ -54,12 +57,12 @@ UPairLHalf =[];
 
 for Sub = 1:length(Files)
     
-    load(['C:\Users\User\Desktop\Radhika\TimeEst_Raw' filesep Files{Sub}]);
+    load(['E:\TimeEst_All\' filesep Files{Sub}]);
     
     if ~exist('RT_lower')
         continue;
     end
-    
+   
 %     
     LBinsFHalfCOUNTER = 1;
     LBinsLHalfCOUNTER = 1;
@@ -81,6 +84,10 @@ for Sub = 1:length(Files)
     Block_beg = find(ismember({events.value},num2str(Block_start)));
     Block_end = Block_beg(2:end);
     Block_end = [Block_end find(ismember({events.value},num2str(Exp_end)))];
+    
+    if length(RT_lower) ~= length(Block_beg)
+        continue;
+    end
     
     for Type = 1:length(Block_beg)
         
@@ -158,7 +165,7 @@ for Sub = 1:length(Files)
                         if Learn
                             LPair{Sub,PMath}(end+1) = Deviation(Trl) - Deviation(Trl-1);
                             
-                            if Type < ceil(length(Block_beg)/2)
+                            if Type < ceil(length(Block_beg)/2) 
                                 LPairFHalf{Sub,PMath}(LPairFHalfCOUNTER) =  LPair{Sub,PMath}(end);
                                 LPairFHalfCOUNTER =LPairFHalfCOUNTER +1;
                             else

@@ -220,7 +220,7 @@ for cond = 1:length(Deci.Plot.Draw)
         
  
         square(subj) = figure;
-        
+        square(subj).Position = [200 200 750 750];
         if Deci.Plot.Stat.do
             dc_pmask(square(subj))
         end

@@ -206,11 +206,59 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
         end
         
         AccMean{fig} = params.type(Acc{fig},1);
-        Accstd{fig} =  nanstd(Acc{fig},[],1);
+        Accstd{fig} =  std(Acc{fig},[],1,'omitnan');
         
         Sub.Acc = {'SubjAvg'}
         
     end
+    
+    display('reject');
+    display(Deci.SubjectList(max(sum(Acc{fig} < .6,3),[],2) >= 2))
+    
+    display('-----------')
+            
+    missing1block = find(max(sum(Acc{fig} < .6,3),[],2) == 1);
+    
+    
+    for subj = 1:length(missing1block)
+    
+        
+        load([Deci.Folder.Artifact filesep Deci.SubjectList{missing1block(subj)}],'data','info');
+        
+        condition = max(Acc{fig}(missing1block(subj),:,:,:) < .6,[],3);
+
+       
+        display(Deci.SubjectList{missing1block(subj)});
+        
+        
+         
+        for cond = find(condition)
+            missingcond = [Deci.Analysis.Conditions{Deci.Plot.Behv.Acc.Total{fig}{cond}}];
+            missingcond = sum(ismember(info.postart.events,missingcond),2) == max(sum(ismember(info.postart.events,missingcond),2));
+            
+            display(cond);
+            block = find(Acc{fig}(missing1block(subj),cond,:,:) < .6);
+            display(block);   
+            display('-----------')
+            
+            
+            for blk = block
+            missingblock = ceil(info.postart.events(:,5)) == -blk;
+                
+            info.postart.locks = info.postart.locks(~(missingblock & missingcond),:);
+            info.postart.events = info.postart.events(~(missingblock & missingcond),:);
+            info.postart.trlnum = info.postart.trlnum(~(missingblock & missingcond),:);
+            
+            display(length(find(missingcond & missingblock)))
+            end
+        end
+        
+        mkdir([Deci.Folder.Artifact '_new']);
+
+        save([Deci.Folder.Artifact '_new' filesep Deci.SubjectList{missing1block(subj)}],'data','info','-v7.3');
+        
+    end
+    
 end
 
 for fig = find(Deci.Plot.Behv.RT.Figure)
@@ -224,7 +272,7 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
         end
         
         
-        RTstd{fig} = nanstd(RT{fig},[],1);
+        RTstd{fig} = std(RT{fig},[],1,'omitnan');
         RTMean{fig} =  params.type(RT{fig},1);
         Sub.RT = {'SubjAvg'};
         

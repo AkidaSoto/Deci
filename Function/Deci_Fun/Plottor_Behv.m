@@ -64,7 +64,15 @@ for subject_list = 1:length(Deci.SubjectList)
             if isa(Deci.Plot.Behv.RT.Block,'function_handle')
                 RTevents(:,find(data.event(1,:) < 1)) = Deci.Plot.Behv.RT.Block(RTevents(:,find(data.event(1,:) < 1)));
                 
-                RTBlock= unique(RTevents(:,find(RTevents(1,:) < 1)),'stable');
+                if size(RTevents(:,find(data.event(1,:) < 1)),2) > 1 && ~isfield(Deci.Plot.Behv,'blockcol')
+                    error('multiple block types cols found, specify which one you want to  use')
+                elseif size(RTevents(:,find(data.event(1,:) < 1)),2) > 1
+                    RTBlock= unique(RTevents(:,Deci.Plot.Behv.blockcol),'stable');
+                else
+                    RTBlock= unique(RTevents(:,find(RTevents(1,:) < 1)),'stable');
+                end
+
+                
             elseif isempty(Deci.Plot.Behv.RT.Block)
                 RTBlock = {-1};
             end
@@ -142,11 +150,19 @@ for subject_list = 1:length(Deci.SubjectList)
             if isa(Deci.Plot.Behv.Acc.Block,'function_handle')
                 Accevents(:,find(data.event(1,:) < 1)) = Deci.Plot.Behv.Acc.Block(data.event(:,find(data.event(1,:) < 1)));
                 
-                AccBlock= unique(Accevents(:,find(Accevents(1,:) < 1)),'stable');
+                if size(Accevents(:,find(data.event(1,:) < 1)),2) > 1 && ~isfield(Deci.Plot.Behv,'blockcol')
+                    error('multiple block types cols found, specify which one you want to  use')
+                elseif size(Accevents(:,find(data.event(1,:) < 1)),2) > 1
+                    AccBlock= unique(Accevents(:,Deci.Plot.Behv.blockcol),'stable');
+                else
+                   AccBlock= unique(Accevents(:,find(Accevents(1,:) < 1)),'stable');
+                end
+
+                
             elseif isempty(Deci.Plot.Behv.Acc.Block)
                 AccBlock = {-1};
             end
-            
+     
             for blk = 1:length(AccBlock)
                 for draw = 1:length(Deci.Plot.Behv.Acc.Total{fig})
                     
@@ -244,13 +260,13 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
         fullAcc{fig} = Acc{fig};
         
         if Deci.Plot.Behv.Acc.Collapse.Trial
-            Accsem{fig} = nanstd(Acc{fig},[],4)/sqrt(size(Acc{fig},4));
+            Accsem{fig} = std(Acc{fig},[],4,'omitnan')/sqrt(size(Acc{fig},4));
             Acc{fig} = nanmean(Acc{fig},4);
             
         end
         
         if Deci.Plot.Behv.Acc.Collapse.Block
-            Accsem{fig} = nanstd(Acc{fig},[],3)/sqrt(size(Acc{fig},3));
+            Accsem{fig} = std(Acc{fig},[],3,'omitnan')/sqrt(size(Acc{fig},3));
             Acc{fig} = nanmean(Acc{fig},3);
             
         end
@@ -263,7 +279,7 @@ for fig = find(Deci.Plot.Behv.Acc.Figure)
              end
             
             if ~Deci.Plot.Behv.Acc.BaW
-            Accsem{fig} =  nanstd(Acc{fig},[],1)/sqrt(size(Acc{fig},1));
+            Accsem{fig} =  std(Acc{fig},[],1,'omitnan')/sqrt(size(Acc{fig},1));
             Acc{fig} =  nanmean(Acc{fig},1);
             Sub.Acc = {'SubjAvg'};
             else
@@ -290,12 +306,12 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
         fullRT{fig} = RT{fig};
         
         if Deci.Plot.Behv.RT.Collapse.Trial
-            RTsem{fig} = nanstd(RT{fig},[],4)/sqrt(size(RT{fig},4));
+            RTsem{fig} = std(RT{fig},[],4,'omitnan')/sqrt(size(RT{fig},4));
             RT{fig} = nanmean(RT{fig},4);
         end
         
         if Deci.Plot.Behv.RT.Collapse.Block
-            RTsem{fig} = nanstd(RT{fig},[],3)/sqrt(size(RT{fig},3));
+            RTsem{fig} = std(RT{fig},[],3,'omitnan')/sqrt(size(RT{fig},3));
             RT{fig} = nanmean(RT{fig},3);
         end
         
@@ -308,7 +324,7 @@ for fig = find(Deci.Plot.Behv.RT.Figure)
             
             if ~Deci.Plot.Behv.RT.BaW
                 
-                RTsem{fig} = nanstd(RT{fig},[],1)/sqrt(size(RT{fig},1));
+                RTsem{fig} = std(RT{fig},[],1,'omitnan')/sqrt(size(RT{fig},1));
                 RT{fig} =  nanmean(RT{fig},1);
                 Sub.RT = {'SubjAvg'};
             else
@@ -455,7 +471,7 @@ if Deci.Plot.Behv.WriteExcel
             %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'RT_Summary');
         end
         
-        excelAccdata = table(Sub.RT(subs)',Deci.Plot.Behv.RT.Subtitle{fig}(conds)',abs(RTBlock(blks))',trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
+        excelAccdata = table(Sub.RT(subs)',Deci.Plot.Behv.RT.Subtitle{fig}(conds)',abs(RTBlock(blks)),trls',fRT,fRTsem,'VariableNames',{'Subj' 'Cond' 'Blk'  'Trl' 'ReactionTime','SEM'});
         writetable(excelAccdata,[Deci.Folder.Plot filesep Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'FileType','spreadsheet','Sheet','RT_Summary');
         %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.RT.Title{fig} ' Behavioral Outputs' ],'TempSheet');
         
@@ -672,7 +688,7 @@ end
                     if draw == 1
                         
                         
-                        if  Deci.Plot.Behv.Acc.Dot
+                        if  Deci.Plot.Behv.RT.Dot
                             CleanBars(RT{fig}(subj,:,:,:),RTsem{fig}(subj,:,:,:),RTDots{fig})
                         else
                             CleanBars(RT{fig}(subj,:,:,:),RTsem{fig}(subj,:,:,:))

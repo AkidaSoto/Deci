@@ -20,8 +20,7 @@ for brain = 1:length(params.Brain)
         info.extension = ['Extra' filesep 'Corr' filesep Deci.Plot.Freq.Type];
         info.parameter = 'powspctrm';
         info.variable = 'R';
-        
-        
+
         
         [Subjects,info] =  dc_plotload(Deci,info);
         

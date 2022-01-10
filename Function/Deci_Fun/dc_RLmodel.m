@@ -11,8 +11,12 @@ function [out] = dc_RLmodel(Deci,info,dat,params)
 %6.) Actor Critic model with 4 parameters, alphaA, AlphaC, d and beta
 %7.) Hybrid AC/Q model with 6
     %Classic model with alphaQ
-    %AC model with alphaA and alphaC
+    % AC model with alphaA and alphaC
     %with outside parameters d,c and beta
+%8.) Actor Critic without d
+%9.)Hybrid AC/Q model with 5. like 7 with d
+    
+%10.) Classic model with 5 parameters, 4 alpha (-+ pe, and chosenvunchosen) and beta 
 
 % Model fit works by using fmincon to find the local minima (highest probability of state | action)
 %from the randomized starting free parameter. The model is rurun multiple
@@ -74,11 +78,11 @@ Values = find(ismember(params.States,trialtypes));
 
 %Sorting data into blocks
 
-for val = Values
+for val = 1:length(Values)
     
-    valuetypes = trialtypes(sum(ismember(trialtypes,[params.States(val)]),2) ==  1,:);
+    valuetypes = trialtypes(sum(ismember(trialtypes,[params.States(Values(val))]),2) ==  1,:);
     
-    trlnum = find(sum(ismember(trialtypes,[params.States(val)]),2) ==  1);
+    trlnum = find(sum(ismember(trialtypes,[params.States(Values(val))]),2) ==  1);
     
     for blk = 1:length(blocknumbers)
         
@@ -94,7 +98,7 @@ for val = Values
         Rewards{blk,val} = valuetypes(blkmrk,Rewmrk);
         
         for rew = 1:length(params.Reward)
-            Rewards{blk,val}(Rewards{blk,val} == params.Reward(rew)) = params.Value{val}(rew);
+            Rewards{blk,val}(Rewards{blk,val} == params.Reward(rew)) = params.Value{Values(val)}(rew);
         end
         
     end
@@ -177,14 +181,14 @@ for Dim2 = 1:size(A_rep,2)
             %1.) Classic model with 2 parameters, alpha and beta
             
             if ismember(1, Deci.Analysis.Extra.QL.ModelNum)
-                Model1.LB = [0 1e-6];
-                Model1.UB = [1 30];
-                Model1.init =rand(1,length(Model1.LB)).*(Model1.UB-Model1.LB)+Model1.LB;
+                Model10.LB = [0 1e-6];
+                Model10.UB = [1 30];
+                Model10.init =rand(1,length(Model10.LB)).*(Model10.UB-Model10.LB)+Model10.LB;
                 
                 
                 [Value{1,init}] = ...
                     fmincon(@(x) SimpleQ(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2)),...
-                    [Model1.init],[],[],[],[],[Model1.LB],[Model1.UB],[],...
+                    [Model10.init],[],[],[],[],[Model10.LB],[Model10.UB],[],...
                     optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
                 
                 [LLE(1,init),out{1,init}] = SimpleQ(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{1,init}(1),Value{1,init}(2));
@@ -339,7 +343,8 @@ for Dim2 = 1:size(A_rep,2)
                 end
             end
             
-                        %6.) Actor Critic model with 4 parameters, alphaA, AlphaC, d and beta
+          %8.) Actor Critic model with 4 parameters, alphaA, AlphaC, and
+          %beta (no d)
             
             if ismember(8,Deci.Analysis.Extra.QL.ModelNum)
                 
@@ -363,10 +368,10 @@ for Dim2 = 1:size(A_rep,2)
                 end
             end
             
-            %7.) Hybrid AC/Q model with 6
+            %9.) Hybrid AC/Q model with 6
             %Classic model with alphaQ
             %AC model with alphaA and alphaC
-            %with outside parameters d,c and beta
+            %with outside ,c and beta
             
             if ismember(9,Deci.Analysis.Extra.QL.ModelNum)
                 
@@ -389,6 +394,30 @@ for Dim2 = 1:size(A_rep,2)
                     ColNames{9} = {'9_Hybrid_AlpQ' '9_Hybrid_AlpA' '9_Hybrid_AlpC' '9_Hybrid_Beta' '9_Hybrid_c'};
                     SheetNames{9} = ('9_Hybrid');
                 end
+            end
+            
+                        %1.) Classic model with 2 parameters, alpha and beta
+            
+            if ismember(10, Deci.Analysis.Extra.QL.ModelNum)
+                Model10.LB = [0 0 0 0 1e-6];
+                Model10.UB = [1 1 1 1 30];
+                Model10.init =rand(1,length(Model10.LB)).*(Model10.UB-Model10.LB)+Model10.LB;
+                
+                
+                [Value{10,init}] = ...
+                    fmincon(@(x) unChosenQ(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards,x(1),x(2),x(3),x(4),x(5)),...
+                    [Model10.init],[],[],[],[],[Model10.LB],[Model10.UB],[],...
+                    optimset('TolX', 0.00001, 'TolFun', 0.00001, 'MaxFunEvals', 9e+9, 'Algorithm', 'interior-point','Display','off'));
+                
+                [LLE(10,init),out{10,init}] = unChosenQ(Deci.Analysis.Extra.QL.Start,Deci.Analysis.Extra.QL.Actions,Actions,Rewards, Value{10,init}(1),Value{10,init}(2),Value{10,init}(3),Value{10,init}(4),Value{10,init}(5));
+                LLE(10,init) = -LLE(10,init); %change fmin to fmax     
+                LLE2(10,init) = aicbic(LLE(10,init),[2]);
+                
+                if init == 1
+                    ColNames{10} = {'10_Unchosen_AlpCP' '10_Unchosen_AlpCN' '10_Unchosen_AlpUP' '10_Unchosen_AlpUN' '10_Classic_Beta'};
+                    SheetNames{10} = ('10_Classic_Model');
+                end
+                
             end
             
         end
@@ -421,24 +450,29 @@ for Dim2 = 1:size(A_rep,2)
                 ExcelMat(2,:) = BestOut{m}.q';
                 ExcelMat(3,:) = BestOut{m}.q_next';
                 ExcelMat(4,:) =  BestOut{m}.Pe';
-                ExcelMat(5,:) = [sign(BestOut{m}.q') + 3]/2;
                 
+                %1 if negative q, 2 if positive q
+                ExcelMat(5,:) = [sign(BestOut{m}.q') + 3]/2;
                 ExcelMat(5,ExcelMat(5,:) == 1.5) = nan;
                 
+                %1 if negative q_next, 2 if positive q_next
                 ExcelMat(6,:) = [sign(BestOut{m}.q_next') + 3]/2;
-                
                 ExcelMat(6,ExcelMat(6,:) == 1.5) = nan;
                 
+                %1 if negative Pe, 2 if positive Pe
                 ExcelMat(7,:) = [sign(BestOut{m}.Pe') + 3]/2;
-                
                 ExcelMat(7,ExcelMat(7,:) == 1.5) = nan;
                 
+                %1 if negative Pe/negative q, 2 if negative Pe/positive q
+                %3 if positive Pe/negative q, 4 if positive Pe/positive q
                 ExcelMat(8,:) = [sign(BestOut{m}.q') + 3]/2 + [sign(BestOut{m}.Pe')+1];
-                
                 ExcelMat(8,ExcelMat(8,:) == 1.5 | ExcelMat(8,:) == 3.5) = nan;
                 
+                %1 if negative Pe/negative q_next, 2 if negative
+                %Pe/positive q_next
+                %3 if positive Pe/negative q_next, 4 if positive
+                %Pe/positive q_next
                 ExcelMat(9,:) = [sign(BestOut{m}.q_next') + 3]/2 + [sign(BestOut{m}.Pe')+1];
-                
                 ExcelMat(9,ExcelMat(8,:) == 1.5 | ExcelMat(9,:) == 3.5) = nan;
                 
                 ExcelMat = ExcelMat';
@@ -1404,6 +1438,99 @@ out.P = cat(1,P{:});
 out.QPe = [PE_QL{:}];
 out.ACPe = [PE_AC{:}];
 out.H = cat(1,Hout{:});
+end
+
+function [LLE,out] = unChosenQ(starting_q,possible_actions,a,r,alpcp,alpcn,alpup,alpun,beta)
+
+% This is the Classic model with no change.
+
+%What are the possible Actions?
+possible_actions;
+
+% Function can run model on multiple blocks at once.
+
+for subj = 1:size(a,1)
+    
+    for cond = 1:size(a,2)
+        
+        for block = 1:size(a,3)
+            
+            %get the intial starting expected value
+            qout{subj,cond,block}(1,:) = starting_q;
+            q{subj,cond,block}(1) = starting_q(1);
+            
+            %Now loop through the actions and find reward, Pe, Q(t+1) and P
+            for Act = 1:length(a{subj,cond,block})
+                
+                %Which action is it?
+                which = find(a{subj,cond,block}(Act) == possible_actions);
+                
+                %What is the expected value of that action?
+                qout{subj,cond,block}(Act,which);
+                
+                %What is the Pe?
+                PE{subj,cond,block}(Act) = (r{subj,cond,block}(Act) - qout{subj,cond,block}(Act,which));
+                
+
+                %What is the Probability of that action?
+                
+                P{subj,cond,block}(Act) = exp(qout{subj,cond,block}(Act,which)/beta)/ ...
+                    [exp(qout{subj,cond,block}(Act,which)/beta) + exp(qout{subj,cond,block}(Act,find(a{subj,cond,block}(Act) ~= possible_actions))/beta)];
+                
+                % sometimes the probabilty is 1, but the
+                % formula outputs a nan and so we have to
+                % compensate for that.
+                if isnan(P{subj,cond,block}(end))
+                    P{subj,cond,block}(end) = qout{subj,cond,block}(Act,which) > qout{subj,cond,block}(Act,find(a{subj,cond,block}(Act) ~= possible_actions));
+                end
+                
+                %update the expected value of the chosen action
+                %qout{subj,cond,block}(Act+1,which) = qout{subj,cond,block}(Act,which) + alp*PE{subj,cond,block}(Act);
+                
+                if PE{subj,cond,block}(Act) > 0
+                    qout{subj,cond,block}(Act+1,which) = qout{subj,cond,block}(Act,which) + alpcp*PE{subj,cond,block}(Act);
+                else
+                    qout{subj,cond,block}(Act+1,which) = qout{subj,cond,block}(Act,which) + alpcn*PE{subj,cond,block}(Act);
+                end
+                
+                %change the unchosen action's expected value.
+                %qout{subj,cond,block}(Act+1,find(a{subj,cond,block}(Act) ~= possible_actions))  = qout{subj,cond,block}(Act,find(a{subj,cond,block}(Act) ~= possible_actions));
+           
+                
+                if PE{subj,cond,block}(Act) > 0
+                   qout{subj,cond,block}(Act+1,find(a{subj,cond,block}(Act) ~= possible_actions)) = qout{subj,cond,block}(Act,find(a{subj,cond,block}(Act) ~= possible_actions)) + alpup*PE{subj,cond,block}(Act);
+                else
+                    qout{subj,cond,block}(Act+1,find(a{subj,cond,block}(Act) ~= possible_actions)) = qout{subj,cond,block}(Act,find(a{subj,cond,block}(Act) ~= possible_actions)) + alpun*PE{subj,cond,block}(Act);
+                end
+
+                % Save Value;
+                q{block}(Act+1) = qout{subj,cond,block}(Act,which);
+            end
+            
+            %remove last, because it's not needed.
+            q_next{block} = q{block}(2:end);
+            q{block} = q{block}(1:end-1);
+        end
+        
+    end
+end
+
+
+%fmincon finds the the local minima, so we will sum up all the
+%probabilities and get the negative value of that. In theory, the
+%higher the P, the higher the model were able to predict that the
+%probability of the choice.
+LLE = -sum(log([P{:}]));
+
+if ~isfinite(LLE)
+    LLE = -sum(numel(a{:})*log(.01));
+end
+
+out.q = [q{:}];
+out.q_next = [q_next{:}];
+out.P = [P{:}];
+out.Pe = [PE{:}];
+
 end
 
 end

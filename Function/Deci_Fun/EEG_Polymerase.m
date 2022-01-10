@@ -32,9 +32,15 @@ startstopseg = reshape(find(ismember({event.value},startstop)'),[2 length(find(i
 
 if ~isempty(cfg.DT.Block)
     
-        bstartstop = [cfg.DT.Block.Markers{:}];
-        bstartstop = arrayfun(@num2str,bstartstop,'un',0);
-        bstartstop = [find(ismember({event.value},bstartstop))];
+    for blktype = 1:length(cfg.DT.Block.Markers)
+        bmarks = [cfg.DT.Block.Markers{blktype}];
+        bmarks = arrayfun(@num2str,bmarks,'un',0);
+        bstartstop = [find(ismember({event.value},bmarks))];
+        bsstype{blktype} = cellfun(@(c) find(ismember(bmarks,c)),{event.value},'un',0);
+        bsstype{blktype} = bsstype{blktype}(~cellfun(@isempty,bsstype{blktype}));
+        bss{blktype} = bstartstop;
+       
+    end
 end
 
 for j = 1:length(startstopseg)
@@ -81,8 +87,9 @@ for j = 1:length(startstopseg)
     trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = nan;
     if ~isempty(cfg.DT.Block)   
         
-        
-            trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = [-1*find([event(startstopseg(1,j)).sample] >  [event(bstartstop).sample],1,'last')];
+        for blktypes = 1:length(cfg.DT.Block.Markers)
+            trialinfo(size(trl,1),length(cfg.DT.Markers)+blktypes) = power(1,blktypes)*[-1*find([event(startstopseg(1,j)).sample] >  [event(bss{blktype}).sample],1,'last')];
+        end
     else
     trialinfo(size(trl,1),length(cfg.DT.Markers)+1) = -1; 
     end
@@ -92,6 +99,9 @@ end
 
 if ~isempty(cfg.DT.Block)
     if isfield(cfg.DT.Block,'Bisect')
+        
+        cfg.DT.Block = Exist(cfg.DT.Block,'Num',2);
+        
         if cfg.DT.Block.Bisect
             bindex =  find(trialinfo(1,:) < 0);
             
@@ -101,11 +111,17 @@ if ~isempty(cfg.DT.Block)
                 
                 onebi = find(ismember(trialinfo(:,bindex),ab));
                 
-                onebi = {onebi(1:floor(length(onebi)/2)) onebi(ceil(length(onebi)/2):end)};
 
-                for eachsect = 1:2
+                minnum = min(onebi);
+                minpairs = min(length(onebi)/cfg.DT.Block.Num);
+
+                onebi = cat(1,reshape(onebi(1:end-rem(length(onebi),cfg.DT.Block.Num)), [[length(onebi)-rem(length(onebi),cfg.DT.Block.Num)]/cfg.DT.Block.Num cfg.DT.Block.Num]), ...
+                    [nan([1 cfg.DT.Block.Num-rem(length(onebi),cfg.DT.Block.Num)]) onebi(end-rem(length(onebi),cfg.DT.Block.Num)+1:end)']);
+
+                
+                for eachsect = 1:cfg.DT.Block.Num
                     
-                    trialinfo(onebi{eachsect},bindex) = trialinfo(onebi{eachsect},bindex) -.5*(eachsect-1);
+                    trialinfo(floor(minpairs*[eachsect-1])+minnum:floor(minpairs*[eachsect])+minnum-1,bindex) = trialinfo(floor(minpairs*[eachsect-1])+minnum:floor(minpairs*[eachsect])+minnum-1,bindex) + [-1/cfg.DT.Block.Num]*(eachsect-1);
                     
                 end
                 

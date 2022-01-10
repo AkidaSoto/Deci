@@ -8,12 +8,17 @@ function dc_updatetrials(dt_path,art_inpath,art_outpath)
 % updates locks and events based on the loose assumption of trlnum
 % switch labels between two arts
 
-dt = CleanDir(dt_path);
-art = CleanDir(art_inpath);
+dt = cellfun(@(c) strsplit(c,'.'),CleanDir(dt_path),'un',0);
+dt = unique(cellfun(@(c) c{1},dt,'un',0));
 
-% if ~all(ismember(dt,art))
-%    error('unequal dt and art lengths') 
-% end
+fakeUI = figure;
+fakeUI.UserData = dt;
+fakeUI.Visible =  'off';
+dc_select_labels(fakeUI,[],dt);
+waitfor(findall(0,'Name','Select Labels'),'BeingDeleted','on');
+dt = fakeUI.UserData;
+close(fakeUI);
+
 
 for dts = 1:length(dt)
 
@@ -21,7 +26,7 @@ for dts = 1:length(dt)
     load([dt_path filesep dt{dts}]);
 
     data = [];
-    load([art_inpath filesep art{dts}]);
+    load([art_inpath filesep dt{dts}]);
     
     if isfield(data,'condinfo')  %replacer starting 12/22, lets keep for ~4 months
         data.postart.locks = data.condinfo{1};
@@ -38,20 +43,21 @@ for dts = 1:length(dt)
     end
     
     if ~isequaln(cfg.trl(:,4:end),data.locks)
-       %error('unequal locks beteen dt and art!') 
-       dts
+       error('unequal locks beteen dt and art!') 
     end
 
-%     data.locks = cfg.trl(:,4:end);
-%     data.events = cfg.event;
-%     data.trlnum = cfg.trialnum;
-% 
-%     if ~isfolder(art_outpath)  
-%        mkdir(art_outpath) 
-%     end
-%     
-%     save([art_outpath filesep art{dts}],'data');
-%     data = rmfield(data,'trial');
-%     save([art_outpath filesep art{dts} '_info'],'data');
+    data.locks = cfg.trl(:,4:end);
+    data.events = cfg.event;
+    data.trlnum = cfg.trialnum;
+
+    data.postart.locks = data.locks(data.postart.trlnum,:);
+    data.postart.events = data.events(data.postart.trlnum,:);
     
+
+    if ~isfolder(art_outpath)  
+       mkdir(art_outpath) 
+    end
+    
+    info = rmfield(data,'trial');
+    save([art_outpath filesep dt{dts}],'data','info','-v7.3');
 end

@@ -111,7 +111,7 @@ for Conditions = 1:size(Subjects,2)
             
             for Channel = 1:length(Chois)
                 
-                load([Deci.Folder.Analysis filesep 'Volt_ERP' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep Chois{Channel} '.mat'],'raw');
+                load([Deci.Folder.Analysis filesep 'Volt_Raw' filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep Chois{Channel} '.mat'],'raw');
                 
                 BslChan{Channel} = raw;
                 BslChan{Channel}.label = Chois(Channel);

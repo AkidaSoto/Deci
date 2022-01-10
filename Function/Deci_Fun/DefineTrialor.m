@@ -35,7 +35,7 @@ for subject_list = 1:length(Deci.SubjectList)
     cfg.trialfun = cfg.DT.Type;
     cfg.file_ending = files_ending{1};
     
-     Deci.DT = Exist(Deci.DT,'NanLocks',false);
+    Deci.DT = Exist(Deci.DT,'NanLocks',false);
     
     evalc('cfg = ft_definetrial(cfg);'); % will return cfg.trl, the segmented data
     

@@ -34,7 +34,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         %cfg.detrend = 'yes';
         bcfg.bpfreq = Deci.ICA.bpfreq;
-        bcfg.bpfilter = 'yes';
+        bcfg.bpfilter = 'no';
         bcfg.detrend = 'yes';
         bcfg.demean = 'yes';
         
@@ -157,47 +157,8 @@ for subject_list = 1:length(Deci.SubjectList)
             cfg.demean = 'yes';
             evalc('data = ft_rejectcomponent(cfg, data)');
         end
-        
-        %% Interpolation
-        if isfield(Deci.Art,'interp')
-            Deci.Art.interp.method = 'spline';
-            load('elec1010_neighb.mat','neighbours');
-            Deci.Art.interp.neighbours = neighbours;
-            
-            
-            if exist([Deci.SubjectList{subject_list} '.bvct']) == 2
-                [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
-            else
-                elec = ft_read_sens('standard_1020.elc');
-            end
-            Deci.Art.interp.elec = elec;
-            display('Laplace Interpolation Applied')
-            
-            nonrepairs.channel = data.label(~ismember(data.label,elec.label));
-            nonrepairs = ft_selectdata(nonrepairs,data);
-            [data_interp] = ft_channelrepair(Deci.Art.interp, data);
-            
-            data = ft_appenddata([],nonrepairs,data_interp);
-        end
-        
-        %% Impicit 
-        
-        if ~isempty(Deci.PP.Imp)
-            Imp = strsplit(Deci.PP.Imp,':');
-            
-            if ~ismember(Imp{2},data.label)
-                error('invalid Implicit channels for reference')
-            end
-            Imp_cfg.reref = 'yes';
-            Imp_cfg.channel  = 'all';
-            Imp_cfg.implicitref = Imp{1};
-            Imp_cfg.refchannel = Imp;
-            %Imp_cfg.feedback = feedback;
-            evalc('data = ft_preprocessing(Imp_cfg,data)');
-            disp('---Implicit Rereference applied---');
-        end
-        
-        tempdata = ft_preprocessing(bcfg,data);
+
+
         %% Manual Trial Rejection
         
         
@@ -248,7 +209,7 @@ for subject_list = 1:length(Deci.SubjectList)
             tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)];
             cfg.channel = 'all';
             
-            evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,tempdata))');
+            evalc('data_rej = ft_rejectvisual(cfg,ft_redefinetrial(tcfg,data))');
             
             
             if Deci.Art.ShowArt
@@ -281,11 +242,44 @@ for subject_list = 1:length(Deci.SubjectList)
             pause(.05);
             
         end
+
+
+        %% Interpolation
+
+if Deci.Art.ATR && any(~ismember(data.label(~ismember(data.label,data_rej.label)),cfg.eog))
+    rej_chan = data.label(~ismember(data.label,data_rej.label));
+    interp_chan = rej_chan(~ismember(rej_chan,cfg.eog));
+
+    Deci.Art.interp.badchannel = interp_chan;
+
+        if isfield(Deci.Art,'interp')
+            Deci.Art.interp.method = 'spline';
+            load('elec1010_neighb.mat','neighbours');
+            Deci.Art.interp.neighbours = neighbours;
+            
+            
+            if exist([Deci.SubjectList{subject_list} '.bvct']) == 2
+                [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
+            else
+                elec = ft_read_sens('standard_1020.elc');
+            end
+            Deci.Art.interp.elec = elec;
+            display('Laplace Interpolation Applied')
+            
+            nonrepairs.channel = data.label(~ismember(data.label,elec.label));
+            nonrepairs = ft_selectdata(nonrepairs,data);
+            [data_interp] = ft_channelrepair(Deci.Art.interp, data);
+            
+            data = ft_appenddata([],nonrepairs,data_interp);
+            clear nonrepairs
+        end
+end
+%% RT
         
         if ~isempty(Deci.Art.RT)
             
             if Deci.Art.RT.dominlength
-                RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] < Deci.Art.RT.minlength;
+                RT_Art = abs([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]) < Deci.Art.RT.minlength;
                 RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
             
                 display(' ')
@@ -304,7 +298,7 @@ for subject_list = 1:length(Deci.SubjectList)
            
             % auto reject max length trials
            if Deci.Art.RT.domaxlength
-           RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] > Deci.Art.RT.maxlength;
+           RT_Art = abs([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]) > Deci.Art.RT.maxlength;
            RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
              
            
@@ -323,7 +317,9 @@ for subject_list = 1:length(Deci.SubjectList)
            
             %%% auto-reject trials based on 2std    
            if Deci.Art.RT.dotwostd
-            RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] > 2*std([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
+            RT_Art = [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] > mean([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))])+2*std([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]) ...
+                    | [locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))] < mean([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))])-2*std([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]) ;
+            
             RT_Nans = isnan([locks(:,Deci.Art.RT.locks(2)) - locks(:,Deci.Art.RT.locks(1))]);
             
             display(' ')
@@ -366,27 +362,27 @@ for subject_list = 1:length(Deci.SubjectList)
         
         
         
-        
-        if Deci.Art.ATR && any(~ismember(data.label(~ismember(data.label,data_rej.label)),cfg.eog))
-            rej_chan = data.label(~ismember(data.label,data_rej.label));
-            interp_chan = rej_chan(~ismember(rej_chan,cfg.eog));
-            
-            TempDeci = Deci;
-            TempDeci.Art.interp.missingchannel = interp_chan;
-            TempDeci.PP.More.channel = data.label(~ismember(data.label,interp_chan));
-            TempDeci.SubjectList = Deci.SubjectList(subject_list);
-            TempDeci.Step = 2;
-            TempDeci.Proceed = 0;
-            TempDeci.PCom               = false;                                                      % Activates Parallel Computing for PP and Analysis only
-            TempDeci.GCom               = false;
-            TempDeci.DCom               = false;
-            TempDeci.ICA.RankReduction = length(interp_chan);
-            
-            Deci_Backend(TempDeci);
-            
-            TempDeci.Step = 3;
-            Deci_Backend(TempDeci);
-        else
+%         
+%         if Deci.Art.ATR && any(~ismember(data.label(~ismember(data.label,data_rej.label)),cfg.eog))
+%             rej_chan = data.label(~ismember(data.label,data_rej.label));
+%             interp_chan = rej_chan(~ismember(rej_chan,cfg.eog));
+%             
+%             TempDeci = Deci;
+%             TempDeci.Art.interp.missingchannel = interp_chan;
+%             TempDeci.PP.More.channel = data.label(~ismember(data.label,interp_chan));
+%             TempDeci.SubjectList = Deci.SubjectList(subject_list);
+%             TempDeci.Step = 2;
+%             TempDeci.Proceed = 0;
+%             TempDeci.PCom               = false;                                                      % Activates Parallel Computing for PP and Analysis only
+%             TempDeci.GCom               = false;
+%             TempDeci.DCom               = false;
+%             TempDeci.ICA.RankReduction = length(interp_chan);
+%             
+%             Deci_Backend(TempDeci);
+%             
+%             TempDeci.Step = 3;
+%             Deci_Backend(TempDeci);
+%         else
             
             data.locks = locks;
             data.events = events;
@@ -416,8 +412,8 @@ for subject_list = 1:length(Deci.SubjectList)
                 save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list}],'data','info','-v7.3')
             end
             %save([Deci.Folder.Artifact filesep Deci.SubjectList{subject_list} '_info'],'data','-v7.3')
-        end
-        
+%         end
+%         
 
     else
         disp('Skipping Artifactor');
