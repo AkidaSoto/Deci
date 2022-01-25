@@ -1,15 +1,9 @@
 function AppendEEGs(Dir,datatype,varargin)
 
 if length(varargin) < 1
-    pos = 4;
-else
-    pos = varargin{1};
-end
-
-if length(varargin) < 2
     base = 3;
 else
-    base = varargin{3};
+    base = varargin{1};
 end
 
 AllFiles = CleanDir(Dir);
@@ -20,7 +14,10 @@ end
 
 AllFiles = unique(cellfun(@(d) d(1),cellfun(@(c) strsplit(c,'.'),AllFiles,'un',0)));
 
-IsCopy = cellfun(@(c) ~isempty(regexp(c{pos},'\d*','Match')),cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',false));
+frags = cellfun(@(c) strsplit(c,'_'),AllFiles,'UniformOutput',false);
+
+IsCopy = cellfun(@(c) length(c),frags);
+IsCopy = IsCopy == max(IsCopy);
 
 BaseFiles = AllFiles(~IsCopy);
 CopyFiles = AllFiles(IsCopy);
@@ -46,7 +43,8 @@ for Each = 1:length(BaseFiles)
         dat2   = ft_read_data([Dir filesep Copies{cop} '.' datatype]);
         event2 = StandardizeEventMarkers(event2);
 
-      event = [event arrayfun(@(c) setfield(c,'sample',c.sample + size(dat,2)+1open ),event2)];
+      event = [event arrayfun(@(c) setfield(c,'sample',c.sample + event(end).sample+1),event2)];
+   %   event = [event arrayfun(@(c) setfield(c,'sample',c.sample + size(dat,2)+1open ),event2)];
       dat = cat(2,dat,dat2);
     end
    

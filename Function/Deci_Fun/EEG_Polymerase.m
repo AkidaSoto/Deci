@@ -63,6 +63,8 @@ for j = 1:length(startstopseg)
     maxlockindex = ismember(cfg.DT.Locks,value([sample{:}] == max([sample{ismember(value,cfg.DT.Locks)}])));
     
     begsample = sample{ismember(value,cfg.DT.Locks(minlockindex))} + sstime(1)*hdr.Fs;
+    
+
     endsample = sample{ismember(value,cfg.DT.Locks(maxlockindex))} + sstime(2)*hdr.Fs;
 
     offsets = begsample - [sample{ismember(value,cfg.DT.Locks)}];
@@ -74,12 +76,16 @@ for j = 1:length(startstopseg)
     
     for i = 1:length(cfg.DT.Markers)
         
+        try
         if any(ismember([cfg.DT.Markers{i}],value))
             
             
             trialinfo(size(trl,1),i) = cfg.DT.Markers{i}(ismember([cfg.DT.Markers{i}],value));
         else
             trialinfo(size(trl,1),i) = nan;
+        end
+        catch
+           k = 0; 
         end
     end
     
