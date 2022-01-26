@@ -234,7 +234,9 @@ disp(['---Starting ICA---']);
 display(' ')
 cfg = [];
 cfg = Deci.ICA;
-cfg.bpfilter = 'yes';
+cfg.bpfilter = 'no';
+cfg.detrend = 'yes';
+cfg.demean = 'yes';
 evalc('data_bp = ft_preprocessing(cfg,data)');
 
 
