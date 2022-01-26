@@ -465,9 +465,9 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         for j = 1:length(uniqueblocks)
                             
                             if  isempty(Deci.Analysis.Freq.PowCorrAcrossTrials.Static)
-                                trials = ceil(events(ccfg.trials,find(events(1,:) < 1)));
-                                block = trials == uniqueblocks(j);
-                                trlnums = ccfg.trials(block) - (abs(uniqueblocks(j))-1)*80;
+                                trials = events(ccfg.trials,:);
+                                trlnums = ccfg.trials(trials(:,find(events(1,:) < 1)) == uniqueblocks(j));
+                                staticlength = trlnum(trlnums);
                             else
                                 static = Deci.Analysis.Conditions{Cond}(ismember(Deci.Analysis.Conditions{Cond},Deci.Analysis.Freq.PowCorrAcrossTrials.Static));
                                 trials = events(ccfg.trials,:);
@@ -508,7 +508,7 @@ k = 0;
                             
                             if Deci.Analysis.Freq.PowCorrAcrossTrials.raw
                                 rawfreq.trialpow{j} = tpowcorr.powspctrm(ceil(events(ccfg.trials,find(events(1,:) < 1))) == uniqueblocks(j),:);
-                                rawfreq.trialnums{j} = trlnums;
+                                rawfreq.trialnums{j} = trlnum(trlnums);
                                 
                             end     
                             
