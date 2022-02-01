@@ -234,10 +234,12 @@ for subject_list = 1:length(Deci.SubjectList)
             
             display(' ')
             disp('---Trial Summary Rejection Applied---')
-            disp(['Rejected ' num2str(length(find(~ismember(postart.trlnum,trlnum(data_rej.saminfo))))) ' trials'])
-            disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
-            disp (['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))]) ' trials'])
-            disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))/length(postart.trlnum)]*100) '% trials'])
+           %disp(['Rejected ' num2str(length(find(~ismember(postart.trlnum,trlnum(data_rej.saminfo))))) ' trials'])
+            disp(['Rejected ' num2str(length(find(~ismember(trlnum,postart.trlnum)))) ' trials'])
+            disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))]) ' trials'])
+           %disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))/length(postart.trlnum)]*100) '% trials'])
+            disp(['Rejected ' num2str([length(find(~ismember(trlnum,postart.trlnum)))/length(trlnum)]*100) '% trials'])
+            disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))/length(trlnum)]*100) '% trials'])
             display(' ')
             pause(.05);
             
