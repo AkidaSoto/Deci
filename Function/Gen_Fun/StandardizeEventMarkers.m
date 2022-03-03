@@ -33,7 +33,8 @@ if isnumeric([cell_value{:}])
 end
 
 cell_value = {events.value};
-if all(cellfun(@(c) isequal(c(1),'S'),cell_value))
+if any(cellfun(@(c) isequal(c(1),'S'),cell_value))
+    events = events(cellfun(@(c) isequal(c(1),'S'),cell_value));
     events = arrayfun(@(c) setfield(c,'value',strtrim(c.value(2:end))),  events,'UniformOutput',0);
     events = [events{:}];
 end
