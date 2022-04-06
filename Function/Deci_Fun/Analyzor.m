@@ -202,8 +202,11 @@ for Cond = 1:length(Deci.Analysis.Conditions)
       
     else
     dataplaceholder = ft_selectdata(ccfg,data);
+    dataplaceholder.event = data.events(ccfg.trials,:);
     end
     
+   
+
     if isfield(data,'trial')
         if length(dataplaceholder.trial) < 40
             display('!!!Trial Count for this condition is < 40, which is abnormally low!!!')
@@ -320,7 +323,12 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         tempdat = dat;
                     end
                     
-                    Fourier = dc_freqanalysis(fcfg, tempdat);
+                    Deci.Analysis = Exist(Deci.Analysis,'FreqFun','dc_freqanalysis');
+
+                    Fourier = feval(Deci.Analysis.FreqFun,fcfg,tempdat);
+
+                    %Fourier = dc_freqanalysis(fcfg, tempdat);
+                    Fourier.event = tempdat.event;
                     trllength = size(Fourier.fourierspctrm,1);
                 else
                     display('Applying Hilbert Transformation')

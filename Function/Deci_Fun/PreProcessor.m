@@ -29,6 +29,12 @@ if ~isempty(Deci.PP.filter)
     disp('Full Data Filtering Applied');
 end
 
+Deci.PP = Exist(Deci.PP,'denoiser',false);
+
+if Deci.PP.denoiser
+   data_eeg.trial{1} =  wdenoise(data_eeg.trial{1}',6,"Wavelet","db2")';
+end
+
 % Once Filtered, Apply trial definition to full data.
 Trialcfg.trl = TrlDefs.trl;
 evalc('data_eeg = ft_redefinetrial(Trialcfg,data_eeg)');
@@ -206,8 +212,8 @@ end
         
 %% Impicit
 
-if ~isempty(Deci.PP.Imp)
-    Imp = strsplit(Deci.PP.Imp,':');
+if Deci.PP.Imp.do
+    Imp = strsplit(Deci.PP.Imp.channels,':');
 
     if ~ismember(Imp{2},data.label)
         error('invalid Implicit channels for reference')

@@ -28,6 +28,9 @@ for Subj = 1:length(Subjs)
 
     trialinfo = find(ismember({events.value},{'S  6','S  7','S 10','S 11'}));
 
+    if length(trialinfo) < 120
+        continue
+    end
 
     display(['Total # Trial is ' num2str(length(trialinfo))]);
     display(['Last Trial is at ' num2str(trialinfo(end))]);
@@ -47,49 +50,83 @@ for Subj = 1:length(Subjs)
                 if ismember(events(event).value,{'S  1','S  2'})
 
                     events2(end+1) = events(event);
-                    events2(end).sample = events(event).sample - [500/2];
+                    events2(end).sample = round(events(event).sample - [hdr.Fs*.25]);
                     events2(end).value = 'S 20';
 
                     events2(end+1) = events(event);
                     events2(end).value = ['S ' num2str(Behv.TRAIN(trialcount-6,1) + 20)];
+
+                   
                 end
 
                 events2(end+1) = events(event);
 
+                if ismember(events(event).value,{'S  3'})
+                 events2(end).sample = round(events2(end).sample + [.05/hdr.Fs]);
+                 StimTime = events2(end).sample;
+                end
+
                 if ismember(events(event).value,{'S  4','S  5'})
+
+                    RspTime = events2(end).sample;
+
                     events2(end+1) = events(event);
                     events2(end).value = 'S 30';
 
                     events2(end+1) = events(event);
                     events2(end).value = ['S ' num2str(~logical(Behv.TRAIN(trialcount-6,2)) + 31)];
+
                 end
 
                 if ismember(events(event).value,{'S  6','S  7','S 10','S 11'})
-                    if ismember(events(event).value,{'S 10','S 11'})
-                        events2(end+1) = events(event);
 
+                    events2(end+1) = events(event);
+                    events2(end).value = 'S 50';
+                    events2(end).sample = events(event).sample;
+
+                    events2(end+1) = events(event);
+                    events2(end).value = 'S 40';
+                    events2(end).sample = events(event).sample + [hdr.Fs*.25];
+
+                    if ismember(events(event).value,{'S 10','S 11'})
+                        
                         if ismember(events(event).value,{'S 10'}) ~= ~Behv.TRAIN(trialcount-6,4)
-                            error('wrong')
+                          events2(end+1) = events(event);
+                          events2(end).value = ['S 43'];
                         elseif ismember(events(event).value,{'S 11'}) ~= Behv.TRAIN(trialcount-6,4)
-                            error('wrong')
+                          events2(end+1) = events(event);
+                          events2(end).value = ['S 43'];
+                        else
+                            
+                            if [[[RspTime - StimTime]/hdr.Fs] - Behv.TRAIN(trialcount-6,3)] < .2
+                            
+                            events2(end+1) = events(event);
+                            events2(end).value = ['S ' num2str(~logical(Behv.TRAIN(trialcount-6,4)) + 41)];
+                            events2(end).sample = events2(end).sample + [.05/hdr.Fs];
+
+                            trialcount = trialcount +1;
+
+                            else
+                                continue
+                            end
                         end
 
-
-                        events2(end).value = ['S ' num2str(~logical(Behv.TRAIN(trialcount-6,4)) + 41)];
-                        trialcount = trialcount +1;
                     else
                         events2(end+1) = events(event);
                         events2(end).value = ['S 43'];
                     end
 
-                    events2(end+1) = events(event);
-                    events2(end).value = 'S 40';
-                    events2(end).sample = events(event).sample + [750/2];
+                   
                 end
 
             end
         end
     end
+
+    if trialcount < 126
+        error('wtf')
+    end
+
     display(['End at ' num2str(events2(end).bvmknum)]);
     check = events2(end).bvmknum;
 

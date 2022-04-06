@@ -43,6 +43,11 @@ if isfield(events,'type')
     events = events(~ismember({events.type},'Comment'));
 end
 
+cell_value = {events.value};
+if any(cellfun(@(c) isempty(str2num(c)),cell_value))
+    events = events(cellfun(@(c) ~isempty(str2num(c)),cell_value));
+end
+
 [uniquesamples uniqueindex] = unique([[events.sample]' cellfun(@(c) str2num(c),{events.value})'],'rows');
 events = events(uniqueindex);
 

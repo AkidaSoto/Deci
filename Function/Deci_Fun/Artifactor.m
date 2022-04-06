@@ -52,9 +52,7 @@ for subject_list = 1:length(Deci.SubjectList)
             
             cfg.feedback = feedback;
             cfg.demean     = 'no';
-            
 
-            
             evalc('data_ica = ft_componentanalysis(cfg, tempdata)');
             data_ica     = rmfield(data_ica,'cfg');
             
@@ -71,6 +69,7 @@ for subject_list = 1:length(Deci.SubjectList)
             all = [tempdata.trial{:}];
             eyechan = all(ismember(tempdata.label,Deci.ICA.eog),:);
             
+            corr = [];
             for eye = 1:size(eyechan,1)
                 for comp = 1:size(comps,1)
                     [compcorr, p] = corrcoef(eyechan(eye,:),comps(comp,:));
@@ -81,8 +80,10 @@ for subject_list = 1:length(Deci.SubjectList)
                 ecomponent{eye} = find(abs(corr(eye,:,1)) >= Deci.ICA.cutoff);
             end
             
+            
             refchan = all(ismember(tempdata.label,{'TP9' 'TP10'}),:);
             
+            corr = [];
             for ref = 1:size(refchan,1)
                 for comp = 1:size(comps,1)
                     [compcorr, p] = corrcoef(refchan(ref,:),comps(comp,:));
@@ -92,6 +93,46 @@ for subject_list = 1:length(Deci.SubjectList)
                 
                 rcomponent{ref} = find(abs(corr(ref,:,1)) >= Deci.ICA.cutoff);
             end
+
+%             Deci.ICA = Exist(Deci.ICA,'freqdecomp',false);
+%             if Deci.ICA.freqdecomp 
+% 
+%                 if ~isempty(unique([rcomponent{:}]))
+%                 
+%                     Fs = data_ica.fsample;           
+%                     T = 1/Fs;             
+%                     L = size(comps,2);             % Length of signal
+%                     t = (0:L-1)*T;        % Time vector
+% 
+%                     %unicorr = unique([rcomponent{:}]);
+%                     unicorr = 1:20;
+%                     for c = 1:length(unicorr)
+% 
+%                         reffreq = comps(unicorr(c),:);
+%                         Y = fft(reffreq);
+%                         P2 = abs(Y/L);
+%                         P1 = P2(1:L/2+1);
+%                         P1(2:end-1) = 2*P1(2:end-1);
+%                         f = Fs*(0:(L/2))/L;
+%                         fidx = f >= 0 & f < 30;
+% 
+%                         Pfinal = P1(fidx);
+%                         ffinal = f(fidx);
+%                         figure;plot(ffinal,Pfinal,'Visible','on')
+%                         title(unicorr(c))
+%                         ylim([1 20])
+% 
+% %                         P22 = abs(fft(Pfinal))/length(Pfinal);
+% %                         P21 = P22(1:length(Pfinal)/2+1);
+% %                         P21(2:end-1) = 2*P21(2:end-1);
+% % 
+% %                         figure;plot(P21(1:1000),'Visible','on')
+% %                         title(unicorr(c))
+% 
+%                     end
+% 
+%                 end
+%             end
             
             possiblecorrupt = max(abs(exp(zscore(cfg.unmixing'))),[],1) > 1100;
             possiblecorrupt = possiblecorrupt | [max(abs(1./exp(zscore(cfg.unmixing'))),[],1) > 1100];
@@ -148,7 +189,7 @@ for subject_list = 1:length(Deci.SubjectList)
                 corr = [];
             else
                 disp('Automated ICA Rejection')
-                cfg.component = unique([component{:}])';
+                cfg.component = unique([rcomponent{:} ecomponent{:}])';
             end
             
             evalc('data = ft_componentanalysis(tempcfg, data)');
@@ -241,6 +282,52 @@ for subject_list = 1:length(Deci.SubjectList)
             display(' ')
             pause(.05);
             
+        end
+
+        if Deci.Art.AutomatedTR
+
+
+            tcfg.toilim = [abs(nanmax(locks,[],2)/1000)+Deci.Art.crittoilim(1) abs(nanmin(locks,[],2)/1000)+Deci.Art.crittoilim(2)];
+
+            cfg = [];
+            % channel selection, cutoff and padding
+            cfg.artfctdef.zvalue.channel      = 'all';
+            cfg.artfctdef.zvalue.cutoff       = 30;
+            cfg.artfctdef.zvalue.trlpadding   = 0;
+            cfg.artfctdef.zvalue.fltpadding   = 0;
+            cfg.artfctdef.zvalue.artpadding   = 0;
+
+            % algorithmic parameters
+            cfg.artfctdef.zvalue.bpfilter     = 'no';
+            cfg.artfctdef.zvalue.bpfreq       = [30 80];
+            cfg.artfctdef.zvalue.bpfiltord    = 4;
+            cfg.artfctdef.zvalue.bpfilttype   = 'but';
+            cfg.artfctdef.zvalue.hilbert      = 'yes';
+            cfg.artfctdef.zvalue.boxcar       = 0.2;
+
+            % make the process interactive
+            cfg.artfctdef.zvalue.interactive = 'no';
+
+            [cfg, mcfg.artfctdef.muscle.artifact ] = ft_artifact_zvalue(cfg,ft_redefinetrial(tcfg,data));% muscle
+
+            data_rej = ft_rejectartifact(mcfg,data);
+            data_rej.saminfo = logical(data_rej.saminfo);
+
+            
+            display(' ')
+            disp('---Automated Trial  Rejection Applied---')
+            disp(['Rejected ' num2str(length(find(~ismember(postart.trlnum,trlnum(data_rej.saminfo))))) ' trials'])
+            disp(['Remaining ' num2str(length(postart.trlnum)) ' trials'])
+            disp (['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))]) ' trials'])
+            disp(['Remaining ' num2str([length(find(ismember(postart.trlnum,trlnum(data_rej.saminfo))))/length(postart.trlnum)]*100) '% trials'])
+            display(' ')
+            pause(.05);
+
+
+            postart.locks = postart.locks(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
+            postart.events = postart.events(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))),:);
+            postart.trlnum = postart.trlnum(ismember(postart.trlnum,trlnum(logical(data_rej.saminfo))));
+
         end
 
 
