@@ -34,7 +34,7 @@ for subject_list = 1:length(Deci.SubjectList)
         
         %cfg.detrend = 'yes';
         bcfg.bpfreq = Deci.ICA.bpfreq;
-        bcfg.bpfilter = 'no';
+        bcfg.bpfilter = 'yes';
         bcfg.detrend = 'yes';
         bcfg.demean = 'yes';
         
@@ -94,46 +94,6 @@ for subject_list = 1:length(Deci.SubjectList)
                 rcomponent{ref} = find(abs(corr(ref,:,1)) >= Deci.ICA.cutoff);
             end
 
-%             Deci.ICA = Exist(Deci.ICA,'freqdecomp',false);
-%             if Deci.ICA.freqdecomp 
-% 
-%                 if ~isempty(unique([rcomponent{:}]))
-%                 
-%                     Fs = data_ica.fsample;           
-%                     T = 1/Fs;             
-%                     L = size(comps,2);             % Length of signal
-%                     t = (0:L-1)*T;        % Time vector
-% 
-%                     %unicorr = unique([rcomponent{:}]);
-%                     unicorr = 1:20;
-%                     for c = 1:length(unicorr)
-% 
-%                         reffreq = comps(unicorr(c),:);
-%                         Y = fft(reffreq);
-%                         P2 = abs(Y/L);
-%                         P1 = P2(1:L/2+1);
-%                         P1(2:end-1) = 2*P1(2:end-1);
-%                         f = Fs*(0:(L/2))/L;
-%                         fidx = f >= 0 & f < 30;
-% 
-%                         Pfinal = P1(fidx);
-%                         ffinal = f(fidx);
-%                         figure;plot(ffinal,Pfinal,'Visible','on')
-%                         title(unicorr(c))
-%                         ylim([1 20])
-% 
-% %                         P22 = abs(fft(Pfinal))/length(Pfinal);
-% %                         P21 = P22(1:length(Pfinal)/2+1);
-% %                         P21(2:end-1) = 2*P21(2:end-1);
-% % 
-% %                         figure;plot(P21(1:1000),'Visible','on')
-% %                         title(unicorr(c))
-% 
-%                     end
-% 
-%                 end
-%             end
-            
             possiblecorrupt = max(abs(exp(zscore(cfg.unmixing'))),[],1) > 1100;
             possiblecorrupt = possiblecorrupt | [max(abs(1./exp(zscore(cfg.unmixing'))),[],1) > 1100];
             
