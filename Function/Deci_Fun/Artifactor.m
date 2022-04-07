@@ -81,7 +81,7 @@ for subject_list = 1:length(Deci.SubjectList)
             end
             
             
-            refchan = all(ismember(tempdata.label,{'TP9' 'TP10'}),:);
+            refchan = all(ismember(tempdata.label,Deci.Art.imp),:);
             
             corr = [];
             for ref = 1:size(refchan,1)

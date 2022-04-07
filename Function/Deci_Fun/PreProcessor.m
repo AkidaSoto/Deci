@@ -32,6 +32,7 @@ end
 Deci.PP = Exist(Deci.PP,'denoiser',false);
 
 if Deci.PP.denoiser
+   disp('Denoising Data');
    data_eeg.trial{1} =  wdenoise(data_eeg.trial{1}',6,"Wavelet","db2")';
 end
 

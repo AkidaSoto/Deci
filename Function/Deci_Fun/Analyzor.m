@@ -55,6 +55,10 @@ if Deci.Analysis.Laplace
         elec = ft_read_sens('standard_1020.elc');
     end
     ecfg.elec = elec;
+
+    data.label =cellfun(@upper, data.label, 'UniformOutput', false);
+    ecfg.elec.label = cellfun(@upper, ecfg.elec.label, 'UniformOutput', false);
+
     evalc('data = ft_scalpcurrentdensity(ecfg, data)');
     
     display('Laplace Transform Applied')
