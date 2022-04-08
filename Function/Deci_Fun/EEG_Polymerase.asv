@@ -26,9 +26,8 @@ event =  StandardizeEventMarkers(event);
 
 if rem(length(find(ismember({event.value},startstop)')),2) ~= 0
     
-    cfg.DT = Exist(cfg.DT,'FixUnevenStartEnd',false);
+    cfg.DT = Exists(cfg.DT,'FixUnevenStartEnd',false);
 
-    if cfg.DT.FixUnevenStartEnd
     idx = 1;
     start = 0;
     eventidx = [];
@@ -40,7 +39,6 @@ if rem(length(find(ismember({event.value},startstop)')),2) ~= 0
         elseif ismember(event(mrk).value, cellfun(@num2str,cfg.DT.Starts,'UniformOutput',false)) && start == 1
             start = 0;
             eventidx(idx+1:end) = false;
-            disp('Improper Start Marker at')
             disp(event(mrk).sample)
         end
 
@@ -51,20 +49,12 @@ if rem(length(find(ismember({event.value},startstop)')),2) ~= 0
         elseif ismember(event(mrk).value, cellfun(@num2str,cfg.DT.Ends,'UniformOutput',false)) && start == 0
            start = 0;
            eventidx(idx+1:end) = false;
-           disp('Improper End Marker at')
            disp(event(mrk).sample)
         end
 
     end
 
-    event = event(logical(eventidx));
-    if rem(length(find(ismember({event.value},startstop)')),2) ~= 0
-        error('This literally can not happen but it could so wth happened?')
-    end
-
-    else
     error('invalid number of start and end pairings, check data!')
-    end
 end
 
 startstopseg = reshape(find(ismember({event.value},startstop)'),[2 length(find(ismember({event.value},startstop)'))/2]);

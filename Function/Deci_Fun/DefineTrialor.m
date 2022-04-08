@@ -39,7 +39,8 @@ for subject_list = 1:length(Deci.SubjectList)
     
     Deci.DT = Exist(Deci.DT,'NanLocks',false);
     
-    evalc('cfg = ft_definetrial(cfg);'); % will return cfg.trl, the segmented data
+    cfg = ft_definetrial(cfg);
+    %evalc('cfg = ft_definetrial(cfg);'); % will return cfg.trl, the segmented data
     
    if strcmpi(cfg.DT.Type,'TD_Module3')
        [a,b] = fileparts(cfg.dataset);
