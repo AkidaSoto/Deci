@@ -5,7 +5,7 @@ EEG.data = permute(EEG.data,[1 2 3]);
 
 % Setup Wavelet Params
 num_freqs=50;
-frex=exp(linspace(log(1),log(50),num_freqs));
+frex=exp(linspace(log(1),log(40),num_freqs));
 s=logspace(log10(3),log10(10),num_freqs)./(2*pi*frex);
 t=data.time{1};
 
