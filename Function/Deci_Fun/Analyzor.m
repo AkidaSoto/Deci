@@ -332,7 +332,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                     Fourier = feval(Deci.Analysis.FreqFun,fcfg,tempdat);
 
                     %Fourier = dc_freqanalysis(fcfg, tempdat);
-                    Fourier.event = tempdat.event;
+                    %Fourier.event = tempdat.event;
                     trllength = size(Fourier.fourierspctrm,1);
                 else
                     display('Applying Hilbert Transformation')
@@ -407,8 +407,8 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             mkdir([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
                             save([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
                             else
-%                             mkdir([Deci.Folder.Analysis filesep 'Freq_InducedITPC' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
-%                             save([Deci.Folder.Analysis filesep 'Freq_InducedITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3'); 
+                             mkdir([Deci.Folder.Analysis filesep 'Freq_InducedITPC' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                             save([Deci.Folder.Analysis filesep 'Freq_InducedITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3'); 
                             end 
                             
                             if Deci.Analysis.Freq.ITPCz.do
