@@ -15,7 +15,7 @@ function hout=suptitle(str, fs)
 plotregion = .92;
 
 % Y position of title in normalized coordinates
-titleypos  = .95;
+titleypos  = .98;
 
 % Fontsize for supertitle
 if nargin < 2
