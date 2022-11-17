@@ -17,10 +17,11 @@ for  subject_list = 1:length(Deci.SubjectList)
             
             else
                 display(['could not find' [Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.Lock filesep Deci.Plot.CondTitle{Conditions} filesep info.Chois{Channel} '.mat']])
-                continue
+                break
             end
             
             evalc(['variable =' info.variable ';']);
+            
             
             if isfield(variable,'freq')
                 foi = variable.freq >= round(info.Fois(1),4) & variable.freq <= round(info.Fois(2),4);
@@ -38,6 +39,7 @@ for  subject_list = 1:length(Deci.SubjectList)
                 variable.(info.parameter) = variable.(info.parameter)(:,foi,:);
                 end
                 
+                
                 Chans{Channel} = variable;
                 
             end
@@ -46,7 +48,8 @@ for  subject_list = 1:length(Deci.SubjectList)
         if isempty(eval(info.variable))
             continue;
         end
-            
+       clear(info.variable)
+
         if isfield(variable,'trllength')
             info.trllen(subject_list,Conditions) = variable.trllength;
         else

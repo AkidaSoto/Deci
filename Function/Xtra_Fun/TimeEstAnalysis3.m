@@ -1,11 +1,14 @@
 clearvars;
 
 includenoRT = false;
-
 % False - Improvements and Adjustment Plots (~20 subj)
 % True - Only Adjustment Plots (~80 Subj)
 
-Files = CleanDir('/Users/REINHARTLAB/Desktop/TimeEst/TimeEst_All');
+% Adjustment : How much change from one trial to the next
+% Improvement: How much closer to target time
+
+Folder = 'C:\Users\John\Desktop\TimeEst\TimeEst_Behavior';
+Files = CleanDir(Folder);
 
 Deci.SubjectList = cellfun(@(c) strsplit(c,'.'),Files,'un',0);
 Deci.SubjectList = unique(cellfun(@(c) c{1},Deci.SubjectList,'un',0));
@@ -45,7 +48,7 @@ if ~includenoRT
 
 for Sub = 1:length(Files)
     
-    load(['/Users/REINHARTLAB/Desktop/TimeEst/TimeEst_All' filesep Files{Sub}]);
+    load([Folder filesep Files{Sub}]);
     
     if ~includenoRT
     if ~exist('RT_lower')
@@ -79,7 +82,7 @@ for Sub = 1:length(NewSubs)
     Learnness = [];
     BlockLength = [];
     
-    load(['/Users/REINHARTLAB/Desktop/TimeEst/TimeEst_All' filesep NewSubs{Sub}]);
+    load([Folder filesep NewSubs{Sub}]);
     
     events =  StandardizeEventMarkers(events);
     

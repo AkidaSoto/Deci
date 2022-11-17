@@ -48,16 +48,28 @@ end
 
 %% Laplace Transformation
 if Deci.Analysis.Laplace
-    if isempty(Deci.Analysis.LaplaceFile)
+    if exist([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct'])
         
         [elec.label, elec.elecpos] = CapTrakMake([Deci.Folder.Raw  filesep Deci.SubjectList{subject_list} '.bvct']);
     else
-        elec = ft_read_sens(Deci.Analysis.LaplaceFile);
+        elec = ft_read_sens('standard_1020.elc');
     end
     ecfg.elec = elec;
+
+%     data.label =cellfun(@upper, data.label, 'UniformOutput', false);
+%     ecfg.elec.label = cellfun(@upper, ecfg.elec.label, 'UniformOutput', false);
+
     evalc('data = ft_scalpcurrentdensity(ecfg, data)');
     
     display('Laplace Transform Applied')
+
+    data.locks = locks;
+    data.events = events;
+    data.trlnum = trlnum;
+    data.postart.locks = postart.locks;
+    data.postart.events = postart.events;
+    data.postart.trlnum = postart.trlnum;
+    info.postart = data.postart;
 end
 
 %% HemifieldFlip
@@ -140,7 +152,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                 display(['Using unique Trial Def:' Deci.DT.Type])
             end
         end
-        error('1 or More Marker Codes not found in events. If using own DT, make sure Step 4 contains updated DT.Markers field')
+        warning('1 or More Marker Codes not found in events. If using own DT, make sure Step 4 contains updated DT.Markers field')
     end
     
     Deci.Analysis = Exist(Deci.Analysis,'UniqueConditions',[]);
@@ -194,8 +206,11 @@ for Cond = 1:length(Deci.Analysis.Conditions)
       
     else
     dataplaceholder = ft_selectdata(ccfg,data);
+    dataplaceholder.event = data.events(ccfg.trials,:);
     end
     
+   
+
     if isfield(data,'trial')
         if length(dataplaceholder.trial) < 40
             display('!!!Trial Count for this condition is < 40, which is abnormally low!!!')
@@ -312,7 +327,12 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                         tempdat = dat;
                     end
                     
-                    Fourier = dc_freqanalysis(fcfg, tempdat);
+                    Deci.Analysis = Exist(Deci.Analysis,'FreqFun','dc_freqanalysis');
+
+                    Fourier = feval(Deci.Analysis.FreqFun,fcfg,tempdat);
+
+                    %Fourier = dc_freqanalysis(fcfg, tempdat);
+                    %Fourier.event = tempdat.event;
                     trllength = size(Fourier.fourierspctrm,1);
                 else
                     display('Applying Hilbert Transformation')
@@ -381,13 +401,25 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             freq.trllength = trllength;
                             freq.lockers = lockers;
                             
+                            
+                         
                             if Deci.Analysis.Freq.Induced.do ~= true
                             mkdir([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
                             save([Deci.Folder.Analysis filesep 'Freq_ITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
                             else
-                            mkdir([Deci.Folder.Analysis filesep 'Freq_InducedITPC' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
-                            save([Deci.Folder.Analysis filesep 'Freq_InducedITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3'); 
+                             mkdir([Deci.Folder.Analysis filesep 'Freq_InducedITPC' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                             save([Deci.Folder.Analysis filesep 'Freq_InducedITPC' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3'); 
                             end 
+                            
+                            if Deci.Analysis.Freq.ITPCz.do
+                            freq.powspctrm = N*(freq.powspctrm.^2);
+                              
+                            mkdir([Deci.Folder.Analysis filesep 'Freq_ITPCz' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                            save([Deci.Folder.Analysis filesep 'Freq_ITPCz' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
+                            
+                            
+                            end
+                                
                         end
                         
                         alt = 0;
@@ -410,6 +442,213 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                             mkdir([Deci.Folder.Analysis filesep 'Freq_EvokedPower2' filesep  Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
                             save([Deci.Folder.Analysis filesep 'Freq_EvokedPower2' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
                            
+                        end
+
+                        Deci.Analysis.Freq = Exist(Deci.Analysis.Freq,'PowCorrAcrossTrials',[]);
+                        Deci.Analysis.Freq.PowCorrAcrossTrials = Exist(Deci.Analysis.Freq.PowCorrAcrossTrials,'do',false);
+                        if Deci.Analysis.Freq.PowCorrAcrossTrials.do && ismember(dcfg.channel,Deci.Analysis.Freq.PowCorrAcrossTrials.choi)
+                            
+                        freq = freqplaceholder;    
+                        freq.powspctrm = abs(freq.fourierspctrm).^2;
+                        freq  = rmfield(freq,'fourierspctrm');
+                        freq.dimord = 'rpt_chan_freq_time';
+                        powcorr =freq;
+                        %ft_freqbaseline(struct('baseline',Deci.Analysis.Freq.PowCorrAcrossTrials.bsl,'baselinetype',Deci.Analysis.Freq.PowCorrAcrossTrials.bsltype),freq);
+
+                        
+                        if Deci.Analysis.Freq.PowCorrAcrossTrials.sigmoid
+                            spowcorr = powcorr;
+                            spowcorr = ft_selectdata(struct('latency',Deci.Analysis.Freq.PowCorrAcrossTrials.toi,'frequency',Deci.Analysis.Freq.PowCorrAcrossTrials.foi,'avgovertime','yes','avgoverfreq','yes'),spowcorr);
+                        end
+                        
+                        if Deci.Analysis.Freq.PowCorrAcrossTrials.raw
+                            tpowcorr = powcorr;
+                            tpowcorr = ft_selectdata(struct('latency',Deci.Analysis.Freq.PowCorrAcrossTrials.toi,'frequency',Deci.Analysis.Freq.PowCorrAcrossTrials.foi, ...
+                                    'avgovertime','yes','avgoverfreq','yes'),tpowcorr);
+                        end
+                                               
+
+                        if any(any(events < 0))
+                            events(:,find(events(1,:) < 1)) = ceil(events(:,find(events(1,:) < 1)));
+                            uniqueblocks = sort(unique(events(ccfg.trials,find(events(1,:) < 1))),'descend');
+                        else
+                            uniqueblocks = -1;
+                        end
+
+                        for j = 1:length(uniqueblocks)
+                            
+                            if  isempty(Deci.Analysis.Freq.PowCorrAcrossTrials.Static)
+                                trials = events(ccfg.trials,:);
+                                trlnums = ccfg.trials(trials(:,find(events(1,:) < 1)) == uniqueblocks(j));
+                                staticlength = trlnum(trlnums);
+                            else
+                                static = Deci.Analysis.Conditions{Cond}(ismember(Deci.Analysis.Conditions{Cond},Deci.Analysis.Freq.PowCorrAcrossTrials.Static));
+                                trials = events(ccfg.trials,:);
+                                trlnums = ccfg.trials(trials(:,1) == static & trials(:,find(events(1,:) < 1)) == uniqueblocks(j));
+                                staticlength = trlnum(trlnums) - min(trlnum(trlnums)) + 1;
+                            end
+
+                            
+                            for fois = 1:size(freq.powspctrm,3)
+                                for tois = 1:size(freq.powspctrm,4)
+                                    %dcorr =  corrcoef(1:length(powcorr.powspctrm(ceil(events(ccfg.trials,5)) == uniqueblocks(j),:,fois,tois)),powcorr.powspctrm(ceil(events(ccfg.trials,5)) == uniqueblocks(j),:,fois,tois));
+                                    
+                                    
+                                    
+                                    if Deci.Analysis.Freq.PowCorrAcrossTrials.polyfit
+                                        try
+                                    [y] = polyfit(staticlength,powcorr.powspctrm(ismember(ccfg.trials,trlnums),:,fois,tois),1);
+                                        catch
+k = 0;
+                                        end
+                                    m = y(1);
+                                    b = y(2);
+                                    
+                                    if m ~= 1
+                                    slope(j,:,fois,tois) = m;
+                                    intercept(j,:,fois,tois) = b;
+                                    else
+                                    slope(j,:,fois,tois) = nan;
+                                    intercept(j,:,fois,tois) = nan; 
+                                    end
+                                    end
+                                    
+                                    
+
+                                    
+                                end
+                            end
+                            
+                            if Deci.Analysis.Freq.PowCorrAcrossTrials.raw
+                                rawfreq.trialpow{j} = tpowcorr.powspctrm(ceil(events(ccfg.trials,find(events(1,:) < 1))) == uniqueblocks(j),:);
+                                rawfreq.trialnums{j} = trlnum(trlnums);
+                                
+                            end     
+                            
+                           if Deci.Analysis.Freq.PowCorrAcrossTrials.sigmoid
+                              strlnum{j} = trlnums; 
+                           end
+                            
+                            
+                        end
+                        
+                        
+                        
+                        if Deci.Analysis.Freq.PowCorrAcrossTrials.sigmoid
+                            param =sigm_fit(cat(1,strlnum{:}),spowcorr.powspctrm,[],[],0);
+                            
+                            startS = param(1);
+                            endS = param(2);
+                            
+                            if startS > endS
+                                slopeS = -1*param(4);
+                            else
+                                slopeS = param(4);
+                            end    
+                        end
+                        
+                        
+                        if Deci.Analysis.Freq.PowCorrAcrossTrials.polyfit
+                        powcorr.powspctrm = permute(nanmean(slope,1),[2 3 4 1]);
+                        powcorr.dimord = 'chan_freq_time';
+                        powcorr.trllength = trllength;
+                        powcorr.lockers = lockers;
+                        freq = powcorr;
+                        
+                        mkdir([Deci.Folder.Analysis filesep 'Freq_PowerSlope2' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        save([Deci.Folder.Analysis filesep 'Freq_PowerSlope2' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
+                  
+                        powcorr.powspctrm = permute(nanmean(intercept,1),[2 3 4 1]);
+                        freq = powcorr;
+                        
+                        mkdir([Deci.Folder.Analysis filesep 'Freq_PowerIntercept2' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        save([Deci.Folder.Analysis filesep 'Freq_PowerIntercept2' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
+                        
+                        powcorr.powspctrm = permute(nanmean(intercept,1),[2 3 4 1]) + trllength*permute(nanmean(slope,1),[2 3 4 1]);
+                        freq = powcorr;
+
+                        mkdir([Deci.Folder.Analysis filesep 'Freq_PowerEnd2' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        save([Deci.Folder.Analysis filesep 'Freq_PowerEnd2' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
+                        
+                        end
+                        
+                        if Deci.Analysis.Freq.PowCorrAcrossTrials.sigmoid
+                        powcorr.powspctrm = nanmean(slopeS,2);
+                        powcorr.freq = mean(spowcorr.freq);
+                        powcorr.time = mean(spowcorr.time);
+                        powcorr.dimord = 'chan_freq_time';
+                        powcorr.trllength = trllength;
+                        powcorr.lockers = lockers;
+                        freq = powcorr;
+                        
+                        mkdir([Deci.Folder.Analysis filesep 'Freq_PowerSigSlope' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        save([Deci.Folder.Analysis filesep 'Freq_PowerSigSlope' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
+                  
+                        powcorr.powspctrm = nanmean(endS,2);
+                        freq = powcorr;
+                        
+                        mkdir([Deci.Folder.Analysis filesep 'Freq_PowerSigEnd' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        save([Deci.Folder.Analysis filesep 'Freq_PowerSigEnd' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
+                     
+                        powcorr.powspctrm = nanmean(startS,2);
+                        freq = powcorr;
+                        
+                        mkdir([Deci.Folder.Analysis filesep 'Freq_PowerSigStart' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        save([Deci.Folder.Analysis filesep 'Freq_PowerSigStart' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
+                     
+                        
+                        end
+                        
+                        if Deci.Analysis.Freq.PowCorrAcrossTrials.raw    
+                        mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'RawFreq' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        save([Deci.Folder.Analysis filesep 'Extra' filesep 'RawFreq' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'rawfreq','-v7.3');
+                        end
+                        
+                        
+%                         freq = freqplaceholder;
+%                         freq.powspctrm = abs(freq.fourierspctrm).^2;
+%                         for j = 1:length(uniqueblocks)
+%                             for fois = 1:size(freq.powspctrm,3)
+%                                 for tois = 1:size(freq.powspctrm,4)
+%                                      dcorr =  corrcoef(1:length(freq.powspctrm(ceil(events(ccfg.trials,5)) == uniqueblocks(j),:,fois,tois)),freq.powspctrm(ceil(events(ccfg.trials,5)) == uniqueblocks(j),:,fois,tois));
+%                                      
+%                                      if numel(dcorr) > 1
+%                                          pcorr(j,:,fois,tois) = dcorr(2);
+%                                      else
+%                                          pcorr(j,:,fois,tois) = nan;
+%                                      end
+%                                 end
+%                             end
+%                         end
+%                         
+%                         freq.powspctrm = permute(mean(pcorr,1),[2 3 4 1]);
+%                         freq.dimord = 'chan_freq_time';
+%                         freq  = rmfield(freq,'fourierspctrm');
+%                         freq.trllength = trllength;
+%                         freq.lockers = lockers;
+%                         
+%                         mkdir([Deci.Folder.Analysis filesep 'Freq_MeanCorrPower' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+%                         save([Deci.Folder.Analysis filesep 'Freq_MeanCorrPower' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
+%                         
+                        
+                        end
+                    
+                        
+                        if Deci.Analysis.Freq.Variance.do
+                        freq = freqplaceholder;
+                        freq.powspctrm = abs(freq.fourierspctrm).^2;
+                        freq.dimord = 'rpt_chan_freq_time';
+                        powvar = ft_freqbaseline(struct('baseline',Deci.Analysis.Freq.Variance.bsl,'baselinetype','absolute'),freq);
+                        powvar.powspctrm = permute(var(powvar.powspctrm,[],1),[2 3 4 1]);
+                        
+                        
+                        freq = powvar;
+                        freq.dimord = 'chan_freq_time';
+                        freq.trllength = trllength;
+                        freq.lockers = lockers;
+                        
+                        mkdir([Deci.Folder.Analysis filesep 'Freq_PowerVar' filesep Deci.SubjectList{subject_list}  filesep filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond}]);
+                        save([Deci.Folder.Analysis filesep 'Freq_PowerVar' filesep Deci.SubjectList{subject_list}  filesep Deci.Analysis.LocksTitle{Lock} filesep Deci.Analysis.CondTitle{Cond} filesep Chan{i}],'freq','-v7.3');
                         end
                         
                         freq = freqplaceholder;
@@ -549,7 +788,7 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                         datahigh.label = labels;
                                         datahigh.dimord = 'rpttap_chan_freq_time';
                                         
-                                        if isequal(LF,HF) && ~isequal(chancmb(choicmb,1),chancmb(choicmb,2)) && ismember(conntype(conoi),{'plv','wpli_debiased','wpli','amplcorr', 'psi', 'powcorr','coh','powcorr_ortho'})
+                                        if isequal(LF,HF) && ~isequal(chancmb(choicmb,1),chancmb(choicmb,2)) && ismember(conntype(conoi),{'plv','wpli_debiased','wpli','amplcorr', 'psi', 'powcorr','coh','powcorr_ortho','phasediff'})
                                             
                                             conndata = ft_appendfreq(struct('parameter','fourierspctrm','appenddim','chan'),datalow,datahigh);
                                             conndata.cumtapcnt = Fourier.cumtapcnt;
@@ -577,8 +816,29 @@ for Cond = 1:length(Deci.Analysis.Conditions)
                                             conndata.dimord = 'rpttap_chan_freq';
                                             end
                                             
+                                            if ~ismember(conntype(conoi),{'phasediff'})
                                             evalc('conn = ft_connectivityanalysis(conncfg,conndata)');
-                                            
+                                            else  
+                                              phase_diff_complex = permute((exp(1i*(angle(datalow.fourierspctrm) - angle(datahigh.fourierspctrm)))),[1 3 4 2]);
+                                              
+                                              t_idx = datalow.time>=Deci.Analysis.Connectivity.toi(1) & datalow.time<=Deci.Analysis.Connectivity.toi(2);
+                                              phase_diff.toi(:,1) = angle(nanmean(nanmean(phase_diff_complex(:,:,t_idx),2),3));
+                                              
+                                              t_idx = datalow.time>=Deci.Analysis.Connectivity.bsl(1) & datalow.time<=Deci.Analysis.Connectivity.bsl(2);
+                                              phase_diff.toi(:,2) = angle(nanmean(nanmean(phase_diff_complex(:,:,t_idx),2),3));
+                                              
+                                              phase_diff.time = {'toi','bsl'};
+                                              
+                                              mkdir([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond}]);
+                                              save([Deci.Folder.Analysis filesep 'Extra' filesep 'Conn' filesep Deci.SubjectList{info.subject_list} filesep Deci.Analysis.LocksTitle{info.Lock} filesep Deci.Analysis.CondTitle{info.Cond} filesep strjoin([chancmb(choicmb,:) freqcmb(foicmb,:) conntype(conoi)],'_')],'phase_diff','-v7.3');
+                                              
+                                              clear phase_diff 
+                                              continue
+                                              %[wwtest] = circ_wwtest(phase_diff_complex_toi,phase_diff_complex_bsl);
+                                              %figure;polarhistogram(phase_diff_complex_toi)
+                                              
+                                            end
+                                                
                                             if ismember({'chancmb'},strsplit(conn.dimord,'_'))
                                             conn.([conntype{conoi} 'spctrm']) = permute(conn.([conntype{conoi} 'spctrm']),[2 3 1]);
                                             else

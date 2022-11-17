@@ -29,6 +29,13 @@ if ~isempty(Deci.PP.filter)
     disp('Full Data Filtering Applied');
 end
 
+Deci.PP = Exist(Deci.PP,'denoiser',false);
+
+if Deci.PP.denoiser
+   disp('Denoising Data');
+   data_eeg.trial{1} =  wdenoise(data_eeg.trial{1}',6,"Wavelet","db2")';
+end
+
 % Once Filtered, Apply trial definition to full data.
 Trialcfg.trl = TrlDefs.trl;
 evalc('data_eeg = ft_redefinetrial(Trialcfg,data_eeg)');
@@ -203,6 +210,27 @@ if Deci.PP.ShowData
     evalc('artf = ft_databrowser(cfg,data)');
 end
 
+        
+%% Impicit
+
+if Deci.PP.Imp.do
+    Imp = strsplit(Deci.PP.Imp.channels,':');
+
+    if ~ismember(Imp{2},data.label)
+        error('invalid Implicit channels for reference')
+    end
+    Imp_cfg.reref = 'yes';
+    Imp_cfg.channel  = 'all';
+    Imp_cfg.implicitref = Imp{1};
+    Imp_cfg.refchannel = Imp;
+    %Imp_cfg.feedback = feedback;
+    evalc('data = ft_preprocessing(Imp_cfg,data)');
+    disp('---Implicit Rereference applied---');
+end
+
+%tempdata = ft_preprocessing(bcfg,data);
+tempdata = data;
+
 %% ICA
 
 display(' ')
@@ -214,6 +242,8 @@ display(' ')
 cfg = [];
 cfg = Deci.ICA;
 cfg.bpfilter = 'yes';
+cfg.detrend = 'yes';
+cfg.demean = 'yes';
 evalc('data_bp = ft_preprocessing(cfg,data)');
 
 

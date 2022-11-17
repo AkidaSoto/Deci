@@ -14,11 +14,19 @@ for Conditions = 1:size(Subjects,2)
             
             for Channel = 1:length(info.Chois)
                 
-                load([Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep info.Chois{Channel} '.mat'],info.variable);
+                eval([info.variable '= [];']);
+
+                if exist([Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep info.Chois{Channel} '.mat']) == 2
+                    load([Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep info.Chois{Channel} '.mat'],info.variable);
+
+                else
+                    display(['could not find' [Deci.Folder.Analysis filesep info.extension filesep Deci.SubjectList{subject_list}  filesep Deci.Plot.BslRef filesep BslCond filesep info.Chois{Channel} '.mat']])
+                    break
+                end
+            
                 evalc(['vari =' info.variable]);
                 
-                
-            
+
                 if isfield(vari,'freq')
                     foi = vari.freq >= round(info.Fois(1),4) & vari.freq <= round(info.Fois(2),4);
                     
@@ -41,9 +49,16 @@ for Conditions = 1:size(Subjects,2)
                 Bsl{subject_list,Conditions} = rmfield(ft_appendtimelock(acfg,Chans{:}),'cfg');
             end
             
+
+            if isempty(eval(info.variable))
+                continue;
+            end
+            clear(info.variable)
         else
             Bsl{subject_list,Conditions} =Subjects{subject_list,Conditions};
         end
+
+
         
         toi = Bsl{subject_list,Conditions}.time >= round(Deci.Plot.Bsl(1),4) & Bsl{subject_list,Conditions}.time <= round(Deci.Plot.Bsl(2),4);
         

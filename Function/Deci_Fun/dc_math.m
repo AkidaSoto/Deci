@@ -39,6 +39,17 @@ display(' ')
             end
             
             scfg.operation = Deci.Plot.Math{conds};
+
+%                         if any(cellfun(@isempty,{Subjects{subj,:}}))
+%                 empties = cellfun(@isempty,{Subjects{subj,:}});
+%                 nempties = ~cellfun(@isempty,{Subjects{subj,:}});
+% 
+%                 for emp = find(empties)
+%                     Subjects{subj,emp} = Subjects{subj,nempties(1)};
+%                     Subjects{subj,emp}.(info.parameter)(:) = nan; 
+%                 end
+%             end
+
             evalc('MathData{subj} = ft_math(scfg,Subjects{subj,:})');
         end 
         

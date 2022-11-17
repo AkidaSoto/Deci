@@ -160,11 +160,11 @@ colname = Deci.Plot.Subtitle;
 exceldata = [{'Bar Data'} colname{:}; Subs' arrayfun(@(d) {d},cell2mat(cellfun(@(c) c.powspctrm, Segdata(:,[Deci.Plot.Draw{:}]), 'UniformOutput', false)))];
 
 if exist([Deci.Folder.Plot filesep  Deci.Plot.Title{1} ' Bar Data' ]) == 2
-    writematrix([],[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' ' Deci.Plot.Freq.Type ' Bar Data' ],'FileType','spreadsheet','Sheet','TempSheet');
-    %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'Accuracy_Full');
+    %writematrix([],[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' ' Deci.Plot.Freq.Type ' Bar Data' ],'FileType','spreadsheet','Sheet','TempSheet');
+    xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Title{1} ' Bar Data' ],'Bar Data');
 end
 
-writecell(exceldata,[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' ' Deci.Plot.Freq.Type ' Data' ],'FileType','spreadsheet','Sheet','Bar Data');
+writecell(exceldata,[Deci.Folder.Plot filesep   Deci.Plot.Title{1} ' ' Deci.Plot.Freq.Type ' Bar Data' ],'FileType','spreadsheet','Sheet','Bar Data');
 %xls_delete_sheets([Deci.Folder.Plot filesep  Deci.Plot.Behv.Acc.Title{fig} ' Behavioral Outputs' ],'TempSheet');
 
 

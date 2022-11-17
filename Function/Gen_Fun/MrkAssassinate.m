@@ -1,4 +1,4 @@
-function MrkAssassinate(folder,refmrk,saved)
+function MrkAssassinate(folder,refmrk,skip)
 
 % folder - path to folder of data to process
 % refmrk - reference marker, cells of cells of strings 
@@ -36,29 +36,20 @@ for k = 1:length(exp_files)
     event = StandardizeEventMarkers(event);
     
     event2 = event;
-    for j = 1:length(refmrk)
-         new_event  = event2(1);
-         
-         skip = 0;
-         
-        for i=1:length(event2)
-            
-           if mean(strcmp(event2(i).value,refmrk{j})) ~= 0
-                skip = skip + 1;
-           end
-                
-            
-            if mean(strcmp(event2(i).value,refmrk{j})) == 0 || skip == saved
-                new_event(end+1) = event2(i);
+
+    new_event  = event2(1);
+    for i=1:length(event2)
+
+        if i > skip
+            if any(arrayfun(@(c) isequal(refmrk{c},{event2(i-skip(c)).value}),1:length(refmrk)))
+                continue
             end
-            
-          
+                new_event(end+1) = event2(i);
         end
-        
-        new_event = new_event(1:end);
-        [tmp,ind]=sortrows({new_event.sample}');
-        event2=new_event(ind);
     end
+    new_event = new_event(2:end);
+    [tmp,ind]=sortrows({new_event.sample}');
+    event2=new_event(ind);
  
     string = strsplit(exp_files(k).name,'.');
     hdr.orig.MarkerFile = [folder '_new' filesep  string{1}  '.vmrk'];

@@ -21,6 +21,8 @@ for subject_list = 1:length(Deci.SubjectList)
         files_ending = {'.rdf','.vmrk','.vhdr'};
     elseif ~isempty(dir([Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.vhdr']))
         files_ending = {'.vhdr','.vmrk'};
+    elseif ~isempty(dir([Deci.Folder.Raw filesep Deci.SubjectList{subject_list} '.set']))
+        files_ending = {'.set','.fdt'};
     end
      
     for file_ending = 1:length(files_ending)
@@ -37,7 +39,8 @@ for subject_list = 1:length(Deci.SubjectList)
     
     Deci.DT = Exist(Deci.DT,'NanLocks',false);
     
-    evalc('cfg = ft_definetrial(cfg);'); % will return cfg.trl, the segmented data
+    cfg = ft_definetrial(cfg);
+    %evalc('cfg = ft_definetrial(cfg);'); % will return cfg.trl, the segmented data
     
    if strcmpi(cfg.DT.Type,'TD_Module3')
        [a,b] = fileparts(cfg.dataset);
